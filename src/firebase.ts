@@ -1,12 +1,24 @@
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
-import firebaseConfig from "../firebase-applet-config.json";
+import { getAnalytics } from "firebase/analytics";
+
+// Your custom web app's Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyBJEYBmU2ZbmBIKvQVNZqzNx_IryIP08OA",
+  authDomain: "forex9ja-585c3.firebaseapp.com",
+  projectId: "forex9ja-585c3",
+  storageBucket: "forex9ja-585c3.firebasestorage.app",
+  messagingSenderId: "599207635482",
+  appId: "1:599207635482:web:cf587e7f057b417044ffa3",
+  measurementId: "G-XRK2B7NC65"
+};
 
 // Initialize Firebase
 export const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);
 export const auth = getAuth(app);
+export const analytics = typeof window !== 'undefined' ? getAnalytics(app) : null;
 
 // Mandated Firebase Error Handling
 export enum OperationType {
@@ -54,5 +66,15 @@ export function handleFirestoreError(error: unknown, operationType: OperationTyp
   };
   console.error('Firestore Error: ', JSON.stringify(errInfo));
   throw new Error(JSON.stringify(errInfo));
+}
+
+export function cleanForFirestore<T extends object>(obj: T): T {
+  const result = { ...obj };
+  Object.keys(result).forEach(key => {
+    if (result[key as keyof T] === undefined) {
+      delete result[key as keyof T];
+    }
+  });
+  return result;
 }
 

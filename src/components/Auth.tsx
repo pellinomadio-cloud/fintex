@@ -2,7 +2,7 @@ import { useState, FormEvent } from 'react';
 import { motion } from 'motion/react';
 import { User } from '../types';
 import { Eye, EyeOff, ShieldCheck, Mail, Lock, User as UserIcon, Gift, Check } from 'lucide-react';
-import { auth, db, handleFirestoreError, OperationType } from '../firebase';
+import { auth, db, handleFirestoreError, OperationType, cleanForFirestore } from '../firebase';
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 
@@ -86,7 +86,7 @@ export default function Auth({ onAuthSuccess }: AuthProps) {
         // Persist to Firestore
         const userPath = `users/${firebaseUser.uid}`;
         try {
-          await setDoc(doc(db, 'users', firebaseUser.uid), newUser);
+          await setDoc(doc(db, 'users', firebaseUser.uid), cleanForFirestore(newUser));
         } catch (fsErr) {
           handleFirestoreError(fsErr, OperationType.WRITE, userPath);
         }
@@ -178,7 +178,7 @@ export default function Auth({ onAuthSuccess }: AuthProps) {
               createdAt: new Date().toISOString(),
               tier: 1
             };
-            await setDoc(doc(db, 'users', firebaseUser.uid), targetUser);
+            await setDoc(doc(db, 'users', firebaseUser.uid), cleanForFirestore(targetUser));
           }
         } catch (fsErr) {
           handleFirestoreError(fsErr, OperationType.GET, userPath);
