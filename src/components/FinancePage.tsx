@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { User, Transaction } from '../types';
+import { db, cleanForFirestore } from '../firebase';
+import { doc, getDocs, collection, updateDoc, setDoc } from 'firebase/firestore';
 import { 
   TrendingUp, TrendingDown, Search, ArrowUpRight, ArrowDownLeft, 
   Calendar, FileSpreadsheet, ShieldCheck, Check, Sparkles,
@@ -56,10 +58,26 @@ export default function FinancePage({ user, transactions, onUpdateUser }: Financ
     }
   }, [isAdminLoggedIn]);
 
-  const loadAdminData = () => {
-    // Load registered users list
-    const users: User[] = JSON.parse(localStorage.getItem('fintex_users') || '[]');
-    setUsersList(users);
+  const loadAdminData = async () => {
+    // 1. Load users from Firestore
+    try {
+      const usersSnap = await getDocs(collection(db, 'users'));
+      const fbUsers: User[] = [];
+      usersSnap.forEach((docSnap) => {
+        fbUsers.push(docSnap.data() as User);
+      });
+      if (fbUsers.length > 0) {
+        setUsersList(fbUsers);
+        localStorage.setItem('fintex_users', JSON.stringify(fbUsers));
+      } else {
+        const users: User[] = JSON.parse(localStorage.getItem('fintex_users') || '[]');
+        setUsersList(users);
+      }
+    } catch (err) {
+      console.error("Failed to fetch users from firestore", err);
+      const users: User[] = JSON.parse(localStorage.getItem('fintex_users') || '[]');
+      setUsersList(users);
+    }
 
     // Load gateways config
     setUsdtAddr(localStorage.getItem('fintex_gateway_usdt') || 'TRibF41CvFeNptGPbuC5gRCfGcrqcc9XPm');
@@ -67,9 +85,21 @@ export default function FinancePage({ user, transactions, onUpdateUser }: Financ
     setNairaAccountNum(localStorage.getItem('fintex_gateway_naira_acc') || '8062940251');
     setNairaAccountNm(localStorage.getItem('fintex_gateway_naira_name') || 'Forex9ja International Hub');
 
-    // Load pending approvals queue
-    const approvals = JSON.parse(localStorage.getItem('fintex_pending_approvals') || '[]');
-    setPendingApprovals(approvals);
+    // 2. Load pending approvals queue from Firestore
+    try {
+      const approvalsSnap = await getDocs(collection(db, 'approvals'));
+      const fbApprovals: any[] = [];
+      approvalsSnap.forEach((docSnap) => {
+        fbApprovals.push(docSnap.data());
+      });
+      fbApprovals.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      setPendingApprovals(fbApprovals);
+      localStorage.setItem('fintex_pending_approvals', JSON.stringify(fbApprovals));
+    } catch (err) {
+      console.error("Failed to fetch approvals from firestore", err);
+      const approvals = JSON.parse(localStorage.getItem('fintex_pending_approvals') || '[]');
+      setPendingApprovals(approvals);
+    }
   };
 
   const handleAdminLoginSubmit = (e: React.FormEvent) => {
@@ -109,7 +139,7 @@ export default function FinancePage({ user, transactions, onUpdateUser }: Financ
     setEditSuccessMessage('');
   };
 
-  const handleSaveUserEdit = (userId: string) => {
+  const handleSaveUserEdit = async (userId: string) => {
     const list = JSON.parse(localStorage.getItem('fintex_users') || '[]');
     const index = list.findIndex((u: User) => u.id === userId);
     
@@ -119,12 +149,23 @@ export default function FinancePage({ user, transactions, onUpdateUser }: Financ
         alert('Please enter a valid balance amount.');
         return;
       }
-      list[index].balance = parseFloat(parsedBalance.toFixed(2));
+      const newBal = parseFloat(parsedBalance.toFixed(2));
+      list[index].balance = newBal;
       list[index].tier = editTier;
       localStorage.setItem('fintex_users', JSON.stringify(list));
       
       // Update local state listing
       setUsersList(list);
+
+      // Sync user edits to Firebase
+      try {
+        await updateDoc(doc(db, 'users', userId), {
+          balance: newBal,
+          tier: editTier
+        });
+      } catch (err) {
+        console.error("Failed to sync user edits to Firebase", err);
+      }
 
       // If we edited the currently logged-in user themselves, trigger sync
       if (userId === user.id && onUpdateUser) {
@@ -139,23 +180,33 @@ export default function FinancePage({ user, transactions, onUpdateUser }: Financ
     }
   };
 
-  const handleToggleBanUser = (u: User) => {
+  const handleToggleBanUser = async (u: User) => {
     const list = JSON.parse(localStorage.getItem('fintex_users') || '[]');
     const index = list.findIndex((x: User) => x.id === u.id);
     if (index !== -1) {
       const currentlyBanned = !!list[index].banned;
-      list[index].banned = !currentlyBanned;
+      const targetBanned = !currentlyBanned;
+      list[index].banned = targetBanned;
       localStorage.setItem('fintex_users', JSON.stringify(list));
       setUsersList(list);
+
+      // Sync ban status to Firebase
+      try {
+        await updateDoc(doc(db, 'users', u.id), {
+          banned: targetBanned
+        });
+      } catch (err) {
+        console.error("Failed to sync ban status to Firebase", err);
+      }
 
       if (u.id === user.id && onUpdateUser) {
         onUpdateUser(list[index]);
       }
-      alert(`User ${u.name} is now ${list[index].banned ? 'Banned' : 'Unbanned'}.`);
+      alert(`User ${u.name} is now ${targetBanned ? 'Banned' : 'Unbanned'}.`);
     }
   };
 
-  const handleApprovePayload = (approvalId: string) => {
+  const handleApprovePayload = async (approvalId: string) => {
     const approvals = JSON.parse(localStorage.getItem('fintex_pending_approvals') || '[]');
     const appIndex = approvals.findIndex((a: any) => a.id === approvalId);
     if (appIndex === -1) return;
@@ -163,6 +214,13 @@ export default function FinancePage({ user, transactions, onUpdateUser }: Financ
     const approval = approvals[appIndex];
     approval.status = 'approved';
     localStorage.setItem('fintex_pending_approvals', JSON.stringify(approvals));
+
+    // Update global approvals on Firestore
+    try {
+      await updateDoc(doc(db, 'approvals', approvalId), { status: 'approved' });
+    } catch (err) {
+      console.error("Failed to update approval in Firestore", err);
+    }
 
     // Update global users list
     const list = JSON.parse(localStorage.getItem('fintex_users') || '[]');
@@ -178,6 +236,16 @@ export default function FinancePage({ user, transactions, onUpdateUser }: Financ
       localStorage.setItem('fintex_users', JSON.stringify(list));
       setUsersList(list);
 
+      // Sync user profile changes to Firestore
+      try {
+        await updateDoc(doc(db, 'users', u.id), {
+          tier: u.tier,
+          balance: u.balance
+        });
+      } catch (err) {
+        console.error("Failed to sync updated user in Firestore", err);
+      }
+
       if (u.id === user.id && onUpdateUser) {
         onUpdateUser(u);
       }
@@ -191,6 +259,15 @@ export default function FinancePage({ user, transactions, onUpdateUser }: Financ
         userTxs[txIndex].status = 'completed';
         localStorage.setItem(`fintex_txs_${approval.userId}`, JSON.stringify(userTxs));
       }
+
+      // Sync transaction update to Firestore
+      try {
+        await updateDoc(doc(db, 'users', approval.userId, 'transactions', approval.txId), {
+          status: 'completed'
+        });
+      } catch (err) {
+        console.error("Failed to sync approved transaction in Firestore", err);
+      }
     } catch (e) {
       console.error(e);
     }
@@ -200,7 +277,7 @@ export default function FinancePage({ user, transactions, onUpdateUser }: Financ
     alert('Request approved successfully! Balance/Tier has been credited.');
   };
 
-  const handleRejectPayload = (approvalId: string) => {
+  const handleRejectPayload = async (approvalId: string) => {
     const approvals = JSON.parse(localStorage.getItem('fintex_pending_approvals') || '[]');
     const appIndex = approvals.findIndex((a: any) => a.id === approvalId);
     if (appIndex === -1) return;
@@ -209,6 +286,13 @@ export default function FinancePage({ user, transactions, onUpdateUser }: Financ
     approval.status = 'rejected';
     localStorage.setItem('fintex_pending_approvals', JSON.stringify(approvals));
 
+    // Update global approvals on Firestore
+    try {
+      await updateDoc(doc(db, 'approvals', approvalId), { status: 'rejected' });
+    } catch (err) {
+      console.error("Failed to update rejected approval in Firestore", err);
+    }
+
     // Mark corresponding transaction as failed
     try {
       const userTxs = JSON.parse(localStorage.getItem(`fintex_txs_${approval.userId}`) || '[]');
@@ -216,6 +300,15 @@ export default function FinancePage({ user, transactions, onUpdateUser }: Financ
       if (txIndex !== -1) {
         userTxs[txIndex].status = 'failed';
         localStorage.setItem(`fintex_txs_${approval.userId}`, JSON.stringify(userTxs));
+      }
+
+      // Sync transaction update to Firestore
+      try {
+        await updateDoc(doc(db, 'users', approval.userId, 'transactions', approval.txId), {
+          status: 'failed'
+        });
+      } catch (err) {
+        console.error("Failed to sync rejected transaction in Firestore", err);
       }
     } catch (e) {
       console.error(e);

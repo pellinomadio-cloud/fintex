@@ -15,34 +15,48 @@ service cloud.firestore {
       return isSignedIn() && request.auth.uid == userId;
     }
 
+    function isAdmin() {
+      return isSignedIn() && request.auth.token.email == 'pellinomadio@gmail.com';
+    }
+
     function isValidId(id) {
       return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
     }
 
     // 2. Main collection rules
     match /users/{userId} {
-      allow get: if isOwner(userId);
-      allow create, update: if isOwner(userId);
+      allow get: if isOwner(userId) || isAdmin();
+      allow list: if isAdmin();
+      allow create, update: if isOwner(userId) || isAdmin();
       allow delete: if false; // Users cannot delete their accounts directly
 
       // Subcollections
       match /transactions/{transactionId} {
-        allow list, get: if isOwner(userId);
-        allow create, update: if isOwner(userId);
+        allow list, get: if isOwner(userId) || isAdmin();
+        allow create: if isOwner(userId);
+        allow update: if isOwner(userId) || isAdmin();
         allow delete: if false;
       }
 
       match /cards/{cardId} {
-        allow list, get: if isOwner(userId);
-        allow create, update: if isOwner(userId);
+        allow list, get: if isOwner(userId) || isAdmin();
+        allow create, update: if isOwner(userId) || isAdmin();
         allow delete: if false;
       }
 
       match /referrals/{referralId} {
-        allow list, get: if isOwner(userId);
-        allow create, update: if isOwner(userId);
+        allow list, get: if isOwner(userId) || isAdmin();
+        allow create, update: if isOwner(userId) || isAdmin();
         allow delete: if false;
       }
+    }
+
+    match /approvals/{approvalId} {
+      allow get: if isAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
+      allow list: if isAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow update: if isAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid && request.resource.data.userId == request.auth.uid);
+      allow delete: if isAdmin();
     }
   }
 }

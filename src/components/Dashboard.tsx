@@ -1,5 +1,7 @@
 import { useState, useEffect, FormEvent } from 'react';
 import { User, Transaction } from '../types';
+import { db, cleanForFirestore } from '../firebase';
+import { doc, setDoc } from 'firebase/firestore';
 import { 
   Eye, EyeOff, Plus, ArrowUpRight, ArrowDownLeft, Landmark, 
   Send, Phone, Database, Trophy, Landmark as LoanIcon, 
@@ -390,10 +392,9 @@ export default function Dashboard({
       proof: uploadedProofBase64
     };
 
-    // Save pending approval record to global space
-    const approvals = JSON.parse(localStorage.getItem('fintex_pending_approvals') || '[]');
-    approvals.push({
-      id: 'app_' + Math.random().toString(36).substr(2, 9),
+    const approvalId = 'app_' + Math.random().toString(36).substr(2, 9);
+    const newApproval = {
+      id: approvalId,
       userId: user.id,
       userName: user.name,
       userEmail: user.email,
@@ -403,8 +404,14 @@ export default function Dashboard({
       date: new Date().toISOString(),
       status: 'pending',
       txId: txId
-    });
+    };
+
+    // Save pending approval record to global space
+    const approvals = JSON.parse(localStorage.getItem('fintex_pending_approvals') || '[]');
+    approvals.push(newApproval);
     localStorage.setItem('fintex_pending_approvals', JSON.stringify(approvals));
+
+    setDoc(doc(db, 'approvals', approvalId), cleanForFirestore(newApproval)).catch(err => console.error("FB approval save error", err));
 
     onAddTransaction(tx);
     setInputAmount('');
@@ -438,10 +445,9 @@ export default function Dashboard({
       proof: uploadedProofBase64
     };
 
-    // Save pending approval record to global space
-    const approvals = JSON.parse(localStorage.getItem('fintex_pending_approvals') || '[]');
-    approvals.push({
-      id: 'app_' + Math.random().toString(36).substr(2, 9),
+    const approvalId = 'app_' + Math.random().toString(36).substr(2, 9);
+    const newApproval = {
+      id: approvalId,
       userId: user.id,
       userName: user.name,
       userEmail: user.email,
@@ -451,8 +457,14 @@ export default function Dashboard({
       date: new Date().toISOString(),
       status: 'pending',
       txId: txId
-    });
+    };
+
+    // Save pending approval record to global space
+    const approvals = JSON.parse(localStorage.getItem('fintex_pending_approvals') || '[]');
+    approvals.push(newApproval);
     localStorage.setItem('fintex_pending_approvals', JSON.stringify(approvals));
+
+    setDoc(doc(db, 'approvals', approvalId), cleanForFirestore(newApproval)).catch(err => console.error("FB approval save error", err));
 
     onAddTransaction(tx);
     setUsdtAmount('');
@@ -488,10 +500,9 @@ export default function Dashboard({
       proof: uploadedProofBase64
     };
 
-    // Save pending approval record to global space
-    const approvals = JSON.parse(localStorage.getItem('fintex_pending_approvals') || '[]');
-    approvals.push({
-      id: 'app_' + Math.random().toString(36).substr(2, 9),
+    const approvalId = 'app_' + Math.random().toString(36).substr(2, 9);
+    const newApproval = {
+      id: approvalId,
       userId: user.id,
       userName: user.name,
       userEmail: user.email,
@@ -501,8 +512,14 @@ export default function Dashboard({
       date: new Date().toISOString(),
       status: 'pending',
       txId: txId
-    });
+    };
+
+    // Save pending approval record to global space
+    const approvals = JSON.parse(localStorage.getItem('fintex_pending_approvals') || '[]');
+    approvals.push(newApproval);
     localStorage.setItem('fintex_pending_approvals', JSON.stringify(approvals));
+
+    setDoc(doc(db, 'approvals', approvalId), cleanForFirestore(newApproval)).catch(err => console.error("FB approval save error", err));
 
     onAddTransaction(tx);
     setNairaAmount('');
@@ -535,10 +552,9 @@ export default function Dashboard({
       proof: uploadedProofBase64
     };
 
-    // Store in global approvals queue
-    const approvals = JSON.parse(localStorage.getItem('fintex_pending_approvals') || '[]');
-    approvals.push({
-      id: 'app_' + Math.random().toString(36).substr(2, 9),
+    const approvalId = 'app_' + Math.random().toString(36).substr(2, 9);
+    const newApproval = {
+      id: approvalId,
       userId: user.id,
       userName: user.name,
       userEmail: user.email,
@@ -548,8 +564,14 @@ export default function Dashboard({
       date: new Date().toISOString(),
       status: 'pending',
       txId: txId
-    });
+    };
+
+    // Store in global approvals queue
+    const approvals = JSON.parse(localStorage.getItem('fintex_pending_approvals') || '[]');
+    approvals.push(newApproval);
     localStorage.setItem('fintex_pending_approvals', JSON.stringify(approvals));
+
+    setDoc(doc(db, 'approvals', approvalId), cleanForFirestore(newApproval)).catch(err => console.error("FB approval save error", err));
 
     onAddTransaction(tx);
     setUploadedProofBase64('');

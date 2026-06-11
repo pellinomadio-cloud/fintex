@@ -72,6 +72,24 @@
         "status": { "type": "string", "enum": ["completed", "pending"] }
       },
       "required": ["refereeName", "email", "date", "rewardEarned", "status"]
+    },
+    "Approval": {
+      "title": "Approval",
+      "description": "Administrative approval requests for deposits, withdrawals, or tier upgrades",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "userEmail": { "type": "string" },
+        "type": { "type": "string" },
+        "amount": { "type": "number" },
+        "proof": { "type": "string" },
+        "date": { "type": "string", "format": "date-time" },
+        "status": { "type": "string", "enum": ["pending", "approved", "rejected"] },
+        "txId": { "type": "string" }
+      },
+      "required": ["id", "userId", "userName", "userEmail", "type", "amount", "proof", "date", "status", "txId"]
     }
   },
   "firestore": {
@@ -90,6 +108,10 @@
     "/users/{userId}/referrals/{referralId}": {
       "schema": "Referral",
       "description": "List of individuals refereeing by of user"
+    },
+    "/approvals/{approvalId}": {
+      "schema": "Approval",
+      "description": "Global approvals queue managed by administrator"
     }
   }
 }

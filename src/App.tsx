@@ -7,6 +7,8 @@ import FinancePage from './components/FinancePage';
 import RewardsPage from './components/RewardsPage';
 import ProfilePage from './components/ProfilePage';
 import TradingPage from './components/TradingPage';
+import { db } from './firebase';
+import { doc, getDoc, getDocs, collection, setDoc, updateDoc } from 'firebase/firestore';
 
 // Lucide Icons
 import { 
@@ -36,9 +38,10 @@ export default function App() {
     }
   }, []);
 
-  // Sync state between global users list and current session
+  // Sync state between global users list, Firestore, and current session
   useEffect(() => {
     if (currentUser) {
+      // 1. Local storage sync
       const users: User[] = JSON.parse(localStorage.getItem('fintex_users') || '[]');
       const latest = users.find(u => u.id === currentUser.id);
       if (latest) {
@@ -52,8 +55,39 @@ export default function App() {
           localStorage.setItem('fintex_current_user', JSON.stringify(latest));
         }
       }
+
+      // 2. Firestore Sync (Real-time checks)
+      const userRef = doc(db, 'users', currentUser.id);
+      getDoc(userRef).then((docSnap) => {
+        if (docSnap.exists()) {
+          const fbUser = docSnap.data() as User;
+          if (
+            fbUser.banned !== currentUser.banned ||
+            fbUser.tier !== currentUser.tier ||
+            fbUser.balance !== currentUser.balance ||
+            fbUser.savingsBalance !== currentUser.savingsBalance
+          ) {
+            setCurrentUser(fbUser);
+            localStorage.setItem('fintex_current_user', JSON.stringify(fbUser));
+          }
+        }
+      }).catch(err => console.error("Error syncing profile from Firestore", err));
+
+      // 3. Firestore Transactions Sync
+      const txsColRef = collection(db, 'users', currentUser.id, 'transactions');
+      getDocs(txsColRef).then((querySnap) => {
+        const fbTxs: Transaction[] = [];
+        querySnap.forEach(snap => {
+          fbTxs.push(snap.data() as Transaction);
+        });
+        fbTxs.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+        if (fbTxs.length > 0) {
+          setTransactions(fbTxs);
+          localStorage.setItem(`fintex_txs_${currentUser.id}`, JSON.stringify(fbTxs));
+        }
+      }).catch(err => console.error("Error syncing transactions from Firestore", err));
     }
-  }, [activeTab]);
+  }, [currentUser?.id, activeTab]);
 
   const handleAuthSuccess = (user: User) => {
     setCurrentUser(user);
@@ -69,7 +103,7 @@ export default function App() {
     setTransactions([]);
   };
 
-  const handleUpdateUser = (updatedUser: User) => {
+  const handleUpdateUser = async (updatedUser: User) => {
     setCurrentUser(updatedUser);
     localStorage.setItem('fintex_current_user', JSON.stringify(updatedUser));
 
@@ -80,21 +114,42 @@ export default function App() {
       users[index] = updatedUser;
       localStorage.setItem('fintex_users', JSON.stringify(users));
     }
+
+    // Sync user changes to Firestore
+    try {
+      await setDoc(doc(db, 'users', updatedUser.id), updatedUser);
+    } catch (err) {
+      console.error("Firestore user update fail", err);
+    }
   };
 
-  const handleAddTransaction = (newTx: Transaction) => {
+  const handleAddTransaction = async (newTx: Transaction) => {
     const updatedTxs = [newTx, ...transactions];
     setTransactions(updatedTxs);
     if (currentUser) {
       localStorage.setItem(`fintex_txs_${currentUser.id}`, JSON.stringify(updatedTxs));
+
+      // Sync transaction to Firestore
+      try {
+        await setDoc(doc(db, 'users', currentUser.id, 'transactions', newTx.id), newTx);
+      } catch (err) {
+        console.error("Firestore add transaction error", err);
+      }
     }
   };
 
-  const handleUpdateTransaction = (txId: string, updatedFields: Partial<Transaction>) => {
+  const handleUpdateTransaction = async (txId: string, updatedFields: Partial<Transaction>) => {
     const updatedTxs = transactions.map(t => t.id === txId ? { ...t, ...updatedFields } : t);
     setTransactions(updatedTxs);
     if (currentUser) {
       localStorage.setItem(`fintex_txs_${currentUser.id}`, JSON.stringify(updatedTxs));
+
+      // Sync updated fields to Firestore
+      try {
+        await updateDoc(doc(db, 'users', currentUser.id, 'transactions', txId), updatedFields);
+      } catch (err) {
+        console.error("Firestore update transaction error", err);
+      }
     }
   };
 
