@@ -65,7 +65,7 @@ export default function FinancePage({ user, transactions, onUpdateUser }: Financ
     setUsdtAddr(localStorage.getItem('fintex_gateway_usdt') || 'TRibF41CvFeNptGPbuC5gRCfGcrqcc9XPm');
     setNairaBank(localStorage.getItem('fintex_gateway_naira_bank') || 'Opay Digital Bank');
     setNairaAccountNum(localStorage.getItem('fintex_gateway_naira_acc') || '8062940251');
-    setNairaAccountNm(localStorage.getItem('fintex_gateway_naira_name') || 'Fintex International Hub');
+    setNairaAccountNm(localStorage.getItem('fintex_gateway_naira_name') || 'Forex9ja International Hub');
 
     // Load pending approvals queue
     const approvals = JSON.parse(localStorage.getItem('fintex_pending_approvals') || '[]');
@@ -301,7 +301,7 @@ export default function FinancePage({ user, transactions, onUpdateUser }: Financ
                 <input 
                   type="email"
                   required
-                  placeholder="admin@fintex.com"
+                  placeholder="admin@forex9ja.online"
                   className="w-full pl-9 pr-4 py-2.5 bg-slate-50 border border-slate-100 rounded-xl text-xs font-semibold focus:outline-none focus:border-brand-primary focus:bg-white text-slate-800"
                   value={adminEmail}
                   onChange={(e) => setAdminEmail(e.target.value)}
@@ -348,7 +348,7 @@ export default function FinancePage({ user, transactions, onUpdateUser }: Financ
           <div>
             <div className="flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-              <h2 className="text-lg font-black text-slate-900 tracking-tight uppercase">Fintex System Admin</h2>
+              <h2 className="text-lg font-black text-slate-900 tracking-tight uppercase">Forex9ja System Admin</h2>
             </div>
             <p className="text-xs text-slate-550">Superuser database operations and audits</p>
           </div>
@@ -663,7 +663,7 @@ export default function FinancePage({ user, transactions, onUpdateUser }: Financ
                     <input 
                       type="text"
                       required
-                      placeholder="Fintex Hub LLC"
+                      placeholder="Forex9ja Hub LLC"
                       className="w-full px-3 py-2 bg-slate-50 border border-slate-100 rounded-xl text-xs text-slate-800 font-bold"
                       value={nairaAccountNm}
                       onChange={(e) => setNairaAccountNm(e.target.value)}

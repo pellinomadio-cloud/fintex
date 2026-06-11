@@ -36,7 +36,7 @@ export default function ProfilePage({ user, onLogout, onUpdateUser }: ProfilePag
             </div>
             <p className="text-xs text-slate-500">{user.email}</p>
             <p className="text-[10px] text-brand-primary font-mono tracking-wider mt-1 uppercase font-bold text-left">
-              Account ID: FTX-{user.referralCode}
+              Account ID: F9J-{user.referralCode}
             </p>
           </div>
         </div>
@@ -65,7 +65,7 @@ export default function ProfilePage({ user, onLogout, onUpdateUser }: ProfilePag
       {/* Customer support desk links */}
       <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm space-y-3" id="profile-helpdesk-module">
         <h3 className="text-xs font-bold text-brand-dark uppercase tracking-wider mb-2">
-          Fintex Customer Help Desk
+          Forex9ja Customer Help Desk
         </h3>
 
         <a 
@@ -101,7 +101,7 @@ export default function ProfilePage({ user, onLogout, onUpdateUser }: ProfilePag
 
         {alertOpen && (
           <div className="p-3 bg-sky-50/50 border border-sky-100 rounded-xl text-[10px] text-slate-600 space-y-1" id="faq-alert-box">
-            <p><strong>Is Fintex safe?</strong> Yes. Fintex is built on safe containerizations layers with real-time AES 256 backup structures.</p>
+            <p><strong>Is Forex9ja safe?</strong> Yes. Forex9ja is built on safe containerizations layers with real-time AES 256 backup structures.</p>
             <p><strong>What is the maximum card balance?</strong> $10,000 USD is the default Tier 2 card limit.</p>
           </div>
         )}

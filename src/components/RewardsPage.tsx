@@ -28,8 +28,8 @@ export default function RewardsPage({ user, onUpdateUser, onAddTransaction }: Re
     const saved = JSON.parse(localStorage.getItem(`fintex_referrals_${user.id}`) || '[]');
     if (saved.length > 0) {
       setReferrals(saved);
-    } else {
-      // Seed default referral to make interface look active and lovely
+    } else if (user.id === 'u_demo') {
+      // Seed default referral to make interface look active and lovely only for demo accounts
       const seed: ReferralHistory = {
         refereeName: 'David Miller',
         email: 'david.miller@gmail.com',
@@ -39,6 +39,8 @@ export default function RewardsPage({ user, onUpdateUser, onAddTransaction }: Re
       };
       setReferrals([seed]);
       localStorage.setItem(`fintex_referrals_${user.id}`, JSON.stringify([seed]));
+    } else {
+      setReferrals([]);
     }
 
     // Check check-in status
@@ -55,7 +57,7 @@ export default function RewardsPage({ user, onUpdateUser, onAddTransaction }: Re
   };
 
   const handleCopyLink = () => {
-    navigator.clipboard.writeText(`https://fintex.com/invite?code=${user.referralCode}`);
+    navigator.clipboard.writeText(`https://forex9ja.online/invite?code=${user.referralCode}`);
     setCopyLinkSuccess(true);
     setTimeout(() => setCopyLinkSuccess(false), 2000);
   };
@@ -283,7 +285,7 @@ export default function RewardsPage({ user, onUpdateUser, onAddTransaction }: Re
 
           <div className="p-3 bg-slate-50 border border-slate-100 rounded-2xl relative" id="clip-ref-link">
             <span className="text-[10px] text-slate-400 font-bold block mb-1">REFERRAL LINK</span>
-            <span className="text-xs text-brand-dark truncate font-medium block pr-6">fintex.com/code={user.referralCode}</span>
+            <span className="text-xs text-brand-dark truncate font-medium block pr-6">forex9ja.online/invite?code={user.referralCode}</span>
             <button 
               type="button" 
               onClick={handleCopyLink} 

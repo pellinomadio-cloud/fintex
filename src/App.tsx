@@ -112,7 +112,7 @@ export default function App() {
           <div className="space-y-2">
             <h1 className="font-display font-black text-2xl text-red-500">Account Access Suspended</h1>
             <p className="text-xs text-slate-400 max-w-xs mx-auto leading-relaxed">
-              We have detected compliance abnormalities on your Fintex account. As a security precaution, your wallet balance, debit cards, and transfers have been locked.
+              We have detected compliance abnormalities on your Forex9ja account. As a security precaution, your wallet balance, debit cards, and transfers have been locked.
             </p>
           </div>
           
@@ -145,15 +145,15 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col antialiased select-none" id="fintex-master-app">
+    <div className="min-h-screen bg-slate-50 flex flex-col antialiased select-none" id="forex9ja-master-app">
       {/* Top Banner Applet Brand Bar */}
-      <header className="fixed top-0 inset-x-0 bg-brand-dark text-white z-40 h-14 flex items-center justify-between px-4 sm:px-6 shadow-md border-b border-brand-medium/20" id="fintex-global-header">
+      <header className="fixed top-0 inset-x-0 bg-brand-dark text-white z-40 h-14 flex items-center justify-between px-4 sm:px-6 shadow-md border-b border-brand-medium/20" id="forex9ja-global-header">
         <div className="flex items-center gap-2" id="header-brand-logo-section">
           <div className="w-8 h-8 rounded-lg bg-white text-brand-dark flex items-center justify-center font-display font-black text-lg shadow">
             F
           </div>
           <span className="font-display font-semibold tracking-tight text-base" id="header-app-brand-name">
-            fintex<span className="text-brand-light font-sans font-medium text-[10px] ml-1">Secure</span>
+            forex9ja<span className="text-brand-light font-sans font-medium text-[10px] ml-1">Secure</span>
           </span>
         </div>
 
@@ -164,7 +164,7 @@ export default function App() {
       </header>
 
       {/* Main Page scroll viewport */}
-      <main className="flex-1 mt-14 px-4 py-6 max-w-lg mx-auto w-full" id="fintex-main-tab-content">
+      <main className="flex-1 mt-14 px-4 py-6 max-w-lg mx-auto w-full" id="forex9ja-main-tab-content">
         {activeTab === 'home' && (
           <Dashboard 
             user={currentUser} 

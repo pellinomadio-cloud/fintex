@@ -1,5 +1,5 @@
 {
-  "name": "Fintex",
+  "name": "forex9ja",
   "description": "A beautiful, responsive fintech application featuring register/login capabilities, personal dashboard, balance management, and card services.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
