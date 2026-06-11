@@ -1,0 +1,95 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile definitions on Forex9ja",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "referralCode": { "type": "string" },
+        "referredBy": { "type": "string" },
+        "balance": { "type": "number" },
+        "savingsBalance": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "tier": { "type": "integer" },
+        "banned": { "type": "boolean" }
+      },
+      "required": ["id", "name", "email", "referralCode", "createdAt", "balance", "savingsBalance"]
+    },
+    "Transaction": {
+      "title": "Transaction",
+      "description": "Financial and reward activity logs",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "type": {
+          "type": "string",
+          "enum": ["deposit", "transfer", "withdrawal", "reward", "airtime", "utility", "savings_deposit", "savings_withdrawal"]
+        },
+        "amount": { "type": "number" },
+        "description": { "type": "string" },
+        "date": { "type": "string", "format": "date-time" },
+        "status": {
+          "type": "string",
+          "enum": ["completed", "pending", "failed"]
+        },
+        "reference": { "type": "string" },
+        "proof": { "type": "string" }
+      },
+      "required": ["id", "userId", "type", "amount", "description", "date", "status"]
+    },
+    "VirtualCard": {
+      "title": "VirtualCard",
+      "description": "Virtual visa or mastercard details",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "cardNumber": { "type": "string" },
+        "cardName": { "type": "string" },
+        "expiry": { "type": "string" },
+        "cvv": { "type": "string" },
+        "status": { "type": "string", "enum": ["active", "blocked"] },
+        "type": { "type": "string", "enum": ["visa", "mastercard"] },
+        "color": { "type": "string", "enum": ["deep-blue", "ice-blue", "slate-dark"] },
+        "limit": { "type": "number" },
+        "spent": { "type": "number" }
+      },
+      "required": ["id", "userId", "cardNumber", "cardName", "expiry", "cvv", "status", "type", "color", "limit", "spent"]
+    },
+    "Referral": {
+      "title": "Referral",
+      "description": "Tracks successful invites and signup credit distributions",
+      "type": "object",
+      "properties": {
+        "refereeName": { "type": "string" },
+        "email": { "type": "string" },
+        "date": { "type": "string", "format": "date-time" },
+        "rewardEarned": { "type": "number" },
+        "status": { "type": "string", "enum": ["completed", "pending"] }
+      },
+      "required": ["refereeName", "email", "date", "rewardEarned", "status"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "Main user records"
+    },
+    "/users/{userId}/transactions/{transactionId}": {
+      "schema": "Transaction",
+      "description": "Transaction ledger entries per user"
+    },
+    "/users/{userId}/cards/{cardId}": {
+      "schema": "VirtualCard",
+      "description": "Virtual debit card profiles per user"
+    },
+    "/users/{userId}/referrals/{referralId}": {
+      "schema": "Referral",
+      "description": "List of individuals refereeing by of user"
+    }
+  }
+}

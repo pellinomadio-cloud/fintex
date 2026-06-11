@@ -2,6 +2,9 @@ import { useState, FormEvent } from 'react';
 import { motion } from 'motion/react';
 import { User } from '../types';
 import { Eye, EyeOff, ShieldCheck, Mail, Lock, User as UserIcon, Gift, Check } from 'lucide-react';
+import { auth, db, handleFirestoreError, OperationType } from '../firebase';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 
 interface AuthProps {
   onAuthSuccess: (user: User) => void;
@@ -34,7 +37,7 @@ export default function Auth({ onAuthSuccess }: AuthProps) {
     return `${cleanName}${rand}`;
   };
 
-  const handleAuth = (e: FormEvent) => {
+  const handleAuth = async (e: FormEvent) => {
     e.preventDefault();
     setError('');
     setSuccess('');
@@ -60,87 +63,164 @@ export default function Auth({ onAuthSuccess }: AuthProps) {
         return;
       }
 
-      // Create new user
-      const newUser: User = {
-        id: 'u_' + Math.random().toString(36).substr(2, 9),
-        name: name.trim(),
-        email: email.trim().toLowerCase(),
-        password: password, // In simulated app context, plain text in localStorage is standard
-        referralCode: generateReferralCode(name),
-        referredBy: referralCode.trim() || undefined,
-        balance: 0.00, // strict requirement: initially dashboard balance of 0.00 dollar
-        savingsBalance: 0.00,
-        createdAt: new Date().toISOString(),
-        tier: 1
-      };
+      setSuccess('Creating your Forex9ja account...');
 
-      // If they had a referral code, simulate rewards setup
-      if (referralCode.trim()) {
-        const referrer = users.find(u => u.referralCode.toUpperCase() === referralCode.trim().toUpperCase());
-        // We'll record this in a simulated referral history inside localStorage
-        const referralRecords = JSON.parse(localStorage.getItem('fintex_referrals') || '[]');
-        referralRecords.push({
-          referrerId: referrer ? referrer.id : 'system',
-          refereeName: name,
+      try {
+        // Real Firebase Auth registration
+        const userCredential = await createUserWithEmailAndPassword(auth, email.trim().toLowerCase(), password);
+        const firebaseUser = userCredential.user;
+
+        // Create new user profile matching types.ts
+        const newUser: User = {
+          id: firebaseUser.uid,
+          name: name.trim(),
           email: email.trim().toLowerCase(),
-          date: new Date().toISOString(),
-          rewardEarned: 10.00,
-          status: 'completed'
-        });
-        localStorage.setItem('fintex_referrals', JSON.stringify(referralRecords));
+          referralCode: generateReferralCode(name),
+          referredBy: referralCode.trim() || undefined,
+          balance: 0.00,
+          savingsBalance: 0.00,
+          createdAt: new Date().toISOString(),
+          tier: 1
+        };
+
+        // Persist to Firestore
+        const userPath = `users/${firebaseUser.uid}`;
+        try {
+          await setDoc(doc(db, 'users', firebaseUser.uid), newUser);
+        } catch (fsErr) {
+          handleFirestoreError(fsErr, OperationType.WRITE, userPath);
+        }
+
+        // If they had a referral code, simulate rewards setup
+        if (referralCode.trim()) {
+          const referrer = users.find(u => u.referralCode.toUpperCase() === referralCode.trim().toUpperCase());
+          const referralRecords = JSON.parse(localStorage.getItem('fintex_referrals') || '[]');
+          referralRecords.push({
+            referrerId: referrer ? referrer.id : 'system',
+            refereeName: name,
+            email: email.trim().toLowerCase(),
+            date: new Date().toISOString(),
+            rewardEarned: 10.00,
+            status: 'completed'
+          });
+          localStorage.setItem('fintex_referrals', JSON.stringify(referralRecords));
+        }
+
+        users.push(newUser);
+        localStorage.setItem('fintex_users', JSON.stringify(users));
+        localStorage.setItem('fintex_current_user', JSON.stringify(newUser));
+
+        setSuccess('Registration successful! Launching your dashboard...');
+        setTimeout(() => {
+          onAuthSuccess(newUser);
+        }, 1200);
+
+      } catch (authErr: any) {
+        let errMsg = 'Registration failed. Please make sure password is at least 6 characters.';
+        if (authErr && authErr.code === 'auth/email-already-in-use') {
+          errMsg = 'This email is already registered.';
+        } else if (authErr && authErr.message) {
+          errMsg = authErr.message;
+        }
+        setError(errMsg);
       }
-
-      users.push(newUser);
-      localStorage.setItem('fintex_users', JSON.stringify(users));
-      localStorage.setItem('fintex_current_user', JSON.stringify(newUser));
-
-      setSuccess('Registration successful! Launching your dashboard...');
-      setTimeout(() => {
-        onAuthSuccess(newUser);
-      }, 1200);
 
     } else {
       // Login flow
-      const user = users.find(
-        (u) =>
-          u.email.toLowerCase() === email.toLowerCase() && u.password === password
+      const matchingDemo = demoAccounts.find(
+        (d) => d.email.toLowerCase() === email.toLowerCase() && d.password === password
       );
 
-      // Check if it matches a demo account that's not yet in localStorage
-      if (!user) {
-        const matchingDemo = demoAccounts.find(
-          (d) => d.email.toLowerCase() === email.toLowerCase() && d.password === password
-        );
-        if (matchingDemo) {
-          const newUser: User = {
-            id: 'u_demo',
-            name: matchingDemo.name,
-            email: matchingDemo.email,
-            password: matchingDemo.password,
-            referralCode: matchingDemo.referralCode,
+      if (matchingDemo) {
+        const user = users.find(u => u.email.toLowerCase() === email.toLowerCase());
+        const targetUser = user || {
+          id: 'u_demo',
+          name: matchingDemo.name,
+          email: matchingDemo.email,
+          referralCode: matchingDemo.referralCode,
+          balance: 0.00,
+          savingsBalance: 0.00,
+          createdAt: new Date().toISOString()
+        };
+
+        if (!user) {
+          users.push(targetUser);
+          localStorage.setItem('fintex_users', JSON.stringify(users));
+        }
+        localStorage.setItem('fintex_current_user', JSON.stringify(targetUser));
+        setSuccess('Logging in securely (Demo Mode)...');
+        setTimeout(() => {
+          onAuthSuccess(targetUser);
+        }, 1000);
+        return;
+      }
+
+      setSuccess('Verifying credentials...');
+      try {
+        const userCredential = await signInWithEmailAndPassword(auth, email.trim().toLowerCase(), password);
+        const firebaseUser = userCredential.user;
+
+        let targetUser: User;
+        const userPath = `users/${firebaseUser.uid}`;
+        try {
+          const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
+          if (userDoc.exists()) {
+            targetUser = userDoc.data() as User;
+          } else {
+            const localUser = users.find(u => u.email.toLowerCase() === email.trim().toLowerCase());
+            targetUser = localUser || {
+              id: firebaseUser.uid,
+              name: email.split('@')[0],
+              email: email.trim().toLowerCase(),
+              referralCode: generateReferralCode(email.split('@')[0]),
+              balance: 0.00,
+              savingsBalance: 0.00,
+              createdAt: new Date().toISOString(),
+              tier: 1
+            };
+            await setDoc(doc(db, 'users', firebaseUser.uid), targetUser);
+          }
+        } catch (fsErr) {
+          handleFirestoreError(fsErr, OperationType.GET, userPath);
+          const localUser = users.find(u => u.email.toLowerCase() === email.trim().toLowerCase());
+          targetUser = localUser || {
+            id: firebaseUser.uid,
+            name: email.split('@')[0],
+            email: email.trim().toLowerCase(),
+            referralCode: generateReferralCode(email.split('@')[0]),
             balance: 0.00,
             savingsBalance: 0.00,
-            createdAt: new Date().toISOString()
+            createdAt: new Date().toISOString(),
+            tier: 1
           };
-          users.push(newUser);
-          localStorage.setItem('fintex_users', JSON.stringify(users));
-          localStorage.setItem('fintex_current_user', JSON.stringify(newUser));
-          setSuccess('Logging in securely...');
+        }
+
+        localStorage.setItem('fintex_current_user', JSON.stringify(targetUser));
+        setSuccess('Secure Login authorized!');
+        setTimeout(() => {
+          onAuthSuccess(targetUser);
+        }, 1000);
+
+      } catch (authErr: any) {
+        // Fallback to local
+        const localUser = users.find(
+          (u) => u.email.toLowerCase() === email.toLowerCase() && u.password === password
+        );
+        if (localUser) {
+          localStorage.setItem('fintex_current_user', JSON.stringify(localUser));
+          setSuccess('Logging in securely (offline mode)...');
           setTimeout(() => {
-            onAuthSuccess(newUser);
+            onAuthSuccess(localUser);
           }, 1000);
           return;
         }
 
-        setError('Invalid email or password.');
-        return;
+        let errMsg = 'Invalid email or password.';
+        if (authErr && authErr.message) {
+          errMsg = authErr.message;
+        }
+        setError(errMsg);
       }
-
-      localStorage.setItem('fintex_current_user', JSON.stringify(user));
-      setSuccess('Logging in securely...');
-      setTimeout(() => {
-        onAuthSuccess(user);
-      }, 1000);
     }
   };
 
