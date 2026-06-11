@@ -320,30 +320,32 @@ export default function Auth({ onAuthSuccess }: AuthProps) {
             </form>
 
             {/* Quick Demo Accounts */}
-            <div className="mt-6 pt-5 border-t border-slate-100" id="auth-demo-section">
-              <span className="block text-[11px] font-bold text-slate-400 tracking-wider uppercase mb-2.5">
-                Quick Demo Accounts (Instant Test)
-              </span>
-              <div className="space-y-2" id="demo-buttons-list">
-                {demoAccounts.map((d, index) => (
-                  <button
-                    key={index}
-                    id={`demo-btn-${index}`}
-                    type="button"
-                    onClick={() => handleDemoLogin(d)}
-                    className="w-full p-2.5 border border-dashed border-slate-200 hover:border-brand-primary hover:bg-sky-50/50 rounded-xl text-left text-xs text-slate-600 hover:text-brand-dark transition-all flex items-center justify-between"
-                  >
-                    <div className="flex flex-col">
-                      <span className="font-semibold">{d.name}</span>
-                      <span className="text-[10px] text-slate-400">{d.email}</span>
-                    </div>
-                    <span className="text-[10px] font-semibold text-brand-primary bg-sky-50 px-2 py-1 rounded">
-                      Use Default
-                    </span>
-                  </button>
-                ))}
+            {!isRegistering && (
+              <div className="mt-6 pt-5 border-t border-slate-100" id="auth-demo-section">
+                <span className="block text-[11px] font-bold text-slate-400 tracking-wider uppercase mb-2.5">
+                  Quick Demo Accounts (Instant Test)
+                </span>
+                <div className="space-y-2" id="demo-buttons-list">
+                  {demoAccounts.map((d, index) => (
+                    <button
+                      key={index}
+                      id={`demo-btn-${index}`}
+                      type="button"
+                      onClick={() => handleDemoLogin(d)}
+                      className="w-full p-2.5 border border-dashed border-slate-200 hover:border-brand-primary hover:bg-sky-50/50 rounded-xl text-left text-xs text-slate-600 hover:text-brand-dark transition-all flex items-center justify-between"
+                    >
+                      <div className="flex flex-col">
+                        <span className="font-semibold">{d.name}</span>
+                        <span className="text-[10px] text-slate-400">{d.email}</span>
+                      </div>
+                      <span className="text-[10px] font-semibold text-brand-primary bg-sky-50 px-2 py-1 rounded">
+                        Use Default
+                      </span>
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
 

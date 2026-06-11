@@ -141,20 +141,14 @@ export default function TradingPage({ user, onUpdateUser, onAddTransaction, onNa
     if (activeContracts.length === 0) return;
 
     const timer = setInterval(() => {
+      const expiredList: BinaryContract[] = [];
+
       setActiveContracts(prev => {
         const remaining: BinaryContract[] = [];
         
         prev.forEach(contract => {
           if (contract.timeLeft <= 1) {
-            // Contract Has Expired! Determine result
-            // Check current price of this pair
-            const targetPair = pairs.find(p => p.symbol === contract.pair) || currentPair;
-            const payoutDecimal = targetPair.price;
-            const isWin = contract.prediction === 'UP' 
-              ? payoutDecimal > contract.entryPrice 
-              : payoutDecimal < contract.entryPrice;
-
-            resolveBinaryContract(contract, targetPair.price, isWin);
+            expiredList.push(contract);
           } else {
             remaining.push({
               ...contract,
@@ -166,6 +160,21 @@ export default function TradingPage({ user, onUpdateUser, onAddTransaction, onNa
         localStorage.setItem(`fintex_active_contracts_${user.id}`, JSON.stringify(remaining));
         return remaining;
       });
+
+      if (expiredList.length > 0) {
+        expiredList.forEach(contract => {
+          setTimeout(() => {
+            const targetPair = pairs.find(p => p.symbol === contract.pair) || currentPair;
+            if (!targetPair) return;
+            const payoutDecimal = targetPair.price;
+            const isWin = contract.prediction === 'UP' 
+              ? payoutDecimal > contract.entryPrice 
+              : payoutDecimal < contract.entryPrice;
+
+            resolveBinaryContract(contract, targetPair.price, isWin);
+          }, 0);
+        });
+      }
     }, 1000);
 
     return () => clearInterval(timer);
