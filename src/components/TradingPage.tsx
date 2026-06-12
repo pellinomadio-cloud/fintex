@@ -593,7 +593,7 @@ export default function TradingPage({ user, onUpdateUser, onAddTransaction, onNa
               📊
             </div>
             <div>
-              <span className="text-[9px] uppercase tracking-widest text-sky-205 font-bold block leading-none">Forex9ja Premium</span>
+              <span className="text-[9px] uppercase tracking-widest text-sky-205 font-bold block leading-none">UX-trade Premium</span>
               <h1 className="font-display font-black text-sm tracking-tight mt-0.5">Forex Liquidity Hub</h1>
             </div>
           </div>

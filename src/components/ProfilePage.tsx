@@ -79,7 +79,7 @@ export default function ProfilePage({ user, onLogout, onUpdateUser, onNavigateTo
       {/* Customer support desk links */}
       <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm space-y-3" id="profile-helpdesk-module">
         <h3 className="text-xs font-bold text-brand-dark uppercase tracking-wider mb-2">
-          Forex9ja Customer Help Desk
+          UX-trade Customer Help Desk
         </h3>
 
         <a 
@@ -115,7 +115,7 @@ export default function ProfilePage({ user, onLogout, onUpdateUser, onNavigateTo
 
         {alertOpen && (
           <div className="p-3 bg-sky-50/50 border border-sky-100 rounded-xl text-[10px] text-slate-600 space-y-1" id="faq-alert-box">
-            <p><strong>Is Forex9ja safe?</strong> Yes. Forex9ja is built on safe containerizations layers with real-time AES 256 backup structures.</p>
+            <p><strong>Is UX-trade safe?</strong> Yes. UX-trade is built on safe containerizations layers with real-time AES 256 backup structures.</p>
             <p><strong>What is the maximum card balance?</strong> $10,000 USD is the default Tier 2 card limit.</p>
           </div>
         )}

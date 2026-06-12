@@ -2149,7 +2149,7 @@ export default function Dashboard({
             type="button"
             className="w-10 h-10 rounded-xl bg-slate-50 hover:bg-sky-50 flex items-center justify-center text-brand-dark border border-slate-100 relative transition-all"
             id="notif-bell-btn"
-            onClick={() => setNotification("Welcome to Forex9ja! Zero hidden fees.")}
+            onClick={() => setNotification("Welcome to UX-trade! Zero hidden fees.")}
           >
             <Bell className="w-5 h-5 text-brand-dark" />
             <span className="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-rose-500 animate-ping-subtle" />
@@ -2305,7 +2305,7 @@ export default function Dashboard({
             <div className="w-11 h-11 bg-white text-brand-primary rounded-xl flex items-center justify-center shadow-sm mb-2">
               <Sparkles className="w-5 h-5 text-brand-primary" />
             </div>
-            <span className="text-xs font-bold text-brand-dark leading-none">Forex9ja Trade</span>
+            <span className="text-xs font-bold text-brand-dark leading-none">UX-trade Trade</span>
             <span className="text-[8px] text-slate-400 mt-1 leading-none">Trade to Earn</span>
           </button>
           <button 
@@ -2455,7 +2455,7 @@ export default function Dashboard({
               {selectedSecurityAnswer === 'A' ? (
                 <span><strong className="text-brand-dark font-bold">Excellent choice!</strong> You are 100% correct. Security starts by reporting issues instantly. Always lock virtual cards from the Cards tab if suspicious.</span>
               ) : (
-                <span><strong className="text-rose-500 font-bold">Safe Tip:</strong> Option A is much safer. Instant action saves balances! Use Forex9ja locks to keep funds perfectly insulated on the go.</span>
+                <span><strong className="text-rose-500 font-bold">Safe Tip:</strong> Option A is much safer. Instant action saves balances! Use UX-trade locks to keep funds perfectly insulated on the go.</span>
               )}
             </div>
           </div>
@@ -2803,7 +2803,7 @@ export default function Dashboard({
                       <div className="flex justify-between items-center border-t border-slate-100/60 pt-2 text-[10.5px]">
                         <span className="text-slate-400 uppercase tracking-widest font-bold">Account Name</span>
                         <span className="font-bold text-slate-805 break-all max-w-[150px] text-right">
-                          FOREX9JA / {(user.email || 'USER').split('@')[0].toUpperCase()}
+                          UXTRADE / {(user.email || 'USER').split('@')[0].toUpperCase()}
                         </span>
                       </div>
                       <div className="flex justify-between items-center border-t border-slate-100/60 pt-2 text-[10.5px]">
@@ -2912,7 +2912,7 @@ export default function Dashboard({
                     <Send className="w-6 h-6" />
                   </div>
                   <h3 className="font-display font-bold text-brand-dark text-base">
-                    Transfer to {inputBank === 'Forex9ja Mail' ? 'Forex9ja User' : inputBank}
+                    Transfer to {inputBank === 'UX-trade Mail' ? 'UX-trade User' : inputBank}
                   </h3>
                   <p className="text-xs text-slate-500">Send money instantly across platforms.</p>
                 </div>
@@ -2920,13 +2920,13 @@ export default function Dashboard({
                 <div className="space-y-3">
                   <div>
                     <label htmlFor="transfer-recipient" className="block text-xs font-semibold text-slate-500 mb-1">
-                      {inputBank === 'Forex9ja Mail' ? 'Recipient Registered Email' : 'Recipient Account / Routing Number'}
+                      {inputBank === 'UX-trade Mail' ? 'Recipient Registered Email' : 'Recipient Account / Routing Number'}
                     </label>
                     <input 
                       id="transfer-recipient"
                       type="text"
                       required
-                      placeholder={inputBank === 'Forex9ja Mail' ? 'friend@example.com' : '8839011293'}
+                      placeholder={inputBank === 'UX-trade Mail' ? 'friend@example.com' : '8839011293'}
                       className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-sm focus:outline-none focus:border-brand-primary focus:bg-white text-slate-800"
                       value={inputRecipient}
                       onChange={(e) => setInputRecipient(e.target.value)}
@@ -3146,7 +3146,7 @@ export default function Dashboard({
                   <div className="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-2.5">
                     <LoanIcon className="w-6 h-6" />
                   </div>
-                  <h3 className="font-display font-bold text-brand-dark text-base">Forex9ja Loan Desk</h3>
+                  <h3 className="font-display font-bold text-brand-dark text-base">UX-trade Loan Desk</h3>
                   <p className="text-xs text-slate-500">Instant credit based on Tier-{user.tier || 1} Verification limits.</p>
                 </div>
 

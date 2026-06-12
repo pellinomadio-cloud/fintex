@@ -22,7 +22,7 @@ export default function Auth({ onAuthSuccess }: AuthProps) {
 
   // Pre-configured simulation accounts
   const demoAccounts = [
-    { email: 'user@forex9ja.online', password: 'password123', name: 'Marvelous John', referralCode: 'MARVELOUS' }
+    { email: 'user@ux6trade.online', password: 'password123', name: 'Marvelous John', referralCode: 'MARVELOUS' }
   ];
 
   const handleDemoLogin = (demo: typeof demoAccounts[0]) => {
@@ -63,7 +63,7 @@ export default function Auth({ onAuthSuccess }: AuthProps) {
         return;
       }
 
-      setSuccess('Creating your Forex9ja account...');
+      setSuccess('Creating your UX-trade account...');
 
       try {
         // Real Firebase Auth registration
@@ -225,17 +225,17 @@ export default function Auth({ onAuthSuccess }: AuthProps) {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-radial from-slate-50 to-blue-50/80 p-4 sm:p-6 lg:p-8" id="forex9ja-auth-container">
-      <div className="w-full max-w-md" id="forex9ja-auth-card-wrapper">
+    <div className="min-h-screen flex items-center justify-center bg-radial from-slate-50 to-blue-50/80 p-4 sm:p-6 lg:p-8" id="uxtrade-auth-container">
+      <div className="w-full max-w-md" id="uxtrade-auth-card-wrapper">
         {/* Banner Logo */}
-        <div className="flex flex-col items-center mb-8" id="forex9ja-brand-header">
-          <div className="w-16 h-16 bg-gradient-to-tr from-brand-dark via-brand-medium to-brand-primary rounded-2xl flex items-center justify-center text-white font-display text-4xl font-bold shadow-lg shadow-sky-950/10 mb-3" id="forex9ja-logo-box">
-            F
+        <div className="flex flex-col items-center mb-8" id="uxtrade-brand-header">
+          <div className="w-16 h-16 bg-gradient-to-tr from-brand-dark via-brand-medium to-brand-primary rounded-2xl flex items-center justify-center text-white font-display text-4xl font-bold shadow-lg shadow-sky-950/10 mb-3" id="uxtrade-logo-box">
+            U
           </div>
-          <h1 className="text-3xl font-bold font-display tracking-tight text-brand-dark" id="forex9ja-title">
-            forex9ja<span className="text-brand-light font-sans font-medium text-xs align-super ml-1">v1.2</span>
+          <h1 className="text-3xl font-bold font-display tracking-tight text-brand-dark" id="uxtrade-title">
+            UX-trade<span className="text-brand-light font-sans font-medium text-xs align-super ml-1">v1.2</span>
           </h1>
-          <p className="text-sm text-slate-500 mt-1" id="forex9ja-subtitle">
+          <p className="text-sm text-slate-500 mt-1" id="uxtrade-subtitle">
             Secure Wealth. Instant Mobility.
           </p>
         </div>
