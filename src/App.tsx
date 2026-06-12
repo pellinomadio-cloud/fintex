@@ -21,6 +21,7 @@ export default function App() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [activeTab, setActiveTab] = useState<string>('home');
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [triggerUpgrade, setTriggerUpgrade] = useState<boolean>(false);
 
   useEffect(() => {
     // Check local session
@@ -228,6 +229,8 @@ export default function App() {
             onAddTransaction={handleAddTransaction}
             onUpdateTransaction={handleUpdateTransaction}
             onNavigateToTab={(tab) => setActiveTab(tab)}
+            triggerUpgrade={triggerUpgrade}
+            onClearTriggerUpgrade={() => setTriggerUpgrade(false)}
           />
         )}
         {activeTab === 'cards' && (
@@ -265,6 +268,10 @@ export default function App() {
             user={currentUser} 
             onLogout={handleLogout} 
             onUpdateUser={handleUpdateUser}
+            onNavigateToUpgrade={() => {
+              setTriggerUpgrade(true);
+              setActiveTab('home');
+            }}
           />
         )}
       </main>

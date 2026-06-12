@@ -3,16 +3,17 @@ import { User, Transaction } from '../types';
 import { 
   User as UserIcon, Mail, ShieldCheck, LogOut, PhoneCall, HelpCircle, 
   ChevronRight, ArrowRight, ShieldAlert, BadgeCheck, FileText, Check,
-  Copy, ArrowLeft
+  Copy, ArrowLeft, Sparkles
 } from 'lucide-react';
 
 interface ProfilePageProps {
   user: User;
   onLogout: () => void;
   onUpdateUser: (updatedUser: User) => void;
+  onNavigateToUpgrade: () => void;
 }
 
-export default function ProfilePage({ user, onLogout, onUpdateUser }: ProfilePageProps) {
+export default function ProfilePage({ user, onLogout, onUpdateUser, onNavigateToUpgrade }: ProfilePageProps) {
   const [alertOpen, setAlertOpen] = useState<boolean>(false);
 
   return (
@@ -46,20 +47,33 @@ export default function ProfilePage({ user, onLogout, onUpdateUser }: ProfilePag
             <div className="flex items-center gap-1.5 text-xs text-brand-dark font-medium">
               <ShieldCheck className="w-4 h-4 text-brand-primary shrink-0" />
               <span>
-                Tier {user.tier || 1} verified account limit: <strong>{(user.tier || 1) >= 2 ? '$10,000.00' : '$1,000.00'} / day</strong>
+                Tier {user.tier || 1} verified account limit: <strong>{(user.tier || 1) >= 2 ? (user.tier === 3 ? '$100,000.00' : '$10,000.00') : '$1,000.00'} / day</strong>
               </span>
             </div>
             {(user.tier || 1) < 2 ? (
-              <span className="text-[10px] text-amber-600 bg-amber-50 px-2.5 py-1 rounded font-black uppercase text-center">
+              <span className="text-[10px] text-amber-600 bg-amber-50 px-2.5 py-1 rounded font-black uppercase text-center animate-pulse">
                 STANDARD
               </span>
             ) : (
               <span className="text-[9px] text-brand-primary bg-sky-105 px-2.5 py-1 rounded font-bold flex items-center gap-1 shrink-0">
-                <Check className="w-3 h-3 text-brand-primary" /> VERIFIED
+                <Check className="w-3 h-3 text-brand-primary" /> {user.tier === 3 ? 'PLATINUM' : 'VERIFIED'}
               </span>
             )}
           </div>
         </div>
+
+        {(user.tier || 1) < 3 && (
+          <button
+            type="button"
+            onClick={onNavigateToUpgrade}
+            className="w-full py-3 px-4 bg-brand-dark hover:bg-brand-medium text-white font-bold text-xs rounded-2xl flex items-center justify-center gap-2 transition-all hover:scale-[1.01] hover:shadow-md cursor-pointer duration-200"
+            id="profile-upgrade-action-btn"
+          >
+            <Sparkles className="w-4 h-4 text-amber-400 fill-amber-400 shrink-0" />
+            <span>Upgrade Account Verification (Unlock limits)</span>
+            <ArrowRight className="w-4 h-4 ml-1" />
+          </button>
+        )}
       </div>
 
       {/* Customer support desk links */}
