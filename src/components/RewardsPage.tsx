@@ -57,7 +57,7 @@ export default function RewardsPage({ user, onUpdateUser, onAddTransaction }: Re
   };
 
   const handleCopyLink = () => {
-    navigator.clipboard.writeText(`https://ux6trade.online/invite?code=${user.referralCode}`);
+    navigator.clipboard.writeText(`https://ux6trade.online/?code=${user.referralCode}`);
     setCopyLinkSuccess(true);
     setTimeout(() => setCopyLinkSuccess(false), 2000);
   };
@@ -285,7 +285,7 @@ export default function RewardsPage({ user, onUpdateUser, onAddTransaction }: Re
 
           <div className="p-3 bg-slate-50 border border-slate-100 rounded-2xl relative" id="clip-ref-link">
             <span className="text-[10px] text-slate-400 font-bold block mb-1">REFERRAL LINK</span>
-            <span className="text-xs text-brand-dark truncate font-medium block pr-6">ux6trade.online/invite?code={user.referralCode}</span>
+            <span className="text-xs text-brand-dark truncate font-medium block pr-6">ux6trade.online/?code={user.referralCode}</span>
             <button 
               type="button" 
               onClick={handleCopyLink} 

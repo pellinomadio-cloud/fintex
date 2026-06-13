@@ -1,4 +1,4 @@
-import { useState, FormEvent } from 'react';
+import { useState, FormEvent, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { User } from '../types';
 import { Eye, EyeOff, ShieldCheck, Mail, Lock, User as UserIcon, Gift, Check } from 'lucide-react';
@@ -19,6 +19,46 @@ export default function Auth({ onAuthSuccess }: AuthProps) {
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
   const [success, setSuccess] = useState<string>('');
+
+  // Extract referral code from URL on load and store perennially
+  useEffect(() => {
+    try {
+      // 1. Check window.location.search (e.g. ?code=MYCODE or /invite?code=MYCODE)
+      const searchParams = new URLSearchParams(window.location.search);
+      let code = searchParams.get('code');
+
+      // 2. Fallback to parsing window.location.href (in case parsed weirdly on custom hosting/iframes)
+      if (!code) {
+        const urlObj = new URL(window.location.href);
+        code = urlObj.searchParams.get('code');
+      }
+
+      // 3. Fallback to checking hash path (e.g. #/invite?code=MYCODE)
+      if (!code && window.location.hash) {
+        const hashQuery = window.location.hash.split('?')[1];
+        if (hashQuery) {
+          const hashParams = new URLSearchParams(hashQuery);
+          code = hashParams.get('code');
+        }
+      }
+
+      if (code) {
+        const sanitizedCode = code.trim().toUpperCase();
+        setReferralCode(sanitizedCode);
+        localStorage.setItem('uxtrade_stored_referral_code', sanitizedCode);
+        setIsRegistering(true); // Force register view so they see the prefilled code
+      } else {
+        // Load the perennial code if previously saved
+        const storedCode = localStorage.getItem('uxtrade_stored_referral_code');
+        if (storedCode) {
+          setReferralCode(storedCode);
+          setIsRegistering(true);
+        }
+      }
+    } catch (err) {
+      console.error("Failed to parse referral code from URL", err);
+    }
+  }, []);
 
   // Pre-configured simulation accounts
   const demoAccounts = [
@@ -109,6 +149,7 @@ export default function Auth({ onAuthSuccess }: AuthProps) {
         users.push(newUser);
         localStorage.setItem('fintex_users', JSON.stringify(users));
         localStorage.setItem('fintex_current_user', JSON.stringify(newUser));
+        localStorage.removeItem('uxtrade_stored_referral_code');
 
         setSuccess('Registration successful! Launching your dashboard...');
         setTimeout(() => {
