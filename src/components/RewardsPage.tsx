@@ -5,7 +5,7 @@ import {
   Plus, Calendar, ArrowDownLeft, BadgeAlert, Sparkle, ShieldAlert
 } from 'lucide-react';
 import { db } from '../firebase';
-import { doc, setDoc, collection, onSnapshot } from 'firebase/firestore';
+import { doc, setDoc, updateDoc, collection, onSnapshot } from 'firebase/firestore';
 
 interface RewardsPageProps {
   user: User;
@@ -33,8 +33,51 @@ export default function RewardsPage({ user, onUpdateUser, onAddTransaction }: Re
     const unsubscribe = onSnapshot(referralsColRef, (snap) => {
       const fbReferrals: ReferralHistory[] = [];
       snap.forEach(docSnap => {
-        fbReferrals.push(docSnap.data() as ReferralHistory);
+        const item = docSnap.data() as ReferralHistory;
+        if (!item.id) {
+          item.id = docSnap.id;
+        }
+        fbReferrals.push(item);
       });
+
+      // Handle real-time referral reward auto-reconciliation
+      const pending = fbReferrals.filter(r => r.status === 'completed');
+      if (pending.length > 0 && user.id !== 'u_demo') {
+        let addedBalance = 0;
+        const newTxs: Transaction[] = [];
+
+        pending.forEach(ref => {
+          const refDocId = ref.id || 'david_miller';
+          addedBalance += ref.rewardEarned;
+
+          // Build reward transaction
+          const rTxId = 'tx_reward_' + Math.random().toString(36).substr(2, 9);
+          const tx: Transaction = {
+            id: rTxId,
+            userId: user.id,
+            type: 'reward',
+            amount: ref.rewardEarned,
+            description: `Referral signup reward for inviting ${ref.refereeName}`,
+            date: new Date().toISOString(),
+            status: 'completed',
+            reference: 'FTX-REF-' + Math.floor(100000 + Math.random() * 900000)
+          };
+          newTxs.push(tx);
+
+          // Update status to 'credited' in Firestore to prevent multiple rewards
+          updateDoc(doc(db, 'users', user.id, 'referrals', refDocId), { status: 'credited' })
+            .catch(e => console.error("Error crediting referral:", e));
+        });
+
+        if (addedBalance > 0) {
+          const updatedUser: User = {
+            ...user,
+            balance: parseFloat((user.balance + addedBalance).toFixed(2))
+          };
+          onUpdateUser(updatedUser);
+          newTxs.forEach(tx => onAddTransaction(tx));
+        }
+      }
 
       if (fbReferrals.length > 0) {
         setReferrals(fbReferrals);

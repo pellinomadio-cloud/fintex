@@ -72,6 +72,14 @@ export default function App() {
       if (docSnap.exists()) {
         const fbUser = docSnap.data() as User;
         
+        // Backup the referralCode index securely so referrals work perfectly
+        if (fbUser.referralCode) {
+          setDoc(doc(db, 'referralCodes', fbUser.referralCode.toUpperCase()), {
+            userId: fbUser.id,
+            name: fbUser.name
+          }, { merge: true }).catch(err => console.error("Error backing up referralCode:", err));
+        }
+        
         // Cache in user dictionary too
         const localUsersList: User[] = JSON.parse(localStorage.getItem('fintex_users') || '[]');
         const idx = localUsersList.findIndex(u => u.id === fbUser.id);

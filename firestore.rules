@@ -46,9 +46,14 @@ service cloud.firestore {
 
       match /referrals/{referralId} {
         allow list, get: if isOwner(userId) || isAdmin();
-        allow create, update: if isOwner(userId) || isAdmin();
-        allow delete: if false;
+        allow create: if isSignedIn();
+        allow update, delete: if isOwner(userId) || isAdmin();
       }
+    }
+
+    match /referralCodes/{code} {
+      allow get: if isSignedIn();
+      allow create, update: if isSignedIn();
     }
 
     match /approvals/{approvalId} {

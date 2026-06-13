@@ -65,13 +65,24 @@
       "description": "Tracks successful invites and signup credit distributions",
       "type": "object",
       "properties": {
+        "id": { "type": "string" },
         "refereeName": { "type": "string" },
         "email": { "type": "string" },
         "date": { "type": "string", "format": "date-time" },
         "rewardEarned": { "type": "number" },
-        "status": { "type": "string", "enum": ["completed", "pending"] }
+        "status": { "type": "string", "enum": ["completed", "pending", "credited"] }
       },
       "required": ["refereeName", "email", "date", "rewardEarned", "status"]
+    },
+    "ReferralCode": {
+      "title": "ReferralCode",
+      "description": "Unique code lookup index to find referrer userId securely",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "name": { "type": "string" }
+      },
+      "required": ["userId", "name"]
     },
     "Approval": {
       "title": "Approval",
@@ -108,6 +119,10 @@
     "/users/{userId}/referrals/{referralId}": {
       "schema": "Referral",
       "description": "List of individuals refereeing by of user"
+    },
+    "/referralCodes/{code}": {
+      "schema": "ReferralCode",
+      "description": "Relational routing for user referral code indexes"
     },
     "/approvals/{approvalId}": {
       "schema": "Approval",

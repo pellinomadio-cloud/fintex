@@ -40,9 +40,10 @@ export interface VirtualCard {
 }
 
 export interface ReferralHistory {
+  id?: string;
   refereeName: string;
   email: string;
   date: string;
   rewardEarned: number;
-  status: 'completed' | 'pending';
+  status: 'completed' | 'pending' | 'credited';
 }

@@ -127,6 +127,11 @@ export default function Auth({ onAuthSuccess }: AuthProps) {
         const userPath = `users/${firebaseUser.uid}`;
         try {
           await setDoc(doc(db, 'users', firebaseUser.uid), cleanForFirestore(newUser));
+          // Save the unique referral code lookup index securely
+          await setDoc(doc(db, 'referralCodes', newUser.referralCode.toUpperCase()), {
+            userId: firebaseUser.uid,
+            name: newUser.name
+          });
         } catch (fsErr) {
           handleFirestoreError(fsErr, OperationType.WRITE, userPath);
         }
@@ -134,46 +139,25 @@ export default function Auth({ onAuthSuccess }: AuthProps) {
         // If they had a referral code, persist the referral record to the referrer's referrals subcollection in Firestore
         if (referralCode.trim()) {
           try {
-            const q = query(collection(db, 'users'), where('referralCode', '==', referralCode.trim().toUpperCase()));
-            const qSnap = await getDocs(q);
-            let referrerId = 'system';
-            if (!qSnap.empty) {
-              const referrerDoc = qSnap.docs[0];
-              referrerId = referrerDoc.id;
+            const refDoc = await getDoc(doc(db, 'referralCodes', referralCode.trim().toUpperCase()));
+            if (refDoc.exists()) {
+              const refData = refDoc.data();
+              const referrerId = refData.userId;
               
-              // Increment referrer balance by 10.00 in Firestore
-              const rData = referrerDoc.data();
-              const currentBal = rData.balance || 0;
-              await updateDoc(doc(db, 'users', referrerId), {
-                balance: parseFloat((currentBal + 10.00).toFixed(2))
-              });
-              
-              // Add reward transaction for the referrer
-              const rTxId = 'tx_reward_' + Math.random().toString(36).substr(2, 9);
-              await setDoc(doc(db, 'users', referrerId, 'transactions', rTxId), {
-                id: rTxId,
-                userId: referrerId,
-                type: 'reward',
-                amount: 10.00,
-                description: `Referral signup reward for inviting ${name.trim()}`,
+              // Add to the referrer's referrals subcollection
+              const refId = 'ref_' + Math.random().toString(36).substr(2, 9);
+              const referralRecord = {
+                id: refId,
+                refereeName: name.trim(),
+                email: email.trim().toLowerCase(),
                 date: new Date().toISOString(),
-                status: 'completed',
-                reference: 'FTX-REF-' + Math.floor(100000 + Math.random() * 900000)
-              });
-            }
-            
-            // Add to the referrer's referrals subcollection
-            const refId = 'ref_' + Math.random().toString(36).substr(2, 9);
-            const referralRecord = {
-              refereeName: name.trim(),
-              email: email.trim().toLowerCase(),
-              date: new Date().toISOString(),
-              rewardEarned: 10.00,
-              status: 'completed'
-            };
-            
-            if (referrerId !== 'system') {
+                rewardEarned: 10.00,
+                status: 'completed'
+              };
+              
               await setDoc(doc(db, 'users', referrerId, 'referrals', refId), referralRecord);
+            } else {
+              console.warn("Invalid referral code provided:", referralCode);
             }
           } catch (refErr) {
             console.error("Failed to associate referrer reward in Firestore:", refErr);
