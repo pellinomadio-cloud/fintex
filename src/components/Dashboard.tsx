@@ -282,7 +282,7 @@ export default function Dashboard({
   const promoCarousels = [
     { title: "Grab Up to 15% APY 🔥", desc: "Unlock Safebox Vault rewards by saving as little as $5.00 daily.", btnText: "Open Safebox" },
     { title: "Complete Daily Tasks 🏆", desc: "Gain point streaks and earn real cashback coupons in Rewards.", btnText: "Check Rewards" },
-    { title: "Double Referral Bonus 👥", desc: "Get $10.00 cash for every friend that sets up an account with your code.", btnText: "Copy Link" }
+    { title: "Double Referral Bonus 👥", desc: "Get $5.00 cash for every friend that sets up an account with your code.", btnText: "Copy Link" }
   ];
 
   useEffect(() => {

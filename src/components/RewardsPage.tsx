@@ -40,45 +40,6 @@ export default function RewardsPage({ user, onUpdateUser, onAddTransaction }: Re
         fbReferrals.push(item);
       });
 
-      // Handle real-time referral reward auto-reconciliation
-      const pending = fbReferrals.filter(r => r.status === 'completed');
-      if (pending.length > 0 && user.id !== 'u_demo') {
-        let addedBalance = 0;
-        const newTxs: Transaction[] = [];
-
-        pending.forEach(ref => {
-          const refDocId = ref.id || 'david_miller';
-          addedBalance += ref.rewardEarned;
-
-          // Build reward transaction
-          const rTxId = 'tx_reward_' + Math.random().toString(36).substr(2, 9);
-          const tx: Transaction = {
-            id: rTxId,
-            userId: user.id,
-            type: 'reward',
-            amount: ref.rewardEarned,
-            description: `Referral signup reward for inviting ${ref.refereeName}`,
-            date: new Date().toISOString(),
-            status: 'completed',
-            reference: 'FTX-REF-' + Math.floor(100000 + Math.random() * 900000)
-          };
-          newTxs.push(tx);
-
-          // Update status to 'credited' in Firestore to prevent multiple rewards
-          updateDoc(doc(db, 'users', user.id, 'referrals', refDocId), { status: 'credited' })
-            .catch(e => console.error("Error crediting referral:", e));
-        });
-
-        if (addedBalance > 0) {
-          const updatedUser: User = {
-            ...user,
-            balance: parseFloat((user.balance + addedBalance).toFixed(2))
-          };
-          onUpdateUser(updatedUser);
-          newTxs.forEach(tx => onAddTransaction(tx));
-        }
-      }
-
       if (fbReferrals.length > 0) {
         setReferrals(fbReferrals);
         localStorage.setItem(`fintex_referrals_${user.id}`, JSON.stringify(fbReferrals));
@@ -87,7 +48,7 @@ export default function RewardsPage({ user, onUpdateUser, onAddTransaction }: Re
           refereeName: 'David Miller',
           email: 'david.miller@gmail.com',
           date: new Date(Date.now() - 3600000 * 48).toISOString(),
-          rewardEarned: 10.00,
+          rewardEarned: 5.00,
           status: 'completed'
         };
         setDoc(doc(db, 'users', user.id, 'referrals', 'david_miller'), seed)

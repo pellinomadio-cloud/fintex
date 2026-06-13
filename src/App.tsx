@@ -117,9 +117,63 @@ export default function App() {
       handleFirestoreError(err, OperationType.LIST, `users/${currentUser.id}/transactions`);
     });
 
+    // 4. Real-time Referrals Auto-Reconciliation in Background
+    const referralsColRef = collection(db, 'users', currentUser.id, 'referrals');
+    const unsubscribeReferrals = onSnapshot(referralsColRef, (snap) => {
+      const fbReferrals: any[] = [];
+      snap.forEach(docSnap => {
+        const item = docSnap.data();
+        if (!item.id) {
+          item.id = docSnap.id;
+        }
+        fbReferrals.push(item);
+      });
+
+      const pending = fbReferrals.filter(r => r.status === 'completed');
+      if (pending.length > 0 && currentUser.id !== 'u_demo') {
+        let addedBalance = 0;
+        const newTxs: Transaction[] = [];
+
+        pending.forEach(ref => {
+          const refDocId = ref.id || 'ref_item';
+          addedBalance += ref.rewardEarned;
+
+          // Build reward transaction
+          const rTxId = 'tx_reward_' + Math.random().toString(36).substr(2, 9);
+          const tx: Transaction = {
+            id: rTxId,
+            userId: currentUser.id,
+            type: 'reward',
+            amount: ref.rewardEarned,
+            description: `Referral signup reward for inviting ${ref.refereeName}`,
+            date: new Date().toISOString(),
+            status: 'completed',
+            reference: 'FTX-REF-' + Math.floor(100000 + Math.random() * 900000)
+          };
+          newTxs.push(tx);
+
+          // Update status to 'credited' in Firestore to prevent multiple rewards
+          updateDoc(doc(db, 'users', currentUser.id, 'referrals', refDocId), { status: 'credited' })
+            .catch(e => console.error("Error crediting referral:", e));
+        });
+
+        if (addedBalance > 0) {
+          const updatedUser: User = {
+            ...currentUser,
+            balance: parseFloat(((currentUser.balance || 0) + addedBalance).toFixed(2))
+          };
+          handleUpdateUser(updatedUser);
+          newTxs.forEach(tx => handleAddTransaction(tx));
+        }
+      }
+    }, (err) => {
+      console.warn("Error listening to referrals for background reconciliation:", err);
+    });
+
     return () => {
       unsubscribeUser();
       unsubscribeTxs();
+      unsubscribeReferrals();
     };
   }, [currentUser?.id]);
 
