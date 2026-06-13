@@ -9,7 +9,7 @@ import ProfilePage from './components/ProfilePage';
 import TradingPage from './components/TradingPage';
 import HistoryPage from './components/HistoryPage';
 import { db, auth, handleFirestoreError, OperationType } from './firebase';
-import { doc, collection, setDoc, updateDoc, onSnapshot } from 'firebase/firestore';
+import { doc, collection, setDoc, updateDoc, onSnapshot, getDoc, getDocs } from 'firebase/firestore';
 
 // Lucide Icons
 import { 
@@ -23,6 +23,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<string>('home');
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [triggerUpgrade, setTriggerUpgrade] = useState<boolean>(false);
+  const [reconciledUserId, setReconciledUserId] = useState<string | null>(null);
 
   useEffect(() => {
     // Check local session
@@ -118,65 +119,84 @@ export default function App() {
       handleFirestoreError(err, OperationType.LIST, `users/${currentUser.id}/transactions`);
     });
 
-    // 4. Real-time Referrals Auto-Reconciliation in Background
-    const referralsColRef = collection(db, 'users', currentUser.id, 'referrals');
-    const unsubscribeReferrals = onSnapshot(referralsColRef, (snap) => {
-      const fbReferrals: any[] = [];
-      snap.forEach(docSnap => {
-        const item = docSnap.data();
-        if (!item.id) {
-          item.id = docSnap.id;
-        }
-        fbReferrals.push(item);
-      });
-
-      const pending = fbReferrals.filter(r => r.status === 'completed');
-      if (pending.length > 0 && currentUser.id !== 'u_demo') {
-        let addedBalance = 0;
-        const newTxs: Transaction[] = [];
-
-        pending.forEach(ref => {
-          const refDocId = ref.id || 'ref_item';
-          addedBalance += ref.rewardEarned;
-
-          // Build reward transaction
-          const rTxId = 'tx_reward_' + Math.random().toString(36).substr(2, 9);
-          const tx: Transaction = {
-            id: rTxId,
-            userId: currentUser.id,
-            type: 'reward',
-            amount: ref.rewardEarned,
-            description: `Referral signup reward for inviting ${ref.refereeName}`,
-            date: new Date().toISOString(),
-            status: 'completed',
-            reference: 'FTX-REF-' + Math.floor(100000 + Math.random() * 900000)
-          };
-          newTxs.push(tx);
-
-          // Update status to 'credited' in Firestore to prevent multiple rewards
-          updateDoc(doc(db, 'users', currentUser.id, 'referrals', refDocId), { status: 'credited' })
-            .catch(e => console.error("Error crediting referral:", e));
-        });
-
-        if (addedBalance > 0) {
-          const updatedUser: User = {
-            ...currentUser,
-            balance: parseFloat(((currentUser.balance || 0) + addedBalance).toFixed(2))
-          };
-          handleUpdateUser(updatedUser);
-          newTxs.forEach(tx => handleAddTransaction(tx));
-        }
-      }
-    }, (err) => {
-      console.warn("Error listening to referrals for background reconciliation:", err);
-    });
-
     return () => {
       unsubscribeUser();
       unsubscribeTxs();
-      unsubscribeReferrals();
     };
   }, [currentUser?.id]);
+
+  // One-time referral rewards reconciliation immediately after sign in / load
+  useEffect(() => {
+    if (!currentUser?.id || currentUser.id === 'u_demo') return;
+    if (reconciledUserId === currentUser.id) return;
+
+    const performReferralReconciliation = async () => {
+      // Mark as reconciled so we don't run it again for this user id
+      setReconciledUserId(currentUser.id);
+
+      try {
+        const referralsColRef = collection(db, 'users', currentUser.id, 'referrals');
+        const snap = await getDocs(referralsColRef);
+        const fbReferrals: any[] = [];
+        snap.forEach(docSnap => {
+          const item = docSnap.data();
+          if (!item.id) {
+            item.id = docSnap.id;
+          }
+          fbReferrals.push(item);
+        });
+
+        const pending = fbReferrals.filter(r => r.status === 'completed');
+        if (pending.length > 0) {
+          console.log(`[Reconciliation] Found ${pending.length} pending referral rewards to credit.`);
+          
+          // Get the absolute latest, fresh user profile from Firestore to prevent stale balance overwrites
+          const userDocRef = doc(db, 'users', currentUser.id);
+          const userSnap = await getDoc(userDocRef);
+          if (!userSnap.exists()) return;
+          const freshUser = userSnap.data() as User;
+
+          let addedBalance = 0;
+
+          // Process each pending referral
+          for (const ref of pending) {
+            const refDocId = ref.id || 'ref_item';
+            addedBalance += ref.rewardEarned;
+
+            // Generate unique transaction for this reward
+            const rTxId = 'tx_reward_' + Math.random().toString(36).substr(2, 9);
+            const tx: Transaction = {
+              id: rTxId,
+              userId: currentUser.id,
+              type: 'reward',
+              amount: ref.rewardEarned,
+              description: `Referral signup reward for inviting ${ref.refereeName}`,
+              date: new Date().toISOString(),
+              status: 'completed',
+              reference: 'FTX-REF-' + Math.floor(100000 + Math.random() * 900000)
+            };
+
+            // 1. Update status to 'credited' in Firestore
+            await updateDoc(doc(db, 'users', currentUser.id, 'referrals', refDocId), { status: 'credited' });
+
+            // 2. Add the transaction record in Firestore
+            await setDoc(doc(db, 'users', currentUser.id, 'transactions', rTxId), tx);
+          }
+
+          if (addedBalance > 0) {
+            // 3. Update fresh user balance in Firestore
+            const finalBalance = parseFloat(((freshUser.balance || 0) + addedBalance).toFixed(2));
+            await updateDoc(userDocRef, { balance: finalBalance });
+            console.log(`[Reconciliation] Successfully credited $${addedBalance} to balance. New balance: $${finalBalance}`);
+          }
+        }
+      } catch (err) {
+        console.error("Error during one-time referral rewards reconciliation:", err);
+      }
+    };
+
+    performReferralReconciliation();
+  }, [currentUser?.id, reconciledUserId]);
 
   const handleAuthSuccess = (user: User) => {
     setCurrentUser(user);
