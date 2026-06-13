@@ -47,3 +47,12 @@ export interface ReferralHistory {
   rewardEarned: number;
   status: 'completed' | 'pending' | 'credited';
 }
+
+export interface SupportMessage {
+  id: string;
+  message: string;
+  createdAt: string;
+  expiresAt: string;
+  authorName?: string;
+}
+

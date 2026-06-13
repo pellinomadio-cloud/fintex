@@ -63,5 +63,11 @@ service cloud.firestore {
       allow update: if isAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid && request.resource.data.userId == request.auth.uid);
       allow delete: if isAdmin();
     }
+
+    match /supportMessages/{messageId} {
+      allow get, list: if isSignedIn();
+      allow create, update: if isAdmin();
+      allow delete: if isAdmin() || (isSignedIn() && resource.data.expiresAt < request.time);
+    }
   }
 }

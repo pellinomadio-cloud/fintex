@@ -1,14 +1,14 @@
 import { useState, useEffect, FormEvent } from 'react';
-import { User, Transaction } from '../types';
+import { User, Transaction, SupportMessage } from '../types';
 import { db, cleanForFirestore } from '../firebase';
-import { doc, setDoc, onSnapshot, getDoc } from 'firebase/firestore';
+import { doc, setDoc, onSnapshot, getDoc, collection, deleteDoc } from 'firebase/firestore';
 import { 
   Eye, EyeOff, Plus, ArrowUpRight, ArrowDownLeft, Landmark, 
   Send, Phone, Database, Trophy, Landmark as LoanIcon, 
   Users, HelpCircle, ChevronRight, Bell, Smartphone, 
   Tv, Sparkles, AlertCircle, ShieldAlert, CheckCircle2,
   X, BadgeAlert, ArrowRightCircle, ArrowLeft, Coins, Copy, Check, Gift,
-  ShieldCheck
+  ShieldCheck, Megaphone
 } from 'lucide-react';
 
 interface DashboardProps {
@@ -93,6 +93,57 @@ export default function Dashboard({
   const [gatewayNairaBank, setGatewayNairaBank] = useState<string>(() => localStorage.getItem('fintex_gateway_naira_bank') || 'Opay Digital Bank');
   const [gatewayNairaAcc, setGatewayNairaAcc] = useState<string>(() => localStorage.getItem('fintex_gateway_naira_acc') || '8062940251');
   const [gatewayNairaName, setGatewayNairaName] = useState<string>(() => localStorage.getItem('fintex_gateway_naira_name') || 'Fintex International Hub');
+
+  // Customer support global premium notifications state
+  const [activeSupportMessages, setActiveSupportMessages] = useState<SupportMessage[]>([]);
+  const [dismissedMessages, setDismissedMessages] = useState<string[]>([]);
+
+  // Subscribe to priority support messages
+  useEffect(() => {
+    if (!user.id) return;
+    const unsub = onSnapshot(collection(db, 'supportMessages'), (snap) => {
+      const msgs: SupportMessage[] = [];
+      snap.forEach((docSnap) => {
+        const item = docSnap.data();
+        
+        // Convert Firebase Timestamps or fallback strings safely
+        const createdAt = item.createdAt?.seconds 
+          ? new Date(item.createdAt.seconds * 1000).toISOString() 
+          : (item.createdAt || new Date().toISOString());
+        const expiresAt = item.expiresAt?.seconds 
+          ? new Date(item.expiresAt.seconds * 1000).toISOString() 
+          : (item.expiresAt || new Date(Date.now() + 3600000).toISOString());
+
+        msgs.push({
+          id: docSnap.id,
+          message: item.message,
+          createdAt,
+          expiresAt,
+          authorName: item.authorName || 'Customer Support'
+        });
+      });
+
+      // Local filter & auto-pruning from database if expired
+      const validMsgs = msgs.filter((msg) => {
+        const isExpired = new Date() > new Date(msg.expiresAt);
+        if (isExpired) {
+          // Fire-and-forget server side deletion call
+          deleteDoc(doc(db, 'supportMessages', msg.id))
+            .catch((e) => console.log('Auto pruned expired broadcast:', e.message));
+          return false;
+        }
+        return true;
+      });
+
+      // Priority Announcements sorted by time (descending)
+      validMsgs.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      setActiveSupportMessages(validMsgs);
+    }, (err) => {
+      console.warn("Failed to subscribe to supportMessages on Dashboard:", err);
+    });
+
+    return () => unsub();
+  }, [user.id]);
 
   useEffect(() => {
     const unsub = onSnapshot(doc(db, 'settings', 'gateways'), (snap) => {
@@ -2210,6 +2261,43 @@ export default function Dashboard({
           </button>
         </div>
       )}
+
+      {/* Global Priority Support Broadcasts Alert */}
+      {activeSupportMessages
+        .filter((msg) => !dismissedMessages.includes(msg.id))
+        .map((msg) => {
+          const diffMs = new Date(msg.expiresAt).getTime() - Date.now();
+          const remMin = Math.max(0, Math.round(diffMs / 60000));
+          return (
+            <div 
+              key={msg.id} 
+              className="p-3.5 bg-gradient-to-r from-rose-50/95 to-amber-50/95 border border-rose-100 rounded-3xl text-slate-850 flex items-start gap-2.5 shadow-xs relative overflow-hidden" 
+              id={`support-broadcast-${msg.id}`}
+            >
+              <div className="absolute right-0 top-0 w-20 h-20 bg-rose-500/5 rounded-full blur-xl pointer-events-none" />
+              <div className="w-7.5 h-7.5 rounded-xl bg-gradient-to-br from-rose-500 to-rose-600 text-white flex items-center justify-center shrink-0 mt-0.5 shadow-xs">
+                <Megaphone className="w-3.5 h-3.5 text-white animate-bounce-slow" />
+              </div>
+              <div className="flex-1 space-y-0.5 text-xs">
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <span className="font-black uppercase tracking-wider text-[8px] text-rose-605 bg-rose-100/80 px-2 py-0.5 rounded-full">Support Broadcast</span>
+                  <span className="text-[8px] font-bold text-slate-450 bg-slate-205/60 px-1.5 py-0.5 rounded">
+                    Expires in {remMin}m
+                  </span>
+                </div>
+                <p className="font-bold text-slate-800 leading-normal text-[11px] pr-2 whitespace-pre-wrap">{msg.message}</p>
+              </div>
+              <button 
+                type="button" 
+                onClick={() => setDismissedMessages(prev => [...prev, msg.id])} 
+                className="text-slate-400 hover:text-rose-600 p-1 rounded-xl hover:bg-white/60 transition-all cursor-pointer shrink-0"
+                id={`dismiss-support-${msg.id}`}
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          );
+        })}
 
       {/* Hero Card - Balance Display Block (White, Light Blue, Dark Blue) */}
       <div 

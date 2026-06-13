@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { User, Transaction } from '../types';
+import { User, Transaction, SupportMessage } from '../types';
 import { db, cleanForFirestore } from '../firebase';
-import { doc, getDocs, collection, updateDoc, setDoc, getDoc } from 'firebase/firestore';
+import { doc, getDocs, collection, updateDoc, setDoc, getDoc, onSnapshot, deleteDoc } from 'firebase/firestore';
 import { 
   TrendingUp, TrendingDown, Search, ArrowUpRight, ArrowDownLeft, 
   Calendar, FileSpreadsheet, ShieldCheck, Check, Sparkles,
   Lock, Mail, Users, Edit3, ShieldAlert, CheckCircle2, 
-  ChevronDown, XCircle, Settings, Image as ImageIcon, LogOut
+  ChevronDown, XCircle, Settings, Image as ImageIcon, LogOut,
+  Megaphone, Trash2
 } from 'lucide-react';
 
 interface FinancePageProps {
@@ -50,6 +51,44 @@ export default function FinancePage({ user, transactions, onUpdateUser }: Financ
   // Proofs approval queue
   const [pendingApprovals, setPendingApprovals] = useState<any[]>([]);
   const [selectedProofUrl, setSelectedProofUrl] = useState<string | null>(null);
+
+  // Global support broadcast message states
+  const [supportMessages, setSupportMessages] = useState<SupportMessage[]>([]);
+  const [newSupportMessage, setNewSupportMessage] = useState<string>('');
+  const [supportMessageSuccess, setSupportMessageSuccess] = useState<string>('');
+  const [supportError, setSupportError] = useState<string>('');
+
+  // Subscribe to support messages when logged in as admin
+  useEffect(() => {
+    if (!isAdminLoggedIn) return;
+    const unsubscribe = onSnapshot(collection(db, 'supportMessages'), (snap) => {
+      const msgs: SupportMessage[] = [];
+      snap.forEach((docSnap) => {
+        const item = docSnap.data();
+        // Convert Firebase Timestamp or fallback to string gracefully
+        const createdAt = item.createdAt?.seconds 
+          ? new Date(item.createdAt.seconds * 1000).toISOString() 
+          : (item.createdAt || new Date().toISOString());
+        const expiresAt = item.expiresAt?.seconds 
+          ? new Date(item.expiresAt.seconds * 1000).toISOString() 
+          : (item.expiresAt || new Date(Date.now() + 3600000).toISOString());
+
+        msgs.push({
+          id: docSnap.id,
+          message: item.message,
+          createdAt,
+          expiresAt,
+          authorName: item.authorName || 'Customer Support'
+        });
+      });
+      // Sort message list descending
+      msgs.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      setSupportMessages(msgs);
+    }, (err) => {
+      console.error("Failed to subscribe to supportMessages:", err);
+    });
+    return unsubscribe;
+  }, [isAdminLoggedIn]);
 
   // Load Admin Data when logged in
   useEffect(() => {
@@ -362,6 +401,47 @@ export default function FinancePage({ user, transactions, onUpdateUser }: Financ
 
     setPendingApprovals(approvals);
     alert('Payment proof rejected. Request has been cancelled.');
+  };
+
+  const handleSendSupportMessage = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newSupportMessage.trim()) return;
+
+    setSupportError('');
+    setSupportMessageSuccess('');
+
+    try {
+      const msgId = 'msg_' + Math.random().toString(36).substr(2, 9);
+      const now = new Date();
+      // Calculate active period: exactly 1 hour from now
+      const expires = new Date(now.getTime() + 60 * 60 * 1000);
+
+      // Support message document payload
+      const docData = {
+        id: msgId,
+        message: newSupportMessage.trim(),
+        createdAt: now,
+        expiresAt: expires,
+        authorName: 'Customer Support'
+      };
+
+      await setDoc(doc(db, 'supportMessages', msgId), docData);
+      setNewSupportMessage('');
+      setSupportMessageSuccess('Global priority banner message sent! It will pop up at the top of all user dashboard balances and expire in 1 hour.');
+    } catch (err) {
+      console.error("Error broadcasting support message:", err);
+      setSupportError('Failed to broadcast global message. Verify security rules and permissions.');
+    }
+  };
+
+  const handleDeleteSupportMessage = async (msgId: string) => {
+    try {
+      await deleteDoc(doc(db, 'supportMessages', msgId));
+      setSupportMessageSuccess('Message removed successfully!');
+    } catch (err) {
+      console.error("Failed to delete support message:", err);
+      setSupportError('Failed to remove message. Ensure administrative authority.');
+    }
   };
 
   // Standard transactions filtering
@@ -819,6 +899,88 @@ export default function FinancePage({ user, transactions, onUpdateUser }: Financ
               ✓ Save Gateways Configuration
             </button>
           </form>
+        </div>
+
+        {/* 2.4 GLOBAL SUPPORT NOTIFICATION */}
+        <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm space-y-4" id="admin-broadcast-panel">
+          <div>
+            <h3 className="text-xs font-black text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+              <Megaphone className="w-4 h-4 text-rose-500" />
+              <span>Broadcast Global Support Message</span>
+            </h3>
+            <p className="text-[10px] text-slate-400 mt-0.5 font-medium leading-relaxed">
+              Send a priority support alert that will pop up instantly on top of all user dashboard balances. 
+              The message will auto-expire and can be deleted after 1 hour.
+            </p>
+          </div>
+
+          <form onSubmit={handleSendSupportMessage} className="space-y-4 text-xs" id="support-broadcast-form">
+            {supportMessageSuccess && (
+              <div className="p-3 bg-emerald-50 border border-emerald-105 text-emerald-800 font-bold rounded-xl flex items-center gap-1.5 text-[11px]" id="support-msg-success">
+                <CheckCircle2 className="w-4.5 h-4.5 text-emerald-600 shrink-0" />
+                <span>{supportMessageSuccess}</span>
+              </div>
+            )}
+            {supportError && (
+              <div className="p-3 bg-red-50 border border-red-105 text-red-800 font-bold rounded-xl flex items-center gap-1.5 text-[11px]" id="support-msg-error">
+                <ShieldAlert className="w-4.5 h-4.5 text-red-600 shrink-0" />
+                <span>{supportError}</span>
+              </div>
+            )}
+
+            <div>
+              <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Alert Text Message</label>
+              <textarea
+                required
+                rows={3}
+                placeholder="Example: Alert: We are performing system maintenance for standard ledger entries. All services remain functional."
+                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-100 rounded-2xl text-xs text-slate-850 focus:outline-none focus:bg-white focus:border-rose-500 font-medium leading-relaxed resize-none"
+                value={newSupportMessage}
+                onChange={(e) => setNewSupportMessage(e.target.value)}
+              />
+            </div>
+
+            <button
+              type="submit"
+              className="w-full py-3 bg-rose-550 hover:bg-rose-600 text-white font-bold text-xs rounded-2xl cursor-pointer shadow-xs uppercase tracking-wider transition-colors"
+            >
+              ✓ Send Global Priority Alert Message (1 Hour Window)
+            </button>
+          </form>
+
+          {/* Broadcast history list */}
+          {supportMessages.length > 0 && (
+            <div className="border-t border-slate-50 pt-4" id="admin-broadcasts-history">
+              <span className="text-[10px] text-slate-400 font-black uppercase tracking-widest block mb-2.5">Priority Announcements ({supportMessages.length})</span>
+              <div className="space-y-2.5 max-h-60 overflow-y-auto pr-1">
+                {supportMessages.map((msg) => {
+                  const isExpired = new Date() > new Date(msg.expiresAt);
+                  return (
+                    <div key={msg.id} className="p-3 bg-slate-50/80 border border-slate-200/50 rounded-2xl flex items-start justify-between gap-3 text-xs shadow-xs hover:border-slate-300 transition-all">
+                      <div className="space-y-1">
+                        <p className="font-semibold text-slate-855 leading-relaxed">{msg.message}</p>
+                        <div className="flex items-center gap-2 text-[9px] text-slate-400 font-bold uppercase tracking-wider">
+                          <span>Sent: {new Date(msg.createdAt).toLocaleTimeString()}</span>
+                          <span>•</span>
+                          <span className={isExpired ? 'text-red-500' : 'text-emerald-600'}>
+                            {isExpired ? 'Expired' : `Expires: ${new Date(msg.expiresAt).toLocaleTimeString()}`}
+                          </span>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteSupportMessage(msg.id)}
+                        className="p-1.5 bg-white hover:bg-rose-50 text-slate-400 hover:text-red-600 rounded-xl border border-slate-200 shadow-xs hover:scale-105 transition-all cursor-pointer shrink-0"
+                        title="Delete announcement from database"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     );

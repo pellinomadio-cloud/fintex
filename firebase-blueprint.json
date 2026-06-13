@@ -101,6 +101,19 @@
         "txId": { "type": "string" }
       },
       "required": ["id", "userId", "userName", "userEmail", "type", "amount", "proof", "date", "status", "txId"]
+    },
+    "SupportMessage": {
+      "title": "SupportMessage",
+      "description": "Global support message displayed to all users",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "message": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "expiresAt": { "type": "string", "format": "date-time" },
+        "authorName": { "type": "string" }
+      },
+      "required": ["id", "message", "createdAt", "expiresAt"]
     }
   },
   "firestore": {
@@ -127,6 +140,10 @@
     "/approvals/{approvalId}": {
       "schema": "Approval",
       "description": "Global approvals queue managed by administrator"
+    },
+    "/supportMessages/{messageId}": {
+      "schema": "SupportMessage",
+      "description": "Global support notifications displayable to all users"
     }
   }
 }
