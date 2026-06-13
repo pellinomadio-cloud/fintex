@@ -19,6 +19,95 @@ body {
   background-color: #F8FAFC;
   color: #0F172A;
   -webkit-font-smoothing: antialiased;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Global Dark Mode Overrides */
+body.dark {
+  background-color: #0F172A !important;
+  color: #F8FAFC !important;
+}
+
+body.dark #uxtrade-global-header {
+  background-color: #1E293B !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+body.dark nav#fixed-bottom-application-nav {
+  background-color: #1E293B !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.15) !important;
+}
+
+body.dark nav#fixed-bottom-application-nav button {
+  color: #94A3B8;
+}
+
+body.dark nav#fixed-bottom-application-nav button.text-brand-dark,
+body.dark nav#fixed-bottom-application-nav button .text-brand-dark {
+  color: #38BDF8 !important;
+}
+
+body.dark nav#fixed-bottom-application-nav button .text-slate-400 {
+  color: #64748B;
+}
+
+body.dark .bg-white {
+  background-color: #1E293B !important;
+  color: #F8FAFC !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+body.dark .text-brand-dark, 
+body.dark .text-slate-800,
+body.dark .text-slate-700,
+body.dark .text-slate-900,
+body.dark .text-slate-850 {
+  color: #F8FAFC !important;
+}
+
+body.dark .text-slate-550,
+body.dark .text-slate-500,
+body.dark .text-slate-400,
+body.dark .text-slate-450 {
+  color: #94A3B8 !important;
+}
+
+body.dark .bg-slate-50, 
+body.dark .bg-slate-100 {
+  background-color: #0F172A !important;
+  color: #F8FAFC !important;
+}
+
+body.dark .border-slate-100,
+body.dark .border-slate-200,
+body.dark .border-slate-50 {
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+body.dark input, 
+body.dark select, 
+body.dark textarea {
+  background-color: #0F172A !important;
+  color: #F8FAFC !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+body.dark input::placeholder {
+  color: #64748B !important;
+}
+
+body.dark .text-indigo-500 {
+  color: #818CF8 !important;
+}
+
+body.dark .bg-sky-50,
+body.dark .bg-sky-55 {
+  background-color: rgba(14, 165, 233, 0.1) !important;
+}
+
+body.dark .text-brand-primary {
+  color: #38BDF8 !important;
 }
 
 /* Custom scrollbar styling for a cleaner look */

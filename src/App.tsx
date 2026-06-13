@@ -37,6 +37,14 @@ export default function App() {
         console.error('Session retrieve failure', err);
       }
     }
+
+    // Initialize dark/light mode from localStorage on load
+    const isDark = localStorage.getItem('uxtrade_dark_mode') === 'true';
+    if (isDark) {
+      document.body.classList.add('dark');
+    } else {
+      document.body.classList.remove('dark');
+    }
   }, []);
 
   // Sync state between global users list, Firestore, and current session using real-time listeners
