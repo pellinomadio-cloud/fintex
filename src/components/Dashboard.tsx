@@ -1,7 +1,7 @@
 import { useState, useEffect, FormEvent } from 'react';
 import { User, Transaction } from '../types';
 import { db, cleanForFirestore } from '../firebase';
-import { doc, setDoc } from 'firebase/firestore';
+import { doc, setDoc, onSnapshot, getDoc } from 'firebase/firestore';
 import { 
   Eye, EyeOff, Plus, ArrowUpRight, ArrowDownLeft, Landmark, 
   Send, Phone, Database, Trophy, Landmark as LoanIcon, 
@@ -89,10 +89,37 @@ export default function Dashboard({
   }, [triggerUpgrade]);
 
   // Loaded Gateway addresses dynamically customized by Admin
-  const gatewayUsdt = localStorage.getItem('fintex_gateway_usdt') || 'TRibF41CvFeNptGPbuC5gRCfGcrqcc9XPm';
-  const gatewayNairaBank = localStorage.getItem('fintex_gateway_naira_bank') || 'Opay Digital Bank';
-  const gatewayNairaAcc = localStorage.getItem('fintex_gateway_naira_acc') || '8062940251';
-  const gatewayNairaName = localStorage.getItem('fintex_gateway_naira_name') || 'Fintex International Hub';
+  const [gatewayUsdt, setGatewayUsdt] = useState<string>(() => localStorage.getItem('fintex_gateway_usdt') || 'TRibF41CvFeNptGPbuC5gRCfGcrqcc9XPm');
+  const [gatewayNairaBank, setGatewayNairaBank] = useState<string>(() => localStorage.getItem('fintex_gateway_naira_bank') || 'Opay Digital Bank');
+  const [gatewayNairaAcc, setGatewayNairaAcc] = useState<string>(() => localStorage.getItem('fintex_gateway_naira_acc') || '8062940251');
+  const [gatewayNairaName, setGatewayNairaName] = useState<string>(() => localStorage.getItem('fintex_gateway_naira_name') || 'Fintex International Hub');
+
+  useEffect(() => {
+    const unsub = onSnapshot(doc(db, 'settings', 'gateways'), (snap) => {
+      if (snap.exists()) {
+        const data = snap.data();
+        if (data.usdtAddr) {
+          setGatewayUsdt(data.usdtAddr);
+          localStorage.setItem('fintex_gateway_usdt', data.usdtAddr);
+        }
+        if (data.nairaBank) {
+          setGatewayNairaBank(data.nairaBank);
+          localStorage.setItem('fintex_gateway_naira_bank', data.nairaBank);
+        }
+        if (data.nairaAccountNum) {
+          setGatewayNairaAcc(data.nairaAccountNum);
+          localStorage.setItem('fintex_gateway_naira_acc', data.nairaAccountNum);
+        }
+        if (data.nairaAccountNm) {
+          setGatewayNairaName(data.nairaAccountNm);
+          localStorage.setItem('fintex_gateway_naira_name', data.nairaAccountNm);
+        }
+      }
+    }, (err) => {
+      console.warn("Failed to subscribe to payment gateways configs in Firestore settings/gateways:", err);
+    });
+    return () => unsub();
+  }, []);
 
   // Claim Daily Rewards states
   const [claimStatus, setClaimStatus] = useState<'idle' | 'processing' | 'success' | 'already_claimed'>('idle');

@@ -4,6 +4,8 @@ import {
   CreditCard, Eye, EyeOff, ShieldCheck, Lock, Check, Plus, 
   Trash2, Sliders, AlertCircle, ShoppingBag, Sparkles
 } from 'lucide-react';
+import { db } from '../firebase';
+import { doc, getDoc, setDoc, updateDoc, deleteDoc, collection, onSnapshot } from 'firebase/firestore';
 
 interface CardsPageProps {
   user: User;
@@ -21,31 +23,52 @@ export default function CardsPage({ user, onUpdateUser, onAddTransaction, onNavi
   const [notification, setNotification] = useState<string | null>(null);
 
   useEffect(() => {
-    // Load existing virtual cards from localStorage
-    const savedCards = JSON.parse(localStorage.getItem(`fintex_cards_${user.id}`) || '[]');
-    if (savedCards.length > 0) {
-      setCards(savedCards);
-      setActiveCardId(savedCards[0].id);
-    } else {
-      // Seed default virtual card
-      const defaultCard: VirtualCard = {
-        id: 'c_default',
-        userId: user.id,
-        cardNumber: generateCardNum(),
-        cardName: `${user.name.toUpperCase()} PLATINUM`,
-        expiry: '09/31',
-        cvv: '581',
-        status: 'active',
-        type: 'visa',
-        color: 'deep-blue',
-        limit: 1500,
-        spent: 0
-      };
-      const initial = [defaultCard];
-      localStorage.setItem(`fintex_cards_${user.id}`, JSON.stringify(initial));
-      setCards(initial);
-      setActiveCardId('c_default');
-    }
+    if (!user?.id) return;
+
+    const cardsColRef = collection(db, 'users', user.id, 'cards');
+    const unsubscribe = onSnapshot(cardsColRef, (snap) => {
+      const fbCards: VirtualCard[] = [];
+      snap.forEach(docSnap => {
+        fbCards.push(docSnap.data() as VirtualCard);
+      });
+
+      if (fbCards.length > 0) {
+        setCards(fbCards);
+        localStorage.setItem(`fintex_cards_${user.id}`, JSON.stringify(fbCards));
+        if (!activeCardId || !fbCards.some(c => c.id === activeCardId)) {
+          setActiveCardId(fbCards[0].id);
+        }
+      } else {
+        // Seed default virtual card
+        const defaultCard: VirtualCard = {
+          id: 'c_default',
+          userId: user.id,
+          cardNumber: generateCardNum(),
+          cardName: `${user.name.toUpperCase()} PLATINUM`,
+          expiry: '09/31',
+          cvv: '581',
+          status: 'active',
+          type: 'visa',
+          color: 'deep-blue',
+          limit: 1500,
+          spent: 0
+        };
+        const initial = [defaultCard];
+        setDoc(doc(db, 'users', user.id, 'cards', 'c_default'), defaultCard)
+          .catch(err => console.error("Error seeding default card:", err));
+        setCards(initial);
+        localStorage.setItem(`fintex_cards_${user.id}`, JSON.stringify(initial));
+        setActiveCardId('c_default');
+      }
+    }, (err) => {
+      console.error("Error fetching cards from Firestore:", err);
+      const savedCards = JSON.parse(localStorage.getItem(`fintex_cards_${user.id}`) || '[]');
+      if (savedCards.length > 0) {
+        setCards(savedCards);
+      }
+    });
+
+    return () => unsubscribe();
   }, [user.id, user.name]);
 
   const generateCardNum = () => {
@@ -109,34 +132,33 @@ export default function CardsPage({ user, onUpdateUser, onAddTransaction, onNavi
       spent: 0
     };
 
-    const updated = [...cards, newCard];
-    localStorage.setItem(`fintex_cards_${user.id}`, JSON.stringify(updated));
-    setCards(updated);
+    setDoc(doc(db, 'users', user.id, 'cards', newCard.id), newCard)
+      .catch(err => console.error("Failed to save card to Firestore:", err));
+
     setActiveCardId(newCard.id);
     setNewCardLabel('');
     setNotification('✓ Virtual card issued successfully! $5.00 fee deducted from wallet balance.');
   };
 
   const deleteCard = (cardId: string) => {
-    const updated = cards.filter(c => c.id !== cardId);
-    localStorage.setItem(`fintex_cards_${user.id}`, JSON.stringify(updated));
-    setCards(updated);
-    if (activeCardId === cardId && updated.length > 0) {
-      setActiveCardId(updated[0].id);
-    }
+    deleteDoc(doc(db, 'users', user.id, 'cards', cardId))
+      .then(() => {
+        const updated = cards.filter(c => c.id !== cardId);
+        if (activeCardId === cardId && updated.length > 0) {
+          setActiveCardId(updated[0].id);
+        }
+      })
+      .catch(err => console.error("Failed to delete card from Firestore:", err));
   };
 
   const toggleFreeze = (cardId: string) => {
-    const updated = cards.map(c => {
-      if (c.id === cardId) {
-        const nextStatus = c.status === 'active' ? 'blocked' : 'active';
-        setNotification(nextStatus === 'blocked' ? 'Card frozen. Online payments rejected.' : 'Card is successfully active!');
-        return { ...c, status: nextStatus };
-      }
-      return c;
-    });
-    localStorage.setItem(`fintex_cards_${user.id}`, JSON.stringify(updated));
-    setCards(updated);
+    const cardToFreeze = cards.find(c => c.id === cardId);
+    if (!cardToFreeze) return;
+    const nextStatus = cardToFreeze.status === 'active' ? 'blocked' : 'active';
+    setNotification(nextStatus === 'blocked' ? 'Card frozen. Online payments rejected.' : 'Card is successfully active!');
+
+    updateDoc(doc(db, 'users', user.id, 'cards', cardId), { status: nextStatus })
+      .catch(err => console.error("Failed to freeze/unfreeze card in Firestore:", err));
   };
 
   const toggleReveal = (cardId: string) => {

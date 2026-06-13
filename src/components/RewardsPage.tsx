@@ -4,6 +4,8 @@ import {
   Users, Gift, Award, ArrowUpRight, Copy, Share2, Sparkles, Check, 
   Plus, Calendar, ArrowDownLeft, BadgeAlert, Sparkle, ShieldAlert
 } from 'lucide-react';
+import { db } from '../firebase';
+import { doc, setDoc, collection, onSnapshot } from 'firebase/firestore';
 
 interface RewardsPageProps {
   user: User;
@@ -24,31 +26,70 @@ export default function RewardsPage({ user, onUpdateUser, onAddTransaction }: Re
   const [claimingStatus, setClaimingStatus] = useState<string>('');
 
   useEffect(() => {
-    // Load local referrals
-    const saved = JSON.parse(localStorage.getItem(`fintex_referrals_${user.id}`) || '[]');
-    if (saved.length > 0) {
-      setReferrals(saved);
-    } else if (user.id === 'u_demo') {
-      // Seed default referral to make interface look active and lovely only for demo accounts
-      const seed: ReferralHistory = {
-        refereeName: 'David Miller',
-        email: 'david.miller@gmail.com',
-        date: new Date(Date.now() - 3600000 * 48).toISOString(),
-        rewardEarned: 10.00,
-        status: 'completed'
-      };
-      setReferrals([seed]);
-      localStorage.setItem(`fintex_referrals_${user.id}`, JSON.stringify([seed]));
-    } else {
-      setReferrals([]);
-    }
+    if (!user?.id) return;
 
-    // Check check-in status
-    const checked = localStorage.getItem(`fintex_checked_in_${user.id}_${new Date().toDateString()}`);
-    if (checked) {
-      setHasCheckedInToday(true);
-    }
-  }, [user.id]);
+    // Load actual referrals from Firestore subcollection
+    const referralsColRef = collection(db, 'users', user.id, 'referrals');
+    const unsubscribe = onSnapshot(referralsColRef, (snap) => {
+      const fbReferrals: ReferralHistory[] = [];
+      snap.forEach(docSnap => {
+        fbReferrals.push(docSnap.data() as ReferralHistory);
+      });
+
+      if (fbReferrals.length > 0) {
+        setReferrals(fbReferrals);
+        localStorage.setItem(`fintex_referrals_${user.id}`, JSON.stringify(fbReferrals));
+      } else if (user.id === 'u_demo') {
+        const seed: ReferralHistory = {
+          refereeName: 'David Miller',
+          email: 'david.miller@gmail.com',
+          date: new Date(Date.now() - 3600000 * 48).toISOString(),
+          rewardEarned: 10.00,
+          status: 'completed'
+        };
+        setDoc(doc(db, 'users', user.id, 'referrals', 'david_miller'), seed)
+          .catch(err => console.error("Failed to seed default referral in Firestore:", err));
+        setReferrals([seed]);
+        localStorage.setItem(`fintex_referrals_${user.id}`, JSON.stringify([seed]));
+      } else {
+        setReferrals([]);
+      }
+    }, (err) => {
+      console.error("Error fetching referrals from Firestore:", err);
+      const saved = JSON.parse(localStorage.getItem(`fintex_referrals_${user.id}`) || '[]');
+      setReferrals(saved);
+    });
+
+    // Check check-in status from user's lastCheckInDate field in real-time or local storage
+    const userRef = doc(db, 'users', user.id);
+    const unsubUser = onSnapshot(userRef, (snap) => {
+      if (snap.exists()) {
+        const data = snap.data();
+        if (data.lastCheckInDate === new Date().toDateString()) {
+          setHasCheckedInToday(true);
+        } else {
+          // Check local storage fallback too
+          const checked = localStorage.getItem(`fintex_checked_in_${user.id}_${new Date().toDateString()}`);
+          if (checked) {
+            setHasCheckedInToday(true);
+          } else {
+            setHasCheckedInToday(false);
+          }
+        }
+      }
+    }, (err) => {
+      console.warn("Error subscribing to user profile check-in date:", err);
+      const checked = localStorage.getItem(`fintex_checked_in_${user.id}_${new Date().toDateString()}`);
+      if (checked) {
+        setHasCheckedInToday(true);
+      }
+    });
+
+    return () => {
+      unsubscribe();
+      unsubUser();
+    };
+  }, [user.id, user.name]);
 
   const handleCopyCode = () => {
     navigator.clipboard.writeText(user.referralCode);
@@ -71,7 +112,8 @@ export default function RewardsPage({ user, onUpdateUser, onAddTransaction }: Re
     setTimeout(() => {
       const updatedUser: User = {
         ...user,
-        balance: parseFloat((user.balance + rewardAmt).toFixed(2))
+        balance: parseFloat((user.balance + rewardAmt).toFixed(2)),
+        lastCheckInDate: new Date().toDateString()
       };
 
       const tx: Transaction = {

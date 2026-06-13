@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { User, Transaction } from '../types';
 import { db, cleanForFirestore } from '../firebase';
-import { doc, getDocs, collection, updateDoc, setDoc } from 'firebase/firestore';
+import { doc, getDocs, collection, updateDoc, setDoc, getDoc } from 'firebase/firestore';
 import { 
   TrendingUp, TrendingDown, Search, ArrowUpRight, ArrowDownLeft, 
   Calendar, FileSpreadsheet, ShieldCheck, Check, Sparkles,
@@ -80,10 +80,33 @@ export default function FinancePage({ user, transactions, onUpdateUser }: Financ
     }
 
     // Load gateways config
-    setUsdtAddr(localStorage.getItem('fintex_gateway_usdt') || 'TRibF41CvFeNptGPbuC5gRCfGcrqcc9XPm');
-    setNairaBank(localStorage.getItem('fintex_gateway_naira_bank') || 'Opay Digital Bank');
-    setNairaAccountNum(localStorage.getItem('fintex_gateway_naira_acc') || '8062940251');
-    setNairaAccountNm(localStorage.getItem('fintex_gateway_naira_name') || 'UX-trade International Hub');
+    try {
+      const gatewaysDoc = await getDoc(doc(db, 'settings', 'gateways'));
+      if (gatewaysDoc.exists()) {
+        const data = gatewaysDoc.data();
+        setUsdtAddr(data.usdtAddr || 'TRibF41CvFeNptGPbuC5gRCfGcrqcc9XPm');
+        setNairaBank(data.nairaBank || 'Opay Digital Bank');
+        setNairaAccountNum(data.nairaAccountNum || '8062940251');
+        setNairaAccountNm(data.nairaAccountNm || 'UX-trade International Hub');
+
+        // Sync to localStorage
+        localStorage.setItem('fintex_gateway_usdt', data.usdtAddr || 'TRibF41CvFeNptGPbuC5gRCfGcrqcc9XPm');
+        localStorage.setItem('fintex_gateway_naira_bank', data.nairaBank || 'Opay Digital Bank');
+        localStorage.setItem('fintex_gateway_naira_acc', data.nairaAccountNum || '8062940251');
+        localStorage.setItem('fintex_gateway_naira_name', data.nairaAccountNm || 'UX-trade International Hub');
+      } else {
+        setUsdtAddr(localStorage.getItem('fintex_gateway_usdt') || 'TRibF41CvFeNptGPbuC5gRCfGcrqcc9XPm');
+        setNairaBank(localStorage.getItem('fintex_gateway_naira_bank') || 'Opay Digital Bank');
+        setNairaAccountNum(localStorage.getItem('fintex_gateway_naira_acc') || '8062940251');
+        setNairaAccountNm(localStorage.getItem('fintex_gateway_naira_name') || 'UX-trade International Hub');
+      }
+    } catch (gerr) {
+      console.error("Failed to fetch settings from Firestore:", gerr);
+      setUsdtAddr(localStorage.getItem('fintex_gateway_usdt') || 'TRibF41CvFeNptGPbuC5gRCfGcrqcc9XPm');
+      setNairaBank(localStorage.getItem('fintex_gateway_naira_bank') || 'Opay Digital Bank');
+      setNairaAccountNum(localStorage.getItem('fintex_gateway_naira_acc') || '8062940251');
+      setNairaAccountNm(localStorage.getItem('fintex_gateway_naira_name') || 'UX-trade International Hub');
+    }
 
     // 2. Load pending approvals queue from Firestore
     try {
@@ -122,13 +145,26 @@ export default function FinancePage({ user, transactions, onUpdateUser }: Financ
     setIsAdminLoggedIn(false);
   };
 
-  const handleSaveGateways = (e: React.FormEvent) => {
+  const handleSaveGateways = async (e: React.FormEvent) => {
     e.preventDefault();
     localStorage.setItem('fintex_gateway_usdt', usdtAddr);
     localStorage.setItem('fintex_gateway_naira_bank', nairaBank);
     localStorage.setItem('fintex_gateway_naira_acc', nairaAccountNum);
     localStorage.setItem('fintex_gateway_naira_name', nairaAccountNm);
-    setGatewaySuccessMsg('Payment Gateways configured successfully!');
+    
+    try {
+      await setDoc(doc(db, 'settings', 'gateways'), {
+        usdtAddr,
+        nairaBank,
+        nairaAccountNum,
+        nairaAccountNm,
+        updatedAt: new Date().toISOString()
+      });
+      setGatewaySuccessMsg('Payment Gateways configured globally in Firebase!');
+    } catch (err) {
+      console.error("Failed to save gateways to Firebase settings/gateways", err);
+      setGatewaySuccessMsg('Gateways saved locally (offline mode fallback).');
+    }
     setTimeout(() => setGatewaySuccessMsg(''), 3000);
   };
 

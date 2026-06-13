@@ -10,6 +10,7 @@ export interface User {
   createdAt: string;
   tier?: number;
   banned?: boolean;
+  lastCheckInDate?: string;
 }
 
 export interface Transaction {
