@@ -203,8 +203,6 @@ export default function RewardsPage({ user, onUpdateUser, onAddTransaction }: Re
     alert(`Success! Redeemed $${amt.toFixed(2)} principal & unlocked interest instantly.`);
   };
 
-  const totalRewards = referrals.reduce((sum, item) => sum + item.rewardEarned, 0) + (hasCheckedInToday ? 0.50 : 0);
-
   return (
     <div className="space-y-6 pb-24" id="rewards-tab-content">
       {/* Title Header */}
@@ -214,17 +212,13 @@ export default function RewardsPage({ user, onUpdateUser, onAddTransaction }: Re
       </div>
 
       {/* Stats row list */}
-      <div className="grid grid-cols-2 gap-4" id="rewards-scoreboard">
-        <div className="bg-white border border-slate-100 p-4 rounded-3xl shadow-sm text-center" id="reward-stats-box1">
-          <Award className="w-6 h-6 text-brand-primary mx-auto mb-1.5" />
-          <span className="text-[11px] font-semibold text-slate-500 block">Rewards Balance</span>
-          <span className="font-mono text-xl font-black text-slate-800">${totalRewards.toFixed(2)}</span>
-        </div>
-
-        <div className="bg-white border border-slate-100 p-4 rounded-3xl shadow-sm text-center" id="reward-stats-box2">
-          <Users className="w-6 h-6 text-indigo-500 mx-auto mb-1.5" />
-          <span className="text-[11px] font-semibold text-slate-500 block">Invites Approved</span>
-          <span className="font-mono text-xl font-black text-slate-800">{referrals.length} friends</span>
+      <div className="w-full" id="rewards-scoreboard">
+        <div className="bg-white border border-slate-100 p-4 rounded-3xl shadow-sm flex items-center justify-between px-6" id="reward-stats-box2">
+          <div className="flex items-center gap-3">
+            <Users className="w-6 h-6 text-indigo-500" />
+            <span className="text-xs font-bold text-slate-500 uppercase tracking-wide block">Invites Approved</span>
+          </div>
+          <span className="font-mono text-sm font-black text-indigo-700 bg-indigo-50/70 px-4 py-1.5 rounded-full">{referrals.length} friends</span>
         </div>
       </div>
 
