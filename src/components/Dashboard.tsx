@@ -2323,7 +2323,7 @@ export default function Dashboard({
           </div>
           <button 
             type="button"
-            onClick={() => onNavigateToTab('finance')}
+            onClick={() => onNavigateToTab('history')}
             className="text-xs text-sky-100 hover:text-white flex items-center gap-1 font-medium bg-white/10 hover:bg-white/15 px-3 py-1.5 rounded-xl border border-white/10 transition-all"
             id="tx-history-nav-btn"
           >
@@ -2585,7 +2585,7 @@ export default function Dashboard({
           </h3>
           <button 
             type="button"
-            onClick={() => onNavigateToTab('finance')} 
+            onClick={() => onNavigateToTab('history')} 
             className="text-xs font-semibold text-brand-primary flex items-center hover:underline"
             id="see-all-transactions"
           >

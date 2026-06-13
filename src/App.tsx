@@ -7,6 +7,7 @@ import FinancePage from './components/FinancePage';
 import RewardsPage from './components/RewardsPage';
 import ProfilePage from './components/ProfilePage';
 import TradingPage from './components/TradingPage';
+import HistoryPage from './components/HistoryPage';
 import { db, auth, handleFirestoreError, OperationType } from './firebase';
 import { doc, collection, setDoc, updateDoc, onSnapshot } from 'firebase/firestore';
 
@@ -333,6 +334,13 @@ export default function App() {
             user={currentUser} 
             transactions={transactions} 
             onUpdateUser={handleUpdateUser}
+          />
+        )}
+        {activeTab === 'history' && (
+          <HistoryPage 
+            user={currentUser} 
+            transactions={transactions} 
+            onNavigateToTab={(tab) => setActiveTab(tab)}
           />
         )}
         {activeTab === 'trade' && (
