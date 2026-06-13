@@ -7,8 +7,8 @@ import FinancePage from './components/FinancePage';
 import RewardsPage from './components/RewardsPage';
 import ProfilePage from './components/ProfilePage';
 import TradingPage from './components/TradingPage';
-import { db } from './firebase';
-import { doc, getDoc, getDocs, collection, setDoc, updateDoc } from 'firebase/firestore';
+import { db, auth, handleFirestoreError, OperationType } from './firebase';
+import { doc, collection, setDoc, updateDoc, onSnapshot } from 'firebase/firestore';
 
 // Lucide Icons
 import { 
@@ -39,56 +39,73 @@ export default function App() {
     }
   }, []);
 
-  // Sync state between global users list, Firestore, and current session
+  // Sync state between global users list, Firestore, and current session using real-time listeners
   useEffect(() => {
-    if (currentUser) {
-      // 1. Local storage sync
-      const users: User[] = JSON.parse(localStorage.getItem('fintex_users') || '[]');
-      const latest = users.find(u => u.id === currentUser.id);
-      if (latest) {
+    if (!currentUser?.id) return;
+
+    // 1. Local storage sync on initial mount or load
+    const users: User[] = JSON.parse(localStorage.getItem('fintex_users') || '[]');
+    const latest = users.find(u => u.id === currentUser.id);
+    if (latest) {
+      if (
+        latest.banned !== currentUser.banned || 
+        latest.tier !== currentUser.tier || 
+        latest.balance !== currentUser.balance ||
+        latest.savingsBalance !== currentUser.savingsBalance
+      ) {
+        setCurrentUser(latest);
+        localStorage.setItem('fintex_current_user', JSON.stringify(latest));
+      }
+    }
+
+    // 2. Real-time User Profile Firestore Sync
+    const userRef = doc(db, 'users', currentUser.id);
+    const unsubscribeUser = onSnapshot(userRef, (docSnap) => {
+      if (docSnap.exists()) {
+        const fbUser = docSnap.data() as User;
+        
+        // Cache in user dictionary too
+        const localUsersList: User[] = JSON.parse(localStorage.getItem('fintex_users') || '[]');
+        const idx = localUsersList.findIndex(u => u.id === fbUser.id);
+        if (idx !== -1) {
+          localUsersList[idx] = fbUser;
+          localStorage.setItem('fintex_users', JSON.stringify(localUsersList));
+        }
+
         if (
-          latest.banned !== currentUser.banned || 
-          latest.tier !== currentUser.tier || 
-          latest.balance !== currentUser.balance ||
-          latest.savingsBalance !== currentUser.savingsBalance
+          fbUser.banned !== currentUser.banned ||
+          fbUser.tier !== currentUser.tier ||
+          fbUser.balance !== currentUser.balance ||
+          fbUser.savingsBalance !== currentUser.savingsBalance
         ) {
-          setCurrentUser(latest);
-          localStorage.setItem('fintex_current_user', JSON.stringify(latest));
+          setCurrentUser(fbUser);
+          localStorage.setItem('fintex_current_user', JSON.stringify(fbUser));
         }
       }
+    }, (err) => {
+      handleFirestoreError(err, OperationType.GET, `users/${currentUser.id}`);
+    });
 
-      // 2. Firestore Sync (Real-time checks)
-      const userRef = doc(db, 'users', currentUser.id);
-      getDoc(userRef).then((docSnap) => {
-        if (docSnap.exists()) {
-          const fbUser = docSnap.data() as User;
-          if (
-            fbUser.banned !== currentUser.banned ||
-            fbUser.tier !== currentUser.tier ||
-            fbUser.balance !== currentUser.balance ||
-            fbUser.savingsBalance !== currentUser.savingsBalance
-          ) {
-            setCurrentUser(fbUser);
-            localStorage.setItem('fintex_current_user', JSON.stringify(fbUser));
-          }
-        }
-      }).catch(err => console.error("Error syncing profile from Firestore", err));
+    // 3. Real-time Transactions Firestore Sync
+    const txsColRef = collection(db, 'users', currentUser.id, 'transactions');
+    const unsubscribeTxs = onSnapshot(txsColRef, (querySnap) => {
+      const fbTxs: Transaction[] = [];
+      querySnap.forEach(snap => {
+        fbTxs.push(snap.data() as Transaction);
+      });
+      fbTxs.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      
+      setTransactions(fbTxs);
+      localStorage.setItem(`fintex_txs_${currentUser.id}`, JSON.stringify(fbTxs));
+    }, (err) => {
+      handleFirestoreError(err, OperationType.LIST, `users/${currentUser.id}/transactions`);
+    });
 
-      // 3. Firestore Transactions Sync
-      const txsColRef = collection(db, 'users', currentUser.id, 'transactions');
-      getDocs(txsColRef).then((querySnap) => {
-        const fbTxs: Transaction[] = [];
-        querySnap.forEach(snap => {
-          fbTxs.push(snap.data() as Transaction);
-        });
-        fbTxs.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-        if (fbTxs.length > 0) {
-          setTransactions(fbTxs);
-          localStorage.setItem(`fintex_txs_${currentUser.id}`, JSON.stringify(fbTxs));
-        }
-      }).catch(err => console.error("Error syncing transactions from Firestore", err));
-    }
-  }, [currentUser?.id, activeTab]);
+    return () => {
+      unsubscribeUser();
+      unsubscribeTxs();
+    };
+  }, [currentUser?.id]);
 
   const handleAuthSuccess = (user: User) => {
     setCurrentUser(user);

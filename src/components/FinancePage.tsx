@@ -212,6 +212,11 @@ export default function FinancePage({ user, transactions, onUpdateUser }: Financ
     if (appIndex === -1) return;
 
     const approval = approvals[appIndex];
+    if (approval.status === 'approved' || approval.status === 'rejected') {
+      console.warn("Approval request already processed.");
+      return;
+    }
+    
     approval.status = 'approved';
     localStorage.setItem('fintex_pending_approvals', JSON.stringify(approvals));
 
@@ -283,6 +288,11 @@ export default function FinancePage({ user, transactions, onUpdateUser }: Financ
     if (appIndex === -1) return;
 
     const approval = approvals[appIndex];
+    if (approval.status === 'approved' || approval.status === 'rejected') {
+      console.warn("Approval request already processed.");
+      return;
+    }
+
     approval.status = 'rejected';
     localStorage.setItem('fintex_pending_approvals', JSON.stringify(approvals));
 
