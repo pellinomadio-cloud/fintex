@@ -1794,25 +1794,6 @@ export default function Dashboard({
                   </div>
                   <ChevronRight className="w-5 h-5 text-slate-400 group-hover:text-slate-600 transition-colors shrink-0" />
                 </button>
-
-                {/* Legacy Card Method */}
-                <button
-                  type="button"
-                  onClick={() => setAddMoneyStep('card_deposit')}
-                  className="w-full p-4 bg-slate-50/75 hover:bg-slate-100 border border-slate-100 rounded-2xl flex items-center justify-between transition-all text-left cursor-pointer group"
-                  id="page-deposit-method-card"
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="w-11 h-11 bg-sky-50 text-brand-primary rounded-xl flex items-center justify-center group-hover:bg-sky-100 transition-colors">
-                      <Plus className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <p className="text-xs font-bold text-slate-800">Linked Debit Card Payment</p>
-                      <p className="text-[10px] text-slate-400 font-medium">Funds straight from your external Visa / Mastercard</p>
-                    </div>
-                  </div>
-                  <ChevronRight className="w-5 h-5 text-slate-400 group-hover:text-slate-600 transition-colors shrink-0" />
-                </button>
               </div>
             </div>
           )}
@@ -2055,63 +2036,7 @@ export default function Dashboard({
             </form>
           )}
 
-          {/* LEGACY CARD DEPOSIT STATE */}
-          {addMoneyStep === 'card_deposit' && (
-            <form onSubmit={handleAddMoney} className="space-y-4" id="page-deposit-card">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-2.5 mb-1">
-                <button
-                  type="button"
-                  onClick={() => setAddMoneyStep('select')}
-                  className="text-xs text-slate-505 hover:text-brand-dark flex items-center gap-1 font-semibold transition-colors cursor-pointer"
-                  id="page-btn-back-to-select-card"
-                >
-                  <ArrowLeft className="w-3.5 h-3.5" /> Back
-                </button>
-                <span className="text-[10px] text-slate-400 font-mono">Linked Card</span>
-              </div>
 
-              <div>
-                <h3 className="font-display font-bold text-brand-dark text-base">Debit Card Funding</h3>
-                <p className="text-xs text-slate-505 font-sans">Instant top up using your pre-authorized card assets.</p>
-              </div>
-
-              <div>
-                <label htmlFor="page-card-amount" className="block text-xs font-semibold text-slate-550 mb-1">
-                  Funding Amount (USD)
-                </label>
-                <div className="relative">
-                  <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-xs font-bold text-brand-dark mt-0.5">$</span>
-                  <input 
-                    id="page-card-amount"
-                    type="number"
-                    step="0.01"
-                    min="1.00"
-                    required
-                    placeholder="50.00"
-                    className="w-full pl-7 pr-4 py-3 bg-slate-55 border border-slate-100 rounded-2xl text-sm font-semibold focus:outline-none focus:border-brand-primary focus:bg-white text-slate-800"
-                    value={inputAmount}
-                    onChange={(e) => setInputAmount(e.target.value)}
-                  />
-                </div>
-              </div>
-
-              <div className="p-3 bg-slate-50 rounded-2xl border border-slate-100 text-[10.5px] text-slate-505 space-y-1">
-                <span className="font-bold text-slate-600 block">Simulated Funding Node</span>
-                <p>Visa Debit ending in •• 4022</p>
-                <p className="text-[9.5px] text-emerald-500 font-bold">✔ Secured by Verified-by-Visa</p>
-              </div>
-
-              {renderProofUploadArea()}
-
-              <button 
-                type="submit" 
-                className="w-full py-3.5 bg-brand-dark text-white font-bold text-xs rounded-2xl hover:bg-brand-medium transition-all shadow-md mt-2 cursor-pointer"
-                id="page-btn-submit-card-deposit"
-              >
-                Complete Payment Settlement
-              </button>
-            </form>
-          )}
 
           {/* USDT PROCESSING STATE */}
           {addMoneyStep === 'processing_usdt' && (
@@ -2778,25 +2703,6 @@ export default function Dashboard({
                         </div>
                         <ChevronRight className="w-4 h-4 text-slate-405 group-hover:text-slate-600 transition-colors shrink-0" />
                       </button>
-
-                      {/* Legacy Card Method */}
-                      <button
-                        type="button"
-                        onClick={() => setAddMoneyStep('card_deposit')}
-                        className="w-full p-3.5 bg-slate-50/75 hover:bg-slate-50 border border-slate-100 rounded-2xl flex items-center justify-between transition-all text-left cursor-pointer group"
-                        id="deposit-method-card"
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 bg-sky-50 text-brand-primary rounded-xl flex items-center justify-center group-hover:bg-sky-100 transition-colors">
-                            <Plus className="w-4.5 h-4.5" />
-                          </div>
-                          <div>
-                            <p className="text-xs font-bold text-slate-800">Linked Debit Card</p>
-                            <p className="text-[10px] text-slate-400 font-medium">USD Visa / Mastercard credit</p>
-                          </div>
-                        </div>
-                        <ChevronRight className="w-4 h-4 text-slate-405 group-hover:text-slate-600 transition-colors shrink-0" />
-                      </button>
                     </div>
                   </div>
                 )}
@@ -3028,62 +2934,6 @@ export default function Dashboard({
                       id="btn-confirm-naira-transfer"
                     >
                       Confirm Deposit Credit
-                    </button>
-                  </form>
-                )}
-
-                {/* 5. LEGACY CARD FUNDING */}
-                {addMoneyStep === 'card_deposit' && (
-                  <form onSubmit={handleAddMoney} className="space-y-4" id="modal-form-add-money">
-                    <div className="flex items-center justify-between border-b border-slate-100 pb-2.5 mb-1">
-                      <button
-                        type="button"
-                        onClick={() => setAddMoneyStep('select')}
-                        className="text-xs text-slate-500 hover:text-brand-dark flex items-center gap-1 font-semibold transition-colors cursor-pointer"
-                        id="btn-back-to-select-card"
-                      >
-                        <ArrowLeft className="w-3.5 h-3.5" /> Back
-                      </button>
-                      <span className="text-[10px] text-slate-400 font-mono">Credit Card</span>
-                    </div>
-
-                    <div className="text-center pb-1">
-                      <h3 className="font-display font-bold text-brand-dark text-base">Linked Debit Card</h3>
-                      <p className="text-xs text-slate-500">Fund your account using instant card settlement.</p>
-                    </div>
-
-                    <div>
-                      <label htmlFor="deposit-amount" className="block text-xs font-semibold text-slate-500 mb-1">
-                        Funding Amount (USD)
-                      </label>
-                      <div className="relative">
-                        <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-sm font-bold text-brand-dark">$</span>
-                        <input 
-                          id="deposit-amount"
-                          type="number"
-                          step="0.01"
-                          min="1.00"
-                          required
-                          placeholder="50.00"
-                          className="w-full pl-7 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-semibold focus:outline-none focus:border-brand-primary focus:bg-white text-slate-800"
-                          value={inputAmount}
-                          onChange={(e) => setInputAmount(e.target.value)}
-                        />
-                      </div>
-                    </div>
-
-                    <div className="p-3 bg-slate-50 rounded-2xl border border-slate-100 text-[11px] text-slate-500 space-y-1.5">
-                      <span className="font-bold text-slate-600 block">Simulated Payment Method</span>
-                      <p>Visa Debit ending in •••• 4022</p>
-                      <p className="text-[10px] text-emerald-500 font-bold">✔ Verified by Secure-Code</p>
-                    </div>
-
-                    <button 
-                      id="btn-confirm-deposit"
-                      type="submit" 
-                      className="w-full py-3.5 bg-brand-dark text-white font-bold text-xs rounded-2xl hover:bg-brand-medium transition-all shadow-md mt-2 cursor-pointer"
-                    >
-                      Verify and Complete Funding
                     </button>
                   </form>
                 )}

@@ -9,6 +9,7 @@ import ProfilePage from './components/ProfilePage';
 import TradingPage from './components/TradingPage';
 import HistoryPage from './components/HistoryPage';
 import BotsPage from './components/BotsPage';
+import { AIAssistant } from './components/AIAssistant';
 import { db, auth, handleFirestoreError, OperationType } from './firebase';
 import { doc, collection, setDoc, updateDoc, onSnapshot, getDoc, getDocs } from 'firebase/firestore';
 
@@ -272,7 +273,12 @@ export default function App() {
   };
 
   if (!currentUser) {
-    return <Auth onAuthSuccess={handleAuthSuccess} />;
+    return (
+      <>
+        <Auth onAuthSuccess={handleAuthSuccess} />
+        <AIAssistant />
+      </>
+    );
   }
 
   if (currentUser.banned) {
@@ -526,6 +532,7 @@ export default function App() {
           <span className={`text-[10px] font-bold mt-1 ${activeTab === 'profile' ? 'text-brand-dark' : 'text-slate-400'}`}>Me</span>
         </button>
       </nav>
+      <AIAssistant />
     </div>
   );
 }
