@@ -2301,61 +2301,87 @@ export default function Dashboard({
 
       {/* Hero Card - Balance Display Block (White, Light Blue, Dark Blue) */}
       <div 
-        className="relative bg-gradient-to-br from-brand-dark via-brand-medium to-brand-primary text-white rounded-3xl p-6 shadow-xl shadow-brand-dark/20 overflow-hidden" 
+        className="relative bg-gradient-to-br from-slate-950 via-brand-dark to-slate-900 text-white rounded-[32px] p-6.5 shadow-2xl shadow-brand-dark/30 overflow-hidden border border-slate-800/85" 
         id="dashboard-available-balance-module"
       >
         {/* Background art patterns for premium aesthetic */}
-        <div className="absolute -right-12 -bottom-12 w-44 h-44 rounded-full bg-white/5 border border-white/10 pointer-events-none" />
-        <div className="absolute right-12 -top-12 w-32 h-32 rounded-full bg-white/5 border border-white/10 pointer-events-none" />
-
-        <div className="flex items-center justify-between mb-2.5" id="balance-title-row">
-          <div className="flex items-center gap-1.5" id="balance-label-trigger">
-            <Landmark className="w-4 h-4 text-brand-light" />
-            <span className="text-xs text-sky-100 font-medium tracking-wide">Available Balance</span>
-            <button 
-              type="button" 
-              className="text-sky-100 hover:text-white transition-colors" 
-              onClick={() => setShowBalance(!showBalance)}
-              id="toggle-visibility-btn"
-            >
-              {showBalance ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
-            </button>
-          </div>
-          <button 
-            type="button"
-            onClick={() => onNavigateToTab('history')}
-            className="text-xs text-sky-100 hover:text-white flex items-center gap-1 font-medium bg-white/10 hover:bg-white/15 px-3 py-1.5 rounded-xl border border-white/10 transition-all"
-            id="tx-history-nav-btn"
-          >
-            Transaction History <ChevronRight className="w-3.5 h-3.5" />
-          </button>
+        <div className="absolute -right-16 -bottom-16 w-56 h-56 rounded-full bg-brand-primary/10 blur-3xl pointer-events-none animate-pulse-subtle" />
+        <div className="absolute left-12 -top-24 w-40 h-40 rounded-full bg-sky-500/10 blur-3xl pointer-events-none" />
+        
+        {/* Card Holographic Badge */}
+        <div className="absolute right-6 top-6 opacity-10 font-black text-[22px] tracking-widest font-mono select-none pointer-events-none">
+          PREMIUM
         </div>
 
-        <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4" id="balance-number-display-wrapper">
-          <div>
-            <span className="font-mono text-3xl sm:text-4xl font-bold flex items-baseline gap-1.5 text-white" id="main-balance-text">
-              {showBalance ? (primaryCurrency === 'USD' ? `$${user.balance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : `₦${(user.balance * 1600).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`) : '••••••'}
-            </span>
-            <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 mt-1 text-[11px] text-sky-100/85">
-              <span>
-                {showBalance ? (primaryCurrency === 'USD' ? `₦${(user.balance * 1600).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} equivalent` : `$${user.balance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} equivalent`) : '••••••'}
-              </span>
-              <span className="text-sky-300/40">•</span>
-              <span className="flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                Safebox: {showBalance ? (primaryCurrency === 'USD' ? `$${user.savingsBalance.toFixed(2)}` : `₦${(user.savingsBalance * 1600).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`) : '••••••'}
+        <div className="flex items-center justify-between mb-4" id="balance-title-row">
+          <div className="flex items-center gap-2" id="balance-label-trigger">
+            <div className="w-7 h-7 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center shadow-xs">
+              <Landmark className="w-3.5 h-3.5 text-brand-light" />
+            </div>
+            <div className="flex flex-col">
+              <span className="text-[9px] text-slate-400 font-bold uppercase tracking-widest leading-none">Available Portfolio</span>
+              <span className="text-xs text-sky-100/90 font-medium tracking-wide mt-0.5 flex items-center gap-1.5">
+                Active Ledger
+                <button 
+                  type="button" 
+                  className="text-sky-300/80 hover:text-white transition-colors cursor-pointer" 
+                  onClick={() => setShowBalance(!showBalance)}
+                  id="toggle-visibility-btn"
+                  title={showBalance ? "Hide Balance" : "Show Balance"}
+                >
+                  {showBalance ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                </button>
               </span>
             </div>
           </div>
+          
+          <button 
+            type="button"
+            onClick={() => onNavigateToTab('history')}
+            className="text-[11px] text-sky-100 hover:text-white flex items-center gap-1 font-bold bg-white/5 hover:bg-white/10 px-3 py-1.5 rounded-xl border border-white/10 transition-all shadow-xs"
+            id="tx-history-nav-btn"
+          >
+            Ledger History <ChevronRight className="w-3 h-3" />
+          </button>
+        </div>
 
-          {/* Premium Currency Selector */}
-          <div className="inline-flex self-start sm:self-center bg-white/10 p-0.5 rounded-xl border border-white/10 backdrop-blur-xs shrink-0" id="currency-display-toggle-bar">
+        {/* Balance Amount and currency switches */}
+        <div className="mb-6 flex flex-col sm:flex-row sm:items-end justify-between gap-5" id="balance-number-display-wrapper">
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-2">
+              <span className="font-mono text-3.5xl sm:text-4.5xl font-extrabold flex items-baseline gap-1 text-white tracking-tight" id="main-balance-text">
+                {showBalance ? (primaryCurrency === 'USD' ? `$${user.balance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : `₦${(user.balance * 1600).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`) : '••••••'}
+              </span>
+              <span className="text-[9px] font-bold uppercase px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 select-none">
+                Live
+              </span>
+            </div>
+            
+            <div className="flex flex-col gap-1 mt-1 text-[11px] text-slate-400">
+              <div className="flex items-center gap-1.5 font-medium">
+                <span className="text-slate-500">Cross-border Value:</span>
+                <span className="text-slate-300 font-mono">
+                  {showBalance ? (primaryCurrency === 'USD' ? `₦${(user.balance * 1600).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : `$${user.balance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`) : '••••••'}
+                </span>
+              </div>
+              <div className="flex items-center gap-1.5 font-medium">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="text-slate-500">Protected Safebox:</span>
+                <span className="text-slate-300 font-mono">
+                  {showBalance ? (primaryCurrency === 'USD' ? `$${user.savingsBalance.toFixed(2)}` : `₦${(user.savingsBalance * 1600).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`) : '••••••'}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Premium Currency Glassmorphism Selector */}
+          <div className="inline-flex self-start sm:self-end bg-white/5 p-1 rounded-xl border border-white/10 backdrop-blur-xs shrink-0" id="currency-display-toggle-bar">
             <button
               type="button"
-              className={`px-3 py-1.5 text-[10px] font-bold rounded-lg transition-all cursor-pointer ${
+              className={`px-3.5 py-2 text-[10px] font-black tracking-wider rounded-lg transition-all cursor-pointer ${
                 primaryCurrency === 'USD' 
-                  ? 'bg-white text-brand-dark shadow-xs' 
-                  : 'text-sky-100 hover:text-white hover:bg-white/5'
+                  ? 'bg-white text-slate-950 shadow-xs' 
+                  : 'text-sky-100/70 hover:text-white hover:bg-white/5'
               }`}
               onClick={() => setPrimaryCurrency('USD')}
               id="currency-switch-usd"
@@ -2364,10 +2390,10 @@ export default function Dashboard({
             </button>
             <button
               type="button"
-              className={`px-3 py-1.5 text-[10px] font-bold rounded-lg transition-all cursor-pointer ${
+              className={`px-3.5 py-2 text-[10px] font-black tracking-wider rounded-lg transition-all cursor-pointer ${
                 primaryCurrency === 'NGN' 
-                  ? 'bg-white text-brand-dark shadow-xs' 
-                  : 'text-sky-100 hover:text-white hover:bg-white/5'
+                  ? 'bg-white text-slate-950 shadow-xs' 
+                  : 'text-sky-100/70 hover:text-white hover:bg-white/5'
               }`}
               onClick={() => setPrimaryCurrency('NGN')}
               id="currency-switch-ngn"
@@ -2377,7 +2403,36 @@ export default function Dashboard({
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-3" id="balance-core-actions">
+        {/* Dynamic decorative element: chip + NFC layout for realistic metal card aesthetic */}
+        <div className="flex items-center justify-between border-t border-white/5 pt-5 mt-2" id="balance-card-details-row">
+          <div className="flex items-center gap-4 text-[9px] uppercase tracking-widest text-slate-400 font-bold select-none">
+            <div className="flex flex-col">
+              <span className="text-[8px] text-slate-500">Cardholder</span>
+              <span className="text-slate-200 font-semibold mt-0.5">{user.name.toUpperCase()}</span>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-[8px] text-slate-500">Tier Status</span>
+              <span className="text-amber-400 font-semibold mt-0.5">Gold Tier {user.tier || 1}</span>
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-2 shrink-0">
+            {/* EMV Microchip Representation */}
+            <div className="w-7 h-5.5 rounded-md bg-gradient-to-br from-amber-200 to-amber-500 border border-amber-600/30 opacity-75 relative overflow-hidden" title="Secure EMV Chip">
+              <div className="absolute inset-x-0 top-1/2 h-[1px] bg-amber-700/45" />
+              <div className="absolute inset-y-0 left-1/2 w-[1px] bg-amber-700/45" />
+            </div>
+            {/* Wireless pay signal vector */}
+            <div className="flex gap-0.5 items-end rotate-90 text-slate-400/80 w-3.5 h-3.5">
+              <span className="w-[1.5px] h-1.5 bg-current rounded-full" />
+              <span className="w-[1.5px] h-2.5 bg-current rounded-full" />
+              <span className="w-[1.5px] h-3.5 bg-current rounded-full" />
+            </div>
+          </div>
+        </div>
+
+        {/* Floating Quick deposit/withdrawal links */}
+        <div className="grid grid-cols-2 gap-3.5 mt-5" id="balance-core-actions">
           <button 
             type="button"
             onClick={() => {
@@ -2387,11 +2442,11 @@ export default function Dashboard({
               setAddMoneyStep('select');
               setActiveModal('add_money');
             }}
-            className="w-full py-3.5 bg-white text-brand-dark font-bold text-xs rounded-2xl hover:bg-sky-100 hover:text-brand-medium active:scale-98 transition-all inline-flex items-center justify-center gap-2 shadow-sm"
+            className="w-full py-3 bg-gradient-to-r from-white to-sky-50 text-slate-900 hover:from-sky-100 hover:to-white font-extrabold text-xs tracking-wider rounded-2xl active:scale-98 transition-all inline-flex items-center justify-center gap-2 shadow-md cursor-pointer uppercase"
             id="btn-add-money-modal"
           >
-            <Plus className="w-4 h-4 text-brand-primary" />
-            Add Money
+            <Plus className="w-4 h-4 text-brand-primary animate-pulse" />
+            Deposit
           </button>
           <button 
             type="button"
@@ -2399,11 +2454,11 @@ export default function Dashboard({
               setInputAmount('');
               setActiveModal('transfer');
             }}
-            className="w-full py-3.5 bg-brand-light/20 hover:bg-brand-light/30 border border-white/20 font-bold text-xs rounded-2xl active:scale-98 transition-all inline-flex items-center justify-center gap-2"
+            className="w-full py-3 bg-white/10 hover:bg-white/15 border border-white/15 text-white font-extrabold text-xs tracking-wider rounded-2xl active:scale-98 transition-all inline-flex items-center justify-center gap-2 cursor-pointer uppercase"
             id="btn-send-money-modal"
           >
             <Send className="w-4 h-4 text-brand-light" />
-            Send Transfer
+            Transfer
           </button>
         </div>
       </div>
