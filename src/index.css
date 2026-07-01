@@ -24,23 +24,25 @@ body {
 
 /* Global Dark Mode Overrides */
 body.dark {
-  background-color: #0F172A !important;
+  background-color: #080C14 !important;
   color: #F8FAFC !important;
 }
 
 body.dark #uxtrade-global-header {
-  background-color: #1E293B !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+  background-color: #0F1524 !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+  backdrop-filter: blur(12px);
 }
 
 body.dark nav#fixed-bottom-application-nav {
-  background-color: #1E293B !important;
-  border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
-  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.15) !important;
+  background-color: rgba(15, 21, 36, 0.9) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.05) !important;
+  backdrop-filter: blur(12px) !important;
+  box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.4) !important;
 }
 
 body.dark nav#fixed-bottom-application-nav button {
-  color: #94A3B8;
+  color: #64748B;
 }
 
 body.dark nav#fixed-bottom-application-nav button.text-brand-dark,
@@ -53,9 +55,9 @@ body.dark nav#fixed-bottom-application-nav button .text-slate-400 {
 }
 
 body.dark .bg-white {
-  background-color: #1E293B !important;
+  background-color: #111827 !important;
   color: #F8FAFC !important;
-  border-color: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(255, 255, 255, 0.05) !important;
 }
 
 body.dark .text-brand-dark, 
@@ -75,26 +77,26 @@ body.dark .text-slate-450 {
 
 body.dark .bg-slate-50, 
 body.dark .bg-slate-100 {
-  background-color: #0F172A !important;
+  background-color: #0C111D !important;
   color: #F8FAFC !important;
 }
 
 body.dark .border-slate-100,
 body.dark .border-slate-200,
 body.dark .border-slate-50 {
-  border-color: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(255, 255, 255, 0.05) !important;
 }
 
 body.dark input, 
 body.dark select, 
 body.dark textarea {
-  background-color: #0F172A !important;
+  background-color: #0C111D !important;
   color: #F8FAFC !important;
-  border-color: rgba(255, 255, 255, 0.15) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
 }
 
 body.dark input::placeholder {
-  color: #64748B !important;
+  color: #475569 !important;
 }
 
 body.dark .text-indigo-500 {
@@ -103,7 +105,7 @@ body.dark .text-indigo-500 {
 
 body.dark .bg-sky-50,
 body.dark .bg-sky-55 {
-  background-color: rgba(14, 165, 233, 0.1) !important;
+  background-color: rgba(14, 165, 233, 0.08) !important;
 }
 
 body.dark .text-brand-primary {

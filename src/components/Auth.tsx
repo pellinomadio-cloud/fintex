@@ -284,32 +284,40 @@ export default function Auth({ onAuthSuccess }: AuthProps) {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-radial from-slate-50 to-blue-50/80 p-4 sm:p-6 lg:p-8" id="uxtrade-auth-container">
-      <div className="w-full max-w-md" id="uxtrade-auth-card-wrapper">
+    <div className="min-h-screen flex items-center justify-center bg-[#080C14] p-4 sm:p-6 lg:p-8 relative overflow-hidden" id="uxtrade-auth-container">
+      {/* Dynamic abstract grid overlay for modern visual depth */}
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#1f293708_1px,transparent_1px),linear-gradient(to_bottom,#1f293708_1px,transparent_1px)] bg-[size:24px_24px]" />
+      
+      {/* Background gradients for premium login screen feel */}
+      <div className="absolute top-1/4 left-1/4 w-72 h-72 bg-brand-primary/5 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-1/4 right-1/4 w-60 h-60 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none" />
+
+      <div className="w-full max-w-md relative z-10 animate-fade-in" id="uxtrade-auth-card-wrapper">
         {/* Banner Logo */}
         <div className="flex flex-col items-center mb-8" id="uxtrade-brand-header">
-          <div className="w-16 h-16 bg-gradient-to-tr from-brand-dark via-brand-medium to-brand-primary rounded-2xl flex items-center justify-center text-white font-display text-4xl font-bold shadow-lg shadow-sky-950/10 mb-3" id="uxtrade-logo-box">
+          <div className="w-16 h-16 bg-gradient-to-tr from-brand-primary via-brand-medium to-slate-950 rounded-2xl flex items-center justify-center text-white font-display text-4xl font-black shadow-lg shadow-sky-950/20 mb-4 border border-white/10" id="uxtrade-logo-box">
             U
           </div>
-          <h1 className="text-3xl font-bold font-display tracking-tight text-brand-dark" id="uxtrade-title">
-            UX-trade<span className="text-brand-light font-sans font-medium text-xs align-super ml-1">v1.2</span>
+          <h1 className="text-3xl font-bold font-display tracking-tight text-white flex items-center gap-2" id="uxtrade-title">
+            UX-trade
+            <span className="text-emerald-400 font-sans font-extrabold text-[9px] uppercase tracking-widest px-2 py-0.5 rounded-md bg-emerald-500/10 border border-emerald-500/20">Secure</span>
           </h1>
-          <p className="text-sm text-slate-500 mt-1" id="uxtrade-subtitle">
-            Secure Wealth. Instant Mobility.
+          <p className="text-xs text-slate-400 mt-2 font-semibold tracking-wide uppercase" id="uxtrade-subtitle">
+            Secure Wealth. Instant Global Cash Out.
           </p>
         </div>
 
         {/* main Form Card */}
-        <div className="bg-white rounded-3xl border border-slate-100 shadow-2xl shadow-slate-200/50 overflow-hidden" id="auth-main-card">
+        <div className="bg-[#111827] rounded-[32px] border border-white/5 shadow-2xl shadow-black/45 overflow-hidden" id="auth-main-card">
           {/* Tabs */}
-          <div className="flex border-b border-slate-100 bg-slate-50/50 p-1" id="auth-tab-bar">
+          <div className="flex border-b border-white/5 bg-[#0C111D] p-1.5" id="auth-tab-bar">
             <button
               id="tab-btn-register"
               type="button"
-              className={`flex-1 py-3.5 text-center text-sm font-semibold transition-all duration-300 rounded-2xl ${
+              className={`flex-1 py-3 text-center text-xs font-black tracking-wider uppercase transition-all duration-300 rounded-2xl cursor-pointer ${
                 isRegistering
-                  ? 'bg-white text-brand-dark shadow-sm'
-                  : 'text-slate-500 hover:text-brand-dark'
+                  ? 'bg-[#1F2937] text-white border border-white/10 shadow-sm'
+                  : 'text-slate-400 hover:text-white'
               }`}
               onClick={() => {
                 setIsRegistering(true);
@@ -321,10 +329,10 @@ export default function Auth({ onAuthSuccess }: AuthProps) {
             <button
               id="tab-btn-login"
               type="button"
-              className={`flex-1 py-3.5 text-center text-sm font-semibold transition-all duration-300 rounded-2xl ${
+              className={`flex-1 py-3 text-center text-xs font-black tracking-wider uppercase transition-all duration-300 rounded-2xl cursor-pointer ${
                 !isRegistering
-                  ? 'bg-white text-brand-dark shadow-sm'
-                  : 'text-slate-500 hover:text-brand-dark'
+                  ? 'bg-[#1F2937] text-white border border-white/10 shadow-sm'
+                  : 'text-slate-400 hover:text-white'
               }`}
               onClick={() => {
                 setIsRegistering(false);
@@ -338,32 +346,32 @@ export default function Auth({ onAuthSuccess }: AuthProps) {
           <div className="p-6 sm:p-8" id="auth-form-body">
             {error && (
               <div
-                className="p-3 mb-4 text-xs font-semibold text-red-600 bg-red-50 border border-red-100 rounded-xl flex items-center gap-2"
+                className="p-3 mb-5 text-xs font-semibold text-red-400 bg-red-950/20 border border-red-500/20 rounded-2xl flex items-center gap-2.5"
                 id="auth-error-alert"
               >
-                <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
+                <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
                 {error}
               </div>
             )}
 
             {success && (
               <div
-                className="p-3 mb-4 text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-100 rounded-xl flex items-center gap-2"
+                className="p-3 mb-5 text-xs font-semibold text-emerald-400 bg-emerald-950/20 border border-emerald-500/20 rounded-2xl flex items-center gap-2.5"
                 id="auth-success-alert"
               >
-                <Check className="w-4 h-4 text-emerald-500" />
+                <Check className="w-4 h-4 text-emerald-400" />
                 {success}
               </div>
             )}
 
-            <form onSubmit={handleAuth} className="space-y-4" id="auth-system-form">
+            <form onSubmit={handleAuth} className="space-y-5" id="auth-system-form">
               {isRegistering && (
                 <div id="field-group-name">
-                  <label htmlFor="auth-name" className="block text-xs font-semibold text-brand-dark mb-1.5">
+                  <label htmlFor="auth-name" className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">
                     Full Name
                   </label>
                   <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
                       <UserIcon className="w-4 h-4" />
                     </div>
                     <input
@@ -371,7 +379,7 @@ export default function Auth({ onAuthSuccess }: AuthProps) {
                       type="text"
                       required
                       placeholder="e.g. Marvelous John"
-                      className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-sm focus:outline-none focus:border-brand-primary focus:bg-white transition-all text-slate-800"
+                      className="w-full pl-10 pr-4 py-3 bg-[#0C111D] border border-white/5 rounded-2xl text-sm focus:outline-none focus:border-brand-primary focus:bg-[#0C111D] transition-all text-white placeholder-slate-600 font-medium"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                     />
@@ -380,11 +388,11 @@ export default function Auth({ onAuthSuccess }: AuthProps) {
               )}
 
               <div id="field-group-email">
-                <label htmlFor="auth-email" className="block text-xs font-semibold text-brand-dark mb-1.5">
+                <label htmlFor="auth-email" className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">
                   Email Address
                 </label>
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
                     <Mail className="w-4 h-4" />
                   </div>
                   <input
@@ -392,7 +400,7 @@ export default function Auth({ onAuthSuccess }: AuthProps) {
                     type="email"
                     required
                     placeholder="name@email.com"
-                    className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-sm focus:outline-none focus:border-brand-primary focus:bg-white transition-all text-slate-800"
+                    className="w-full pl-10 pr-4 py-3 bg-[#0C111D] border border-white/5 rounded-2xl text-sm focus:outline-none focus:border-brand-primary focus:bg-[#0C111D] transition-all text-white placeholder-slate-600 font-medium"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                   />
@@ -400,11 +408,11 @@ export default function Auth({ onAuthSuccess }: AuthProps) {
               </div>
 
               <div id="field-group-password">
-                <label htmlFor="auth-password" className="block text-xs font-semibold text-brand-dark mb-1.5">
+                <label htmlFor="auth-password" className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">
                   Secure Password
                 </label>
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
                     <Lock className="w-4 h-4" />
                   </div>
                   <input
@@ -412,14 +420,14 @@ export default function Auth({ onAuthSuccess }: AuthProps) {
                     type={showPassword ? 'text' : 'password'}
                     required
                     placeholder="••••••••"
-                    className="w-full pl-10 pr-10 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-sm focus:outline-none focus:border-brand-primary focus:bg-white transition-all text-slate-800"
+                    className="w-full pl-10 pr-10 py-3 bg-[#0C111D] border border-white/5 rounded-2xl text-sm focus:outline-none focus:border-brand-primary focus:bg-[#0C111D] transition-all text-white placeholder-slate-600 font-medium"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                   />
                   <button
                     type="button"
                     tabIndex={-1}
-                    className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-brand-dark"
+                    className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-500 hover:text-white transition-colors cursor-pointer"
                     onClick={() => setShowPassword(!showPassword)}
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -429,19 +437,19 @@ export default function Auth({ onAuthSuccess }: AuthProps) {
 
               {isRegistering && (
                 <div id="field-group-referral">
-                  <label htmlFor="auth-referral" className="block text-xs font-semibold text-brand-dark mb-1.5 flex items-center justify-between">
+                  <label htmlFor="auth-referral" className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5 flex items-center justify-between">
                     <span>Referral Code</span>
-                    <span className="text-[10px] text-slate-400 font-normal">Optional</span>
+                    <span className="text-[9px] text-slate-500 font-bold uppercase tracking-wider">Optional</span>
                   </label>
                   <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
                       <Gift className="w-4 h-4" />
                     </div>
                     <input
                       id="auth-referral"
                       type="text"
                       placeholder="e.g. WELCOME10"
-                      className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-sm focus:outline-none focus:border-brand-primary focus:bg-white tracking-widest uppercase transition-all text-slate-800"
+                      className="w-full pl-10 pr-4 py-3 bg-[#0C111D] border border-white/5 rounded-2xl text-sm focus:outline-none focus:border-brand-primary focus:bg-[#0C111D] tracking-widest uppercase transition-all text-white placeholder-slate-600 font-bold"
                       value={referralCode}
                       onChange={(e) => setReferralCode(e.target.value)}
                     />
@@ -452,7 +460,7 @@ export default function Auth({ onAuthSuccess }: AuthProps) {
               <button
                 id="submit-auth-btn"
                 type="submit"
-                className="w-full py-4 bg-brand-dark text-white font-semibold text-sm rounded-2xl hover:bg-brand-medium active:scale-98 transition-all inline-flex items-center justify-center gap-2 mt-2 shadow-md shadow-brand-dark/15"
+                className="w-full py-4 bg-gradient-to-r from-brand-primary to-brand-medium text-white font-extrabold text-xs tracking-widest uppercase rounded-2xl hover:brightness-110 active:scale-98 transition-all inline-flex items-center justify-center gap-2 mt-2 shadow-lg shadow-brand-primary/10 cursor-pointer"
               >
                 {isRegistering ? 'Register & Open Account' : 'Secure Log In'}
               </button>
@@ -460,24 +468,24 @@ export default function Auth({ onAuthSuccess }: AuthProps) {
 
             {/* Quick Demo Accounts */}
             {!isRegistering && (
-              <div className="mt-6 pt-5 border-t border-slate-100" id="auth-demo-section">
-                <span className="block text-[11px] font-bold text-slate-400 tracking-wider uppercase mb-2.5">
+              <div className="mt-6 pt-5 border-t border-white/5" id="auth-demo-section">
+                <span className="block text-[10px] font-bold text-slate-400 tracking-wider uppercase mb-3">
                   Quick Demo Accounts (Instant Test)
                 </span>
-                <div className="space-y-2" id="demo-buttons-list">
+                <div className="space-y-2.5" id="demo-buttons-list">
                   {demoAccounts.map((d, index) => (
                     <button
                       key={index}
                       id={`demo-btn-${index}`}
                       type="button"
                       onClick={() => handleDemoLogin(d)}
-                      className="w-full p-2.5 border border-dashed border-slate-200 hover:border-brand-primary hover:bg-sky-50/50 rounded-xl text-left text-xs text-slate-600 hover:text-brand-dark transition-all flex items-center justify-between"
+                      className="w-full p-3 bg-[#0C111D] border border-dashed border-white/10 hover:border-brand-primary hover:bg-[#111827] rounded-2xl text-left text-xs text-slate-300 hover:text-white transition-all flex items-center justify-between cursor-pointer"
                     >
                       <div className="flex flex-col">
-                        <span className="font-semibold">{d.name}</span>
-                        <span className="text-[10px] text-slate-400">{d.email}</span>
+                        <span className="font-bold text-slate-200">{d.name}</span>
+                        <span className="text-[10px] text-slate-500 mt-0.5">{d.email}</span>
                       </div>
-                      <span className="text-[10px] font-semibold text-brand-primary bg-sky-50 px-2 py-1 rounded">
+                      <span className="text-[9px] font-black tracking-wider uppercase text-brand-light bg-brand-primary/10 border border-brand-primary/20 px-2 py-1 rounded-md">
                         Use Default
                       </span>
                     </button>
@@ -489,9 +497,9 @@ export default function Auth({ onAuthSuccess }: AuthProps) {
         </div>
 
         {/* Guard message matches security guidelines of banking */}
-        <div className="flex items-center justify-center gap-2 mt-6 text-slate-400 text-xs" id="auth-guard-notice">
-          <ShieldCheck className="w-4 h-4 text-brand-primary" />
-          <span>PCI-DSS compliant encryptions protect your data</span>
+        <div className="flex items-center justify-center gap-2 mt-6 text-slate-500 text-[11px] font-semibold" id="auth-guard-notice">
+          <ShieldCheck className="w-4 h-4 text-emerald-400" />
+          <span>PCI-DSS compliant encryptions protect your session</span>
         </div>
       </div>
     </div>

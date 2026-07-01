@@ -190,26 +190,26 @@ export default function CardsPage({ user, onUpdateUser, onAddTransaction, onNavi
 
       {/* Grid: Selected Card Panel & Card Config */}
       {(user.tier || 1) < 2 ? (
-        <div className="bg-white rounded-3xl p-8 border border-slate-100 shadow-sm text-center max-w-md mx-auto my-8 space-y-5 animate-fade-in" id="cards-unverified-lock-screen">
-          <div className="w-16 h-16 bg-amber-50 rounded-full flex items-center justify-center mx-auto text-amber-550 border border-amber-100">
+        <div className="bg-[#111827] rounded-[32px] p-8 border border-white/5 shadow-2xl shadow-black/40 text-center max-w-md mx-auto my-8 space-y-6 animate-fade-in" id="cards-unverified-lock-screen">
+          <div className="w-16 h-16 bg-amber-500/10 rounded-full flex items-center justify-center mx-auto text-amber-400 border border-amber-500/20">
             <Lock className="w-7 h-7" />
           </div>
           <div className="space-y-2">
-            <h3 className="font-display font-bold text-brand-dark text-lg leading-tight">🔒 Tier 2 Verification Required</h3>
-            <p className="text-xs text-slate-500 leading-relaxed">
+            <h3 className="font-display font-bold text-white text-lg leading-tight">🔒 Tier 2 Verification Required</h3>
+            <p className="text-xs text-slate-400 leading-relaxed font-medium">
               To comply with regulatory rules, virtual debit cards and foreign dollar limits are preserved for **Tier 2 Verified** accounts.
             </p>
           </div>
-          <div className="p-3.5 bg-slate-50 rounded-2xl text-[11px] text-slate-500 text-left space-y-1 border border-slate-100 border-dashed">
-            <p className="font-bold text-slate-700">✓ Virtual Card Benefits:</p>
-            <p>• Multi-currency support for dollar shopping and utility payments</p>
-            <p>• Daily account limit upgraded to $10,000.00 / day</p>
-            <p>• Advanced freezing capability and instant ATM reset PIN operations</p>
+          <div className="p-4 bg-[#0C111D] rounded-2xl text-[11px] text-slate-400 text-left space-y-2 border border-white/5 border-dashed">
+            <p className="font-bold text-slate-200">✓ Virtual Card Benefits:</p>
+            <p className="flex items-center gap-1.5">• Multi-currency support for dollar shopping and utility payments</p>
+            <p className="flex items-center gap-1.5">• Daily account limit upgraded to $10,000.00 / day</p>
+            <p className="flex items-center gap-1.5">• Advanced freezing capability and instant ATM reset PIN operations</p>
           </div>
           <button
             type="button"
             onClick={() => onNavigateToTab?.('profile')}
-            className="w-full py-3.5 bg-brand-dark hover:bg-brand-medium text-white font-bold text-xs rounded-2xl transition-all shadow-md active:scale-98 cursor-pointer flex items-center justify-center gap-2"
+            className="w-full py-4 bg-gradient-to-r from-brand-primary to-brand-medium hover:brightness-110 text-white font-extrabold text-xs tracking-wider uppercase rounded-2xl transition-all shadow-lg shadow-brand-primary/10 active:scale-98 cursor-pointer flex items-center justify-center gap-2"
             id="cards-lock-navigate-profile-btn"
           >
             <ShieldCheck className="w-4 h-4 text-emerald-400" />

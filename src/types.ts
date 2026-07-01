@@ -11,6 +11,9 @@ export interface User {
   tier?: number;
   banned?: boolean;
   lastCheckInDate?: string;
+  purchasedBots?: string[];
+  activeBots?: string[];
+  botEarnings?: Record<string, number>;
 }
 
 export interface Transaction {

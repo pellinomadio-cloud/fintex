@@ -14,7 +14,10 @@
         "savingsBalance": { "type": "number" },
         "createdAt": { "type": "string", "format": "date-time" },
         "tier": { "type": "integer" },
-        "banned": { "type": "boolean" }
+        "banned": { "type": "boolean" },
+        "purchasedBots": { "type": "array", "items": { "type": "string" } },
+        "activeBots": { "type": "array", "items": { "type": "string" } },
+        "botEarnings": { "type": "object", "additionalProperties": { "type": "number" } }
       },
       "required": ["id", "name", "email", "referralCode", "createdAt", "balance", "savingsBalance"]
     },

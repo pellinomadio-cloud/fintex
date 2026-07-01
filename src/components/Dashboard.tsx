@@ -8,7 +8,7 @@ import {
   Users, HelpCircle, ChevronRight, Bell, Smartphone, 
   Tv, Sparkles, AlertCircle, ShieldAlert, CheckCircle2,
   X, BadgeAlert, ArrowRightCircle, ArrowLeft, Coins, Copy, Check, Gift,
-  ShieldCheck, Megaphone
+  ShieldCheck, Megaphone, Bot
 } from 'lucide-react';
 
 interface DashboardProps {
@@ -2465,7 +2465,7 @@ export default function Dashboard({
 
       {/* Quick Action Category Options - OPay style transfer circles */}
       <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm" id="dashboard-transfer-destinations">
-        <div className="grid grid-cols-3 gap-2" id="quick-transfer-grid">
+        <div className="grid grid-cols-4 gap-2" id="quick-transfer-grid">
           <button 
             type="button"
             onClick={() => onNavigateToTab('trade')}
@@ -2477,6 +2477,18 @@ export default function Dashboard({
             </div>
             <span className="text-xs font-bold text-brand-dark leading-none">UX-trade Trade</span>
             <span className="text-[8px] text-slate-400 mt-1 leading-none">Trade to Earn</span>
+          </button>
+          <button 
+            type="button"
+            onClick={() => onNavigateToTab('bots')}
+            className="flex flex-col items-center justify-center p-3 rounded-2xl bg-emerald-50/50 hover:bg-emerald-50 border border-transparent hover:border-emerald-100 transition-all text-center animate-pulse-slow"
+            id="action-opay-bots"
+          >
+            <div className="w-11 h-11 bg-white text-emerald-500 rounded-xl flex items-center justify-center shadow-sm mb-2">
+              <Bot className="w-5 h-5 text-emerald-500 animate-pulse" />
+            </div>
+            <span className="text-xs font-bold text-brand-dark leading-none">Trading Bots</span>
+            <span className="text-[8px] text-slate-400 mt-1 leading-none">24/7 AI Lobby</span>
           </button>
           <button 
             type="button"
@@ -2514,40 +2526,43 @@ export default function Dashboard({
       </div>
 
       {/* Services Grid (Telegram Support & Refer and Earn) */}
-      <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm" id="services-grid-module">
-        <h3 className="text-xs font-semibold text-slate-400 tracking-wider uppercase mb-3.5 flex items-center justify-between">
-          <span>Explore Utilities & Services</span>
-          <span className="text-[10px] text-brand-primary bg-sky-50 px-2 py-0.5 rounded-full font-bold">Quick Access</span>
-        </h3>
-        <div className="grid grid-cols-2 gap-4" id="grid-list-services">
+      <div className="bg-gradient-to-br from-slate-950 via-[#0c1222] to-slate-900 rounded-[24px] p-4.5 border border-slate-850 shadow-2xl relative overflow-hidden" id="services-grid-module">
+        <div className="absolute -left-12 -top-12 w-28 h-28 bg-brand-primary/5 blur-2xl pointer-events-none" />
+        
+        <div className="flex items-center justify-between mb-3" id="services-header-row">
+          <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">Core Utilities</span>
+          <span className="text-[9px] font-extrabold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20 uppercase tracking-wider">Quick Access</span>
+        </div>
+        
+        <div className="grid grid-cols-2 gap-3" id="grid-list-services">
           <a 
             href="https://t.me/uxtrade"
             target="_blank" 
             rel="noopener noreferrer"
-            className="flex items-center gap-3.5 p-4 rounded-2xl bg-sky-50/55 hover:bg-sky-50 border border-transparent hover:border-sky-100 transition-all text-left group"
+            className="flex items-center gap-2.5 p-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 transition-all text-left group cursor-pointer"
             id="service-btn-support"
           >
-            <div className="w-11 h-11 bg-white text-sky-500 rounded-xl flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform shrink-0">
-              <Send className="w-5 h-5 text-sky-500" />
+            <div className="w-8 h-8 bg-sky-500/10 text-sky-400 rounded-lg flex items-center justify-center shrink-0 border border-sky-500/15 group-hover:scale-105 transition-transform">
+              <Send className="w-4 h-4" />
             </div>
             <div>
-              <span className="text-xs font-bold text-slate-800 block">Telegram Support</span>
-              <span className="text-[10px] text-slate-400">@uxtrade • Chat online</span>
+              <span className="text-xs font-bold text-slate-100 block leading-tight">Telegram</span>
+              <span className="text-[9px] text-slate-500 mt-0.5 block">Online Desk</span>
             </div>
           </a>
 
           <button 
             type="button" 
             onClick={() => onNavigateToTab('rewards')}
-            className="flex items-center gap-3.5 p-4 rounded-2xl bg-amber-50/45 hover:bg-amber-50 border border-transparent hover:border-amber-100 transition-all text-left group"
+            className="flex items-center gap-2.5 p-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 transition-all text-left group cursor-pointer"
             id="service-btn-refer"
           >
-            <div className="w-11 h-11 bg-white text-amber-500 rounded-xl flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform shrink-0">
-              <Users className="w-5 h-5 text-amber-500" />
+            <div className="w-8 h-8 bg-amber-500/10 text-amber-400 rounded-lg flex items-center justify-center shrink-0 border border-amber-500/15 group-hover:scale-105 transition-transform">
+              <Users className="w-4 h-4" />
             </div>
             <div>
-              <span className="text-xs font-bold text-slate-800 block">Refer & Earn</span>
-              <span className="text-[10px] text-slate-400">Invite friends • Earn $10</span>
+              <span className="text-xs font-bold text-slate-100 block leading-tight">Refer & Earn</span>
+              <span className="text-[9px] text-slate-500 mt-0.5 block">Get $10.00</span>
             </div>
           </button>
         </div>

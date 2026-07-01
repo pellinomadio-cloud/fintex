@@ -586,39 +586,41 @@ export default function TradingPage({ user, onUpdateUser, onAddTransaction, onNa
       )}
 
       {/* Fintex Market Subheader & User Balance Indicator */}
-      <div className="bg-brand-dark rounded-3xl p-5 border border-brand-medium/20 shadow-lg text-white space-y-4" id="trading-stats-hero">
-        <div className="flex justify-between items-center">
-          <div className="flex items-center gap-1.5">
-            <div className="w-7 h-7 bg-brand-light/10 text-brand-light rounded-lg flex items-center justify-center font-bold text-xs">
+      <div className="relative bg-gradient-to-br from-slate-950 via-[#0a1120] to-slate-950 rounded-[32px] p-6 border border-white/5 shadow-2xl text-white space-y-4 overflow-hidden" id="trading-stats-hero">
+        <div className="absolute -right-12 -bottom-12 w-36 h-36 rounded-full bg-brand-primary/5 blur-2xl pointer-events-none" />
+        
+        <div className="flex justify-between items-center relative z-10">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-white/5 border border-white/10 text-brand-light rounded-xl flex items-center justify-center font-bold text-xs shadow-sm">
               📊
             </div>
             <div>
-              <span className="text-[9px] uppercase tracking-widest text-sky-205 font-bold block leading-none">UX-trade Premium</span>
-              <h1 className="font-display font-black text-sm tracking-tight mt-0.5">Forex Liquidity Hub</h1>
+              <span className="text-[8px] uppercase tracking-widest text-slate-400 font-extrabold block leading-none">UX-trade Premium</span>
+              <h1 className="font-display font-black text-sm tracking-tight mt-1 text-white">Forex Liquidity Hub</h1>
             </div>
           </div>
 
           <button 
             type="button" 
             onClick={() => onNavigateToTab('home')}
-            className="text-[10px] bg-white/10 hover:bg-white/20 px-3 py-1 rounded-full text-white font-bold transition-all"
+            className="text-[10px] font-extrabold bg-white/5 hover:bg-white/10 border border-white/10 px-3.5 py-1.5 rounded-xl text-white transition-all cursor-pointer shadow-xs uppercase tracking-wider"
           >
             ← Leave Desk
           </button>
         </div>
 
-        <div className="flex justify-between items-end border-t border-white/10 pt-3">
-          <div>
-            <span className="text-[9.5px] uppercase tracking-wider text-slate-400 block leading-none font-bold">Collateral Vault Balance</span>
-            <span className="font-sans font-black text-2xl text-white inline-block mt-1 font-sans">
+        <div className="flex justify-between items-end border-t border-white/5 pt-4 relative z-10">
+          <div className="space-y-1">
+            <span className="text-[9px] uppercase tracking-wider text-slate-500 block leading-none font-bold">Collateral Vault Balance</span>
+            <span className="font-mono font-extrabold text-2xl text-white inline-block">
               ${user.balance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </span>
           </div>
 
-          <div className="text-right">
-            <span className="text-[9.5px] uppercase tracking-wider text-slate-400 block leading-none font-bold">Leverage Ratio limit</span>
-            <span className="text-emerald-400 font-extrabold text-xs block mt-1.5">
-              1:500 Unlimited CFD
+          <div className="text-right space-y-1">
+            <span className="text-[9px] uppercase tracking-wider text-slate-500 block leading-none font-bold">Leverage Ratio limit</span>
+            <span className="text-emerald-400 font-black text-xs block font-mono">
+              1:500 CFD TIER
             </span>
           </div>
         </div>

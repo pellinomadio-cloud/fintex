@@ -8,6 +8,7 @@ import RewardsPage from './components/RewardsPage';
 import ProfilePage from './components/ProfilePage';
 import TradingPage from './components/TradingPage';
 import HistoryPage from './components/HistoryPage';
+import BotsPage from './components/BotsPage';
 import { db, auth, handleFirestoreError, OperationType } from './firebase';
 import { doc, collection, setDoc, updateDoc, onSnapshot, getDoc, getDocs } from 'firebase/firestore';
 
@@ -15,7 +16,7 @@ import { doc, collection, setDoc, updateDoc, onSnapshot, getDoc, getDocs } from 
 import { 
   Home as HomeIcon, Gift as RewardsIcon, TrendingUp as FinanceIcon, 
   CreditCard as CardsIcon, User as ProfileIcon, ShieldAlert, Sparkles,
-  Activity as TradeIcon
+  Activity as TradeIcon, Bot
 } from 'lucide-react';
 
 export default function App() {
@@ -40,13 +41,9 @@ export default function App() {
       }
     }
 
-    // Initialize dark/light mode from localStorage on load
-    const isDark = localStorage.getItem('uxtrade_dark_mode') === 'true';
-    if (isDark) {
-      document.body.classList.add('dark');
-    } else {
-      document.body.classList.remove('dark');
-    }
+    // Always force premium dark mode for a unified obsidian metallic aesthetic
+    document.body.classList.add('dark');
+    localStorage.setItem('uxtrade_dark_mode', 'true');
   }, []);
 
   // Sync state between global users list, Firestore, and current session using real-time listeners
@@ -309,16 +306,48 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col antialiased select-none" id="uxtrade-master-app">
+    <div className="min-h-screen bg-[#080C14] text-slate-100 flex flex-col antialiased select-none" id="uxtrade-master-app">
       {/* Top Banner Applet Brand Bar */}
-      <header className="fixed top-0 inset-x-0 bg-brand-dark text-white z-40 h-14 flex items-center justify-between px-4 sm:px-6 shadow-md border-b border-brand-medium/20" id="uxtrade-global-header">
-        <div className="flex items-center gap-2" id="header-brand-logo-section">
-          <div className="w-8 h-8 rounded-lg bg-white text-brand-dark flex items-center justify-center font-display font-black text-lg shadow">
-            U
+      <header className="fixed top-0 inset-x-0 bg-[#0F1524]/90 text-white z-40 h-14 flex items-center justify-between px-4 sm:px-6 shadow-lg border-b border-white/5 backdrop-blur-md" id="uxtrade-global-header">
+        <div className="flex items-center gap-2.5" id="header-brand-logo-section">
+          <div 
+            className="flex items-center gap-2 cursor-pointer" 
+            onClick={() => setActiveTab('home')}
+          >
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-primary to-brand-medium text-white flex items-center justify-center font-display font-black text-lg shadow-sm border border-white/10">
+              U
+            </div>
+            <span className="font-display font-bold tracking-tight text-base" id="header-app-brand-name">
+              UX-trade<span className="text-emerald-400 font-sans font-extrabold text-[9px] ml-1.5 uppercase tracking-wider px-1.5 py-0.5 rounded-md bg-emerald-500/10 border border-emerald-500/20">Secure</span>
+            </span>
           </div>
-          <span className="font-display font-semibold tracking-tight text-base" id="header-app-brand-name">
-            UX-trade<span className="text-brand-light font-sans font-medium text-[10px] ml-1">Secure</span>
-          </span>
+
+          <button
+            id="header-btn-bots"
+            type="button"
+            onClick={() => setActiveTab('bots')}
+            className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider flex items-center gap-1 transition-all cursor-pointer border ${
+              activeTab === 'bots'
+                ? 'bg-emerald-500 border-emerald-500 text-white shadow-md shadow-emerald-500/20'
+                : 'bg-white/5 border-white/10 text-slate-350 hover:bg-white/10'
+            }`}
+          >
+            <Bot className="w-3.5 h-3.5 animate-pulse" />
+            <span>Bots</span>
+          </button>
+
+          <button
+            id="header-btn-upgrade"
+            type="button"
+            onClick={() => {
+              setTriggerUpgrade(true);
+              setActiveTab('home');
+            }}
+            className="px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider flex items-center gap-1 transition-all cursor-pointer border bg-white/5 border-white/10 text-slate-350 hover:bg-white/10 hover:text-white"
+          >
+            <Sparkles className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
+            <span>Upgrade</span>
+          </button>
         </div>
 
         <div className="flex items-center gap-2 text-xs font-semibold text-sky-100" id="header-connection-status">
@@ -387,6 +416,14 @@ export default function App() {
               setTriggerUpgrade(true);
               setActiveTab('home');
             }}
+          />
+        )}
+        {activeTab === 'bots' && (
+          <BotsPage 
+            user={currentUser} 
+            onUpdateUser={handleUpdateUser} 
+            onAddTransaction={handleAddTransaction}
+            onNavigateToTab={(tab) => setActiveTab(tab)}
           />
         )}
       </main>
