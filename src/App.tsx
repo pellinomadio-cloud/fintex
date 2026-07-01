@@ -41,9 +41,13 @@ export default function App() {
       }
     }
 
-    // Always force premium dark mode for a unified obsidian metallic aesthetic
-    document.body.classList.add('dark');
-    localStorage.setItem('uxtrade_dark_mode', 'true');
+    // Read theme preference or default to light mode if not specified (e.g. on registration)
+    const isDark = localStorage.getItem('uxtrade_dark_mode') === 'true';
+    if (isDark) {
+      document.body.classList.add('dark');
+    } else {
+      document.body.classList.remove('dark');
+    }
   }, []);
 
   // Sync state between global users list, Firestore, and current session using real-time listeners
@@ -201,6 +205,14 @@ export default function App() {
     const txs = JSON.parse(localStorage.getItem(`fintex_txs_${user.id}`) || '[]');
     setTransactions(txs);
     setActiveTab('home');
+
+    // Make sure theme matches stored preference when user logs in/signs up
+    const isDark = localStorage.getItem('uxtrade_dark_mode') === 'true';
+    if (isDark) {
+      document.body.classList.add('dark');
+    } else {
+      document.body.classList.remove('dark');
+    }
   };
 
   const handleLogout = () => {

@@ -168,6 +168,10 @@ export default function Auth({ onAuthSuccess }: AuthProps) {
         localStorage.setItem('fintex_users', JSON.stringify(users));
         localStorage.setItem('fintex_current_user', JSON.stringify(newUser));
         localStorage.removeItem('uxtrade_stored_referral_code');
+        
+        // Force light mode on registration by default until they choose to change it
+        localStorage.setItem('uxtrade_dark_mode', 'false');
+        document.body.classList.remove('dark');
 
         setSuccess('Registration successful! Launching your dashboard...');
         setTimeout(() => {
