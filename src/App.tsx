@@ -9,7 +9,6 @@ import ProfilePage from './components/ProfilePage';
 import TradingPage from './components/TradingPage';
 import HistoryPage from './components/HistoryPage';
 import BotsPage from './components/BotsPage';
-import { AIAssistant } from './components/AIAssistant';
 import { db, auth, handleFirestoreError, OperationType } from './firebase';
 import { doc, collection, setDoc, updateDoc, onSnapshot, getDoc, getDocs } from 'firebase/firestore';
 
@@ -274,10 +273,7 @@ export default function App() {
 
   if (!currentUser) {
     return (
-      <>
-        <Auth onAuthSuccess={handleAuthSuccess} />
-        <AIAssistant />
-      </>
+      <Auth onAuthSuccess={handleAuthSuccess} />
     );
   }
 
@@ -324,9 +320,9 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-[#080C14] text-slate-100 flex flex-col antialiased select-none" id="uxtrade-master-app">
+    <div className="min-h-screen bg-[#F8FAFC] dark:bg-[#080C14] text-slate-900 dark:text-slate-100 flex flex-col antialiased select-none" id="uxtrade-master-app">
       {/* Top Banner Applet Brand Bar */}
-      <header className="fixed top-0 inset-x-0 bg-[#0F1524]/90 text-white z-40 h-14 flex items-center justify-between px-4 sm:px-6 shadow-lg border-b border-white/5 backdrop-blur-md" id="uxtrade-global-header">
+      <header className="fixed top-0 inset-x-0 bg-white dark:bg-[#0F1524]/90 text-slate-800 dark:text-white z-40 h-14 flex items-center justify-between px-4 sm:px-6 shadow-md border-b border-slate-100 dark:border-white/5 backdrop-blur-md" id="uxtrade-global-header">
         <div className="flex items-center gap-2.5" id="header-brand-logo-section">
           <div 
             className="flex items-center gap-2 cursor-pointer" 
@@ -344,14 +340,14 @@ export default function App() {
             id="header-btn-bots"
             type="button"
             onClick={() => setActiveTab('bots')}
-            className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider flex items-center gap-1 transition-all cursor-pointer border ${
+            className={`px-3 py-1.5 rounded-xl text-[10px] font-extrabold uppercase tracking-widest flex items-center gap-1.5 transition-all cursor-pointer border ${
               activeTab === 'bots'
-                ? 'bg-emerald-500 border-emerald-500 text-white shadow-md shadow-emerald-500/20'
-                : 'bg-white/5 border-white/10 text-slate-350 hover:bg-white/10'
+                ? 'bg-gradient-to-r from-violet-600 to-indigo-600 border-indigo-500 text-white shadow-lg shadow-indigo-500/30'
+                : 'bg-slate-100 dark:bg-slate-900/80 border-violet-500/20 hover:border-violet-400/50 text-violet-600 dark:text-violet-300 hover:bg-violet-50 dark:hover:bg-violet-950/20 hover:text-violet-800 dark:hover:text-violet-200'
             }`}
           >
-            <Bot className="w-3.5 h-3.5 animate-pulse" />
-            <span>Bots</span>
+            <Bot className="w-3.5 h-3.5 animate-bounce" />
+            <span>AI Bots</span>
           </button>
 
           <button
@@ -361,15 +357,15 @@ export default function App() {
               setTriggerUpgrade(true);
               setActiveTab('home');
             }}
-            className="px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider flex items-center gap-1 transition-all cursor-pointer border bg-white/5 border-white/10 text-slate-350 hover:bg-white/10 hover:text-white"
+            className="px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5 transition-all cursor-pointer border bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 border-amber-400/40 text-slate-950 shadow-md shadow-amber-500/10 hover:shadow-amber-500/25 hover:scale-[1.03]"
           >
-            <Sparkles className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
-            <span>Upgrade</span>
+            <Sparkles className="w-3.5 h-3.5 text-slate-950 animate-pulse" />
+            <span>VIP Upgrade</span>
           </button>
         </div>
 
-        <div className="flex items-center gap-2 text-xs font-semibold text-sky-100" id="header-connection-status">
-          <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+        <div className="flex items-center gap-2 text-xs font-semibold text-slate-500 dark:text-sky-100" id="header-connection-status">
+          <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
           <span>Secured Sandbox</span>
         </div>
       </header>
@@ -532,7 +528,6 @@ export default function App() {
           <span className={`text-[10px] font-bold mt-1 ${activeTab === 'profile' ? 'text-brand-dark' : 'text-slate-400'}`}>Me</span>
         </button>
       </nav>
-      <AIAssistant />
     </div>
   );
 }

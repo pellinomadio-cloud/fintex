@@ -2367,10 +2367,10 @@ export default function Dashboard({
               setAddMoneyStep('select');
               setActiveModal('add_money');
             }}
-            className="w-full py-3 bg-gradient-to-r from-white to-sky-50 text-slate-900 hover:from-sky-100 hover:to-white font-extrabold text-xs tracking-wider rounded-2xl active:scale-98 transition-all inline-flex items-center justify-center gap-2 shadow-md cursor-pointer uppercase"
+            className="w-full py-3.5 bg-gradient-to-r from-emerald-500 via-emerald-600 to-teal-600 hover:from-emerald-600 hover:via-teal-600 hover:to-teal-700 text-white font-black text-xs tracking-widest rounded-2xl active:scale-95 transition-all inline-flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/25 cursor-pointer uppercase border border-emerald-400/20"
             id="btn-add-money-modal"
           >
-            <Plus className="w-4 h-4 text-brand-primary animate-pulse" />
+            <Plus className="w-4 h-4 text-white animate-bounce" />
             Deposit
           </button>
           <button 
@@ -2379,7 +2379,7 @@ export default function Dashboard({
               setInputAmount('');
               setActiveModal('transfer');
             }}
-            className="w-full py-3 bg-white/10 hover:bg-white/15 border border-white/15 text-white font-extrabold text-xs tracking-wider rounded-2xl active:scale-98 transition-all inline-flex items-center justify-center gap-2 cursor-pointer uppercase"
+            className="w-full py-3.5 bg-white/10 hover:bg-white/15 border border-white/15 text-white font-extrabold text-xs tracking-wider rounded-2xl active:scale-98 transition-all inline-flex items-center justify-center gap-2 cursor-pointer uppercase"
             id="btn-send-money-modal"
           >
             <Send className="w-4 h-4 text-brand-light" />
@@ -2406,14 +2406,14 @@ export default function Dashboard({
           <button 
             type="button"
             onClick={() => onNavigateToTab('bots')}
-            className="flex flex-col items-center justify-center p-3 rounded-2xl bg-emerald-50/50 hover:bg-emerald-50 border border-transparent hover:border-emerald-100 transition-all text-center animate-pulse-slow"
+            className="flex flex-col items-center justify-center p-3 rounded-2xl bg-gradient-to-br from-indigo-50 to-violet-50/50 hover:from-indigo-100 hover:to-violet-100/50 border border-indigo-100/40 hover:border-indigo-300 transition-all text-center group"
             id="action-opay-bots"
           >
-            <div className="w-11 h-11 bg-white text-emerald-500 rounded-xl flex items-center justify-center shadow-sm mb-2">
-              <Bot className="w-5 h-5 text-emerald-500 animate-pulse" />
+            <div className="w-11 h-11 bg-gradient-to-r from-indigo-500 to-violet-500 text-white rounded-xl flex items-center justify-center shadow-md mb-2 group-hover:scale-105 transition-transform">
+              <Bot className="w-5 h-5 text-white animate-pulse" />
             </div>
-            <span className="text-xs font-bold text-brand-dark leading-none">Trading Bots</span>
-            <span className="text-[8px] text-slate-400 mt-1 leading-none">24/7 AI Lobby</span>
+            <span className="text-xs font-black text-indigo-950 leading-none">Trading Bots</span>
+            <span className="text-[8px] text-indigo-500/80 font-bold mt-1 leading-none">24/7 AI LOBBY</span>
           </button>
           <button 
             type="button"
@@ -2423,14 +2423,14 @@ export default function Dashboard({
               setSelectedUpgradeTier(null);
               setForceShowUpgrade(true);
             }}
-            className="flex flex-col items-center justify-center p-3 rounded-2xl bg-amber-50/50 hover:bg-amber-50 border border-transparent hover:border-amber-100 transition-all text-center"
+            className="flex flex-col items-center justify-center p-3 rounded-2xl bg-gradient-to-br from-amber-50 to-yellow-50/50 hover:from-amber-100 hover:to-yellow-100/50 border border-amber-200/40 hover:border-amber-400 transition-all text-center group"
             id="action-upgrade-tier"
           >
-            <div className="w-11 h-11 bg-white text-amber-500 rounded-xl flex items-center justify-center shadow-sm mb-2">
-              <ShieldCheck className="w-5 h-5 text-amber-500" />
+            <div className="w-11 h-11 bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 rounded-xl flex items-center justify-center shadow-md mb-2 group-hover:scale-105 transition-transform">
+              <ShieldCheck className="w-5 h-5 text-slate-950" />
             </div>
-            <span className="text-xs font-bold text-brand-dark leading-none">Upgrade Tier</span>
-            <span className="text-[8px] text-slate-400 mt-1 leading-none">Tier 2 & 3</span>
+            <span className="text-xs font-black text-amber-950 leading-none">Upgrade Tier</span>
+            <span className="text-[8px] text-amber-600/90 font-bold mt-1 leading-none">TIER 2 & 3 VIP</span>
           </button>
           <button 
             type="button"
@@ -2595,10 +2595,10 @@ export default function Dashboard({
               <button 
                 type="button"
                 onClick={() => { setInputAmount('50.00'); setActiveModal('add_money'); }} 
-                className="text-xs font-bold text-brand-primary hover:text-brand-medium inline-flex items-center gap-1 border border-sky-200 bg-sky-50 px-3 py-1.5 rounded-full"
+                className="text-xs font-extrabold text-emerald-600 hover:text-emerald-700 inline-flex items-center gap-1.5 border border-emerald-200 bg-emerald-50/70 hover:bg-emerald-50 px-4 py-2 rounded-full shadow-sm hover:scale-[1.01] transition-all cursor-pointer"
                 id="quick-fund-btn"
               >
-                Fund $50 Demo Now <ArrowUpRight className="w-3.5 h-3.5" />
+                Fund $50 Demo Now <ArrowUpRight className="w-3.5 h-3.5 text-emerald-600 animate-pulse" />
               </button>
             </div>
           </div>
