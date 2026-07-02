@@ -48,7 +48,7 @@ export default function RewardsPage({ user, onUpdateUser, onAddTransaction }: Re
           refereeName: 'David Miller',
           email: 'david.miller@gmail.com',
           date: new Date(Date.now() - 3600000 * 48).toISOString(),
-          rewardEarned: 5.00,
+          rewardEarned: 0.50,
           status: 'completed'
         };
         setDoc(doc(db, 'users', user.id, 'referrals', 'david_miller'), seed)
@@ -111,7 +111,7 @@ export default function RewardsPage({ user, onUpdateUser, onAddTransaction }: Re
     if (hasCheckedInToday) return;
 
     setClaimingStatus('Processing checkin...');
-    const rewardAmt = 0.50; // daily 50 cents
+    const rewardAmt = 0.20; // daily 20 cents
 
     setTimeout(() => {
       const updatedUser: User = {
@@ -136,7 +136,7 @@ export default function RewardsPage({ user, onUpdateUser, onAddTransaction }: Re
       setHasCheckedInToday(true);
       localStorage.setItem(`fintex_checked_in_${user.id}_${new Date().toDateString()}`, 'true');
       setClaimingStatus('');
-      alert(`Success! Daily check-in complete. You earned +$0.50 cash reward!`);
+      alert(`Success! Daily check-in complete. You earned +$0.20 cash reward!`);
     }, 800);
   };
 
@@ -284,7 +284,7 @@ export default function RewardsPage({ user, onUpdateUser, onAddTransaction }: Re
             <Sparkle className="w-4.5 h-4.5 text-brand-primary" />
             Daily Loyalty Cash Check-In
           </h3>
-          <p className="text-xs text-slate-500">Claim $0.50 cash directly into balance every 24 hours.</p>
+          <p className="text-xs text-slate-500">Claim $0.20 cash directly into balance every 24 hours.</p>
         </div>
         <button
           type="button"
@@ -297,7 +297,7 @@ export default function RewardsPage({ user, onUpdateUser, onAddTransaction }: Re
           }`}
           id="btn-daily-claim"
         >
-          {claimingStatus ? claimingStatus : hasCheckedInToday ? 'Claimed ✓' : 'Claim $0.50'}
+          {claimingStatus ? claimingStatus : hasCheckedInToday ? 'Claimed ✓' : 'Claim $0.20'}
         </button>
       </div>
 

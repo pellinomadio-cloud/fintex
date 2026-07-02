@@ -267,6 +267,7 @@ export const ALL_BOTS_DATA: TradingBot[] = [
 ];
 
 export default function BotsPage({ user, onUpdateUser, onAddTransaction, onNavigateToTab }: BotsPageProps) {
+  const [botsTab, setBotsTab] = useState<'all' | 'purchased'>('all');
   const [filterLevel, setFilterLevel] = useState<string>('All');
   const [selectedBot, setSelectedBot] = useState<TradingBot | null>(null);
   const [checkoutModalOpen, setCheckoutModalOpen] = useState<boolean>(false);
@@ -565,6 +566,9 @@ export default function BotsPage({ user, onUpdateUser, onAddTransaction, onNavig
   };
 
   const filteredBots = ALL_BOTS_DATA.filter(bot => {
+    if (botsTab === 'purchased') {
+      return purchasedBotsList.includes(bot.id);
+    }
     if (filterLevel === 'All') return true;
     if (filterLevel === 'Novice') return bot.level === 'Novice';
     if (filterLevel === 'Intermediate') return bot.level === 'Intermediate';
@@ -643,25 +647,76 @@ export default function BotsPage({ user, onUpdateUser, onAddTransaction, onNavig
         </div>
       </div>
 
-      {/* FILTERS NAVIGATION SCROLLER */}
-      <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-none" id="bots-scroller-filters">
-        {['All', 'Novice', 'Intermediate', 'Advanced', 'Expert', 'Quantum+'].map((lvl) => (
-          <button
-            key={lvl}
-            onClick={() => setFilterLevel(lvl)}
-            className={`px-3 py-1.5 rounded-xl text-[10px] font-extrabold uppercase tracking-wider border shrink-0 transition-all cursor-pointer ${
-              filterLevel === lvl 
-                ? 'bg-brand-primary border-brand-primary text-white shadow-md shadow-brand-primary/10' 
-                : 'bg-[#0f1524] border-slate-850 text-slate-400 hover:text-white'
-            }`}
-          >
-            {lvl}
-          </button>
-        ))}
+      {/* Tab Selector Segment */}
+      <div className="bg-[#0f1524] p-1 rounded-2xl border border-slate-850 flex gap-1" id="bots-lobby-tab-switcher">
+        <button
+          type="button"
+          onClick={() => setBotsTab('all')}
+          className={`flex-1 py-2 rounded-xl text-[10px] font-extrabold uppercase tracking-widest transition-all cursor-pointer text-center ${
+            botsTab === 'all'
+              ? 'bg-brand-primary border border-brand-primary/25 text-white shadow-md shadow-brand-primary/10'
+              : 'text-slate-400 hover:text-white border border-transparent'
+          }`}
+        >
+          🤖 Available Bots
+        </button>
+        <button
+          type="button"
+          onClick={() => setBotsTab('purchased')}
+          className={`flex-1 py-2 rounded-xl text-[10px] font-extrabold uppercase tracking-widest transition-all cursor-pointer text-center relative ${
+            botsTab === 'purchased'
+              ? 'bg-brand-primary border border-brand-primary/25 text-white shadow-md shadow-brand-primary/10'
+              : 'text-slate-400 hover:text-white border border-transparent'
+          }`}
+        >
+          ⚡ My Purchased ({purchasedBotsList.length})
+          {activeBotsList.length > 0 && (
+            <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" />
+          )}
+        </button>
       </div>
 
+      {/* FILTERS NAVIGATION SCROLLER */}
+      {botsTab === 'all' && (
+        <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-none animate-fade-in" id="bots-scroller-filters">
+          {['All', 'Novice', 'Intermediate', 'Advanced', 'Expert', 'Quantum+'].map((lvl) => (
+            <button
+              key={lvl}
+              onClick={() => setFilterLevel(lvl)}
+              className={`px-3 py-1.5 rounded-xl text-[10px] font-extrabold uppercase tracking-wider border shrink-0 transition-all cursor-pointer ${
+                filterLevel === lvl 
+                  ? 'bg-[#1e293b] border-slate-700 text-white shadow-md' 
+                  : 'bg-[#0f1524] border-slate-850 text-slate-400 hover:text-white'
+              }`}
+            >
+              {lvl}
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* BOT LIST CARDS */}
-      <div className="grid grid-cols-1 gap-4" id="bots-grid-wrapper">
+      {botsTab === 'purchased' && filteredBots.length === 0 ? (
+        <div className="bg-[#101524] border border-slate-850 rounded-3xl p-8 text-center space-y-4 animate-fade-in" id="empty-purchased-bots">
+          <div className="w-14 h-14 bg-slate-900/60 text-amber-500/80 rounded-2xl flex items-center justify-center mx-auto text-xl border border-white/5 shadow-inner">
+            🤖
+          </div>
+          <div className="space-y-1">
+            <h4 className="font-display font-black text-white text-xs uppercase tracking-wider">No Bots Purchased Yet</h4>
+            <p className="text-[10.5px] text-slate-400 max-w-xs mx-auto leading-normal">
+              You haven't acquired any automated intelligence contracts. Buy a trading bot using your deposit balance to start automated daily yield collection.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setBotsTab('all')}
+            className="px-5 py-2 bg-brand-primary border border-brand-primary hover:bg-brand-medium text-white font-extrabold text-[10px] rounded-xl shadow-lg transition-all cursor-pointer uppercase tracking-widest inline-block"
+          >
+            Browse Available Bots
+          </button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-4" id="bots-grid-wrapper">
         {filteredBots.map((bot) => {
           const isPurchased = purchasedBotsList.includes(bot.id);
           const isActive = activeBotsList.includes(bot.id);
@@ -782,6 +837,7 @@ export default function BotsPage({ user, onUpdateUser, onAddTransaction, onNavig
           );
         })}
       </div>
+      )}
 
       {/* REAL-TIME BOT SIGNALS LOGS */}
       <div className="bg-[#101524] rounded-3xl p-5 border border-slate-850 shadow-2xl space-y-3.5" id="bots-live-signals-module">

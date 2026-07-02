@@ -151,7 +151,7 @@ export default function Auth({ onAuthSuccess }: AuthProps) {
                 refereeName: name.trim(),
                 email: email.trim().toLowerCase(),
                 date: new Date().toISOString(),
-                rewardEarned: 5.00,
+                rewardEarned: 0.50,
                 status: 'completed'
               };
               

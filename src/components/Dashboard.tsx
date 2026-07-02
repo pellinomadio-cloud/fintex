@@ -274,7 +274,7 @@ export default function Dashboard({
       if (currentProgress >= 100) {
         clearInterval(progressInterval);
         
-        const rewardAmount = (user.tier && user.tier >= 2) ? 200.00 : 5.00;
+        const rewardAmount = 0.20;
         const updatedUser = {
           ...user,
           balance: (user.balance || 0) + rewardAmount
@@ -286,7 +286,7 @@ export default function Dashboard({
           userId: user.id,
           type: 'reward',
           amount: rewardAmount,
-          description: 'Daily Premium Reward Claim',
+          description: 'Daily Loyalty Reward Claim',
           date: new Date().toISOString(),
           status: 'completed',
           reference: 'FTX-RWD-' + Math.floor(100000 + Math.random() * 900000)
@@ -776,8 +776,7 @@ export default function Dashboard({
   const currentTxs = transactions.slice(0, 4);
 
   if (activeModal === 'transfer') {
-    const isTier1 = (user.tier || 1) < 2;
-    const isShowingUpgrade = forceShowUpgrade || isTier1;
+    const isShowingUpgrade = forceShowUpgrade;
 
     return (
       <div className="space-y-6 pb-24 animate-fade-in font-sans" id="cashout-page-view">
@@ -854,8 +853,8 @@ export default function Dashboard({
                         <div className="w-12 h-12 bg-amber-50 text-amber-500 rounded-full flex items-center justify-center mx-auto mb-2.5">
                           <ShieldAlert className="w-6 h-6" />
                         </div>
-                        <h3 className="font-display font-black text-brand-dark text-base">Verification Upgrade Required</h3>
-                        <p className="text-xs text-slate-500">Your account is currently on <strong className="text-amber-600">Tier 1</strong>. You cannot make transfers unless you upgrade.</p>
+                        <h3 className="font-display font-black text-brand-dark text-base">Upgrade Your Limits</h3>
+                        <p className="text-xs text-slate-500">Your account is currently on <strong className="text-amber-600">Tier 1</strong>. Withdrawals are unlocked (min $200), but you can upgrade to unlock higher daily transaction limits!</p>
                       </>
                     )}
                   </div>
@@ -1332,6 +1331,10 @@ export default function Dashboard({
                   setNotification("Please enter a valid amount to cash out.");
                   return;
                 }
+                if (amtUSD < 200) {
+                  setNotification("The minimum withdrawal amount is $200.00 USD.");
+                  return;
+                }
                 if (amtUSD > user.balance) {
                   setNotification(`Insufficient balance. You have $${user.balance.toFixed(2)} in your wallet.`);
                   return;
@@ -1457,9 +1460,9 @@ export default function Dashboard({
                       id="cashout-amount"
                       type="number"
                       step="0.01"
-                      min="1.00"
+                      min="200.00"
                       required
-                      placeholder={`Max: $${user.balance.toFixed(2)}`}
+                      placeholder={`Min: $200.00 | Max: $${user.balance.toFixed(2)}`}
                       className="w-full pl-8 pr-4 py-3 bg-slate-55 border border-slate-100 rounded-2xl text-sm font-semibold focus:outline-none focus:border-brand-primary focus:bg-white text-slate-800"
                       value={cashoutAmount}
                       onChange={(e) => setCashoutAmount(e.target.value)}
@@ -1491,6 +1494,10 @@ export default function Dashboard({
                 const amtUSD = parseFloat(cashoutUSDTAmount);
                 if (!amtUSD || amtUSD <= 0) {
                   setNotification("Please enter a valid USDT amount to cash out.");
+                  return;
+                }
+                if (amtUSD < 200) {
+                  setNotification("The minimum withdrawal amount is $200.00 USD.");
                   return;
                 }
                 if (amtUSD > user.balance) {
@@ -1563,9 +1570,9 @@ export default function Dashboard({
                       id="cashout-usdt-amount"
                       type="number"
                       step="0.01"
-                      min="1.00"
+                      min="200.00"
                       required
-                      placeholder={`Max: $${user.balance.toFixed(2)}`}
+                      placeholder={`Min: $200.00 | Max: $${user.balance.toFixed(2)}`}
                       className="w-full pl-8 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-semibold focus:outline-none focus:border-brand-primary focus:bg-white text-slate-800"
                       value={cashoutUSDTAmount}
                       onChange={(e) => setCashoutUSDTAmount(e.target.value)}
@@ -3010,7 +3017,7 @@ export default function Dashboard({
                     <div>
                       <h4 className="font-display font-black text-brand-dark text-base">Claim Daily Gift Reward</h4>
                       <p className="text-xs text-slate-500 mt-1 max-w-xs mx-auto leading-normal">
-                        Every 24 hours, claim your free <strong className="text-emerald-600">$5.00</strong> loyalty bonus instantly credited to your available balance.
+                        Every 24 hours, claim your free <strong className="text-emerald-600">$0.20</strong> loyalty bonus instantly credited to your available balance.
                       </p>
                     </div>
                     <button
@@ -3018,7 +3025,7 @@ export default function Dashboard({
                       onClick={handleClaimReward}
                       className="w-full py-3.5 bg-amber-500 hover:bg-amber-600 active:scale-98 text-white font-bold text-xs rounded-2xl transition-all shadow-md cursor-pointer"
                     >
-                      Claim $5.00 Cash Now 🎁
+                      Claim $0.20 Cash Now 🎁
                     </button>
                   </div>
                 )}
@@ -3049,7 +3056,7 @@ export default function Dashboard({
                           ? 'Checking local registry timestamp...' 
                           : claimProgress < 80 
                             ? 'Adding instant allocation to ledger...' 
-                            : 'Settling $5.00 safe assets...'}
+                            : 'Settling $0.20 safe assets...'}
                       </p>
                     </div>
                   </div>
@@ -3064,7 +3071,7 @@ export default function Dashboard({
                     <div>
                       <h4 className="font-display font-black text-slate-850 text-base">Congratulations!</h4>
                       <p className="text-xs text-slate-550 mt-1 leading-normal">
-                        Your free <strong className="text-emerald-600">$5.00</strong> daily reward has been deposited into your active account balance.
+                        Your free <strong className="text-emerald-600">$0.20</strong> daily reward has been deposited into your active account balance.
                       </p>
                     </div>
                     <button
