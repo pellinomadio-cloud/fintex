@@ -14,6 +14,7 @@ export interface User {
   purchasedBots?: string[];
   activeBots?: string[];
   botEarnings?: Record<string, number>;
+  joinedCommunity?: boolean;
 }
 
 export interface Transaction {

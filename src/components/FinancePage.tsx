@@ -46,6 +46,7 @@ export default function FinancePage({ user, transactions, onUpdateUser }: Financ
   const [nairaBank, setNairaBank] = useState<string>('');
   const [nairaAccountNum, setNairaAccountNum] = useState<string>('');
   const [nairaAccountNm, setNairaAccountNm] = useState<string>('');
+  const [communityLink, setCommunityLink] = useState<string>('');
   const [gatewaySuccessMsg, setGatewaySuccessMsg] = useState<string>('');
 
   // Proofs approval queue
@@ -144,17 +145,20 @@ export default function FinancePage({ user, transactions, onUpdateUser }: Financ
         setNairaBank(data.nairaBank || 'Opay Digital Bank');
         setNairaAccountNum(data.nairaAccountNum || '8062940251');
         setNairaAccountNm(data.nairaAccountNm || 'UX-trade International Hub');
+        setCommunityLink(data.communityLink || 'https://t.me/uxtrade_community');
 
         // Sync to localStorage
         localStorage.setItem('fintex_gateway_usdt', data.usdtAddr || 'TRibF41CvFeNptGPbuC5gRCfGcrqcc9XPm');
         localStorage.setItem('fintex_gateway_naira_bank', data.nairaBank || 'Opay Digital Bank');
         localStorage.setItem('fintex_gateway_naira_acc', data.nairaAccountNum || '8062940251');
         localStorage.setItem('fintex_gateway_naira_name', data.nairaAccountNm || 'UX-trade International Hub');
+        localStorage.setItem('fintex_community_link', data.communityLink || 'https://t.me/uxtrade_community');
       } else {
         setUsdtAddr(localStorage.getItem('fintex_gateway_usdt') || 'TRibF41CvFeNptGPbuC5gRCfGcrqcc9XPm');
         setNairaBank(localStorage.getItem('fintex_gateway_naira_bank') || 'Opay Digital Bank');
         setNairaAccountNum(localStorage.getItem('fintex_gateway_naira_acc') || '8062940251');
         setNairaAccountNm(localStorage.getItem('fintex_gateway_naira_name') || 'UX-trade International Hub');
+        setCommunityLink(localStorage.getItem('fintex_community_link') || 'https://t.me/uxtrade_community');
       }
     } catch (gerr) {
       console.error("Failed to fetch settings from Firestore:", gerr);
@@ -162,6 +166,7 @@ export default function FinancePage({ user, transactions, onUpdateUser }: Financ
       setNairaBank(localStorage.getItem('fintex_gateway_naira_bank') || 'Opay Digital Bank');
       setNairaAccountNum(localStorage.getItem('fintex_gateway_naira_acc') || '8062940251');
       setNairaAccountNm(localStorage.getItem('fintex_gateway_naira_name') || 'UX-trade International Hub');
+      setCommunityLink(localStorage.getItem('fintex_community_link') || 'https://t.me/uxtrade_community');
     }
   };
 
@@ -191,6 +196,7 @@ export default function FinancePage({ user, transactions, onUpdateUser }: Financ
     localStorage.setItem('fintex_gateway_naira_bank', nairaBank);
     localStorage.setItem('fintex_gateway_naira_acc', nairaAccountNum);
     localStorage.setItem('fintex_gateway_naira_name', nairaAccountNm);
+    localStorage.setItem('fintex_community_link', communityLink);
     
     try {
       await setDoc(doc(db, 'settings', 'gateways'), {
@@ -198,11 +204,12 @@ export default function FinancePage({ user, transactions, onUpdateUser }: Financ
         nairaBank,
         nairaAccountNum,
         nairaAccountNm,
+        communityLink,
         updatedAt: new Date().toISOString()
       });
-      setGatewaySuccessMsg('Payment Gateways configured globally in Firebase!');
+      setGatewaySuccessMsg('Payment Gateways and Community Link configured globally in Firebase!');
     } catch (err) {
-      console.error("Failed to save gateways to Firebase settings/gateways", err);
+      console.error("Failed to save gateways/communityLink to Firebase settings/gateways", err);
       setGatewaySuccessMsg('Gateways saved locally (offline mode fallback).');
     }
     setTimeout(() => setGatewaySuccessMsg(''), 3000);
@@ -891,6 +898,18 @@ export default function FinancePage({ user, transactions, onUpdateUser }: Financ
                     />
                   </div>
                 </div>
+              </div>
+
+              <div className="border-t border-slate-50 pt-3">
+                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-1">UXtrade Community Telegram/Channel Join Link</label>
+                <input 
+                  type="url"
+                  required
+                  placeholder="https://t.me/uxtrade_community"
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-100 rounded-2xl text-xs font-mono font-bold text-slate-800 focus:outline-none focus:bg-white focus:border-red-500"
+                  value={communityLink}
+                  onChange={(e) => setCommunityLink(e.target.value)}
+                />
               </div>
             </div>
 

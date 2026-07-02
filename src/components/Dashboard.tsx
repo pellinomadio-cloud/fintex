@@ -93,6 +93,8 @@ export default function Dashboard({
   const [gatewayNairaBank, setGatewayNairaBank] = useState<string>(() => localStorage.getItem('fintex_gateway_naira_bank') || 'Opay Digital Bank');
   const [gatewayNairaAcc, setGatewayNairaAcc] = useState<string>(() => localStorage.getItem('fintex_gateway_naira_acc') || '8062940251');
   const [gatewayNairaName, setGatewayNairaName] = useState<string>(() => localStorage.getItem('fintex_gateway_naira_name') || 'Fintex International Hub');
+  const [gatewayCommunityLink, setGatewayCommunityLink] = useState<string>(() => localStorage.getItem('fintex_community_link') || 'https://t.me/uxtrade_community');
+  const [showAdvert, setShowAdvert] = useState<boolean>(true);
 
   // Customer support global premium notifications state
   const [activeSupportMessages, setActiveSupportMessages] = useState<SupportMessage[]>([]);
@@ -165,12 +167,46 @@ export default function Dashboard({
           setGatewayNairaName(data.nairaAccountNm);
           localStorage.setItem('fintex_gateway_naira_name', data.nairaAccountNm);
         }
+        if (data.communityLink) {
+          setGatewayCommunityLink(data.communityLink);
+          localStorage.setItem('fintex_community_link', data.communityLink);
+        }
       }
     }, (err) => {
       console.warn("Failed to subscribe to payment gateways configs in Firestore settings/gateways:", err);
     });
     return () => unsub();
   }, []);
+
+  // Advert recurrence effect: if not joined, set showAdvert to true every 7 seconds
+  useEffect(() => {
+    if (user.joinedCommunity) {
+      setShowAdvert(false);
+      return;
+    }
+
+    const interval = setInterval(() => {
+      if (!user.joinedCommunity) {
+        setShowAdvert(true);
+      }
+    }, 7000);
+
+    return () => clearInterval(interval);
+  }, [user.joinedCommunity]);
+
+  // Handle join community button click
+  const handleJoinCommunity = async () => {
+    window.open(gatewayCommunityLink, '_blank');
+    try {
+      await setDoc(doc(db, 'users', user.id), { joinedCommunity: true }, { merge: true });
+      onUpdateUser({ ...user, joinedCommunity: true });
+      setShowAdvert(false);
+    } catch (err) {
+      console.error("Failed to update user joinedCommunity status in Firebase:", err);
+      onUpdateUser({ ...user, joinedCommunity: true });
+      setShowAdvert(false);
+    }
+  };
 
   // Claim Daily Rewards states
   const [claimStatus, setClaimStatus] = useState<'idle' | 'processing' | 'success' | 'already_claimed'>('idle');
@@ -2191,6 +2227,60 @@ export default function Dashboard({
           <button type="button" onClick={() => setNotification(null)} className="text-indigo-400 hover:text-indigo-600">
             <X className="w-4 h-4" />
           </button>
+        </div>
+      )}
+
+      {showAdvert && !user.joinedCommunity && (
+        <div 
+          className="relative overflow-hidden bg-gradient-to-r from-indigo-900 via-[#101524] to-indigo-950 text-white rounded-3xl p-5 border border-indigo-500/25 shadow-xl animate-fade-in space-y-3"
+          id="uxtrade-community-advert-banner"
+        >
+          {/* Animated Background Pulse decoration */}
+          <span className="absolute -right-6 -bottom-6 w-24 h-24 rounded-full bg-brand-primary/20 blur-2xl animate-pulse" />
+          <span className="absolute -left-6 -top-6 w-24 h-24 rounded-full bg-indigo-500/10 blur-2xl animate-pulse" />
+
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-2xl bg-indigo-550/20 border border-indigo-500/40 flex items-center justify-center text-xl shrink-0 animate-bounce-slow">
+                📢
+              </div>
+              <div>
+                <span className="text-[10px] font-extrabold uppercase tracking-widest text-indigo-400 bg-indigo-500/15 px-2 py-0.5 rounded-full inline-block mb-1">
+                  Official Community
+                </span>
+                <h3 className="text-sm font-black uppercase tracking-wider leading-tight text-white">
+                  Join the UXtrade Community Channel
+                </h3>
+                <p className="text-xs text-slate-300 leading-relaxed mt-0.5 max-w-md">
+                  Connect with thousands of active traders, receive exclusive daily trading insights, market analysis, and hot trading signals directly in our official channel!
+                </p>
+              </div>
+            </div>
+
+            <button 
+              type="button" 
+              onClick={() => setShowAdvert(false)}
+              className="p-1.5 hover:bg-white/10 rounded-xl text-slate-300 hover:text-white transition-all cursor-pointer shrink-0"
+              title="Dismiss advert (will reappear in 7 seconds)"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+
+          <div className="flex items-center justify-between gap-2 pt-1 border-t border-white/5">
+            <span className="text-[10px] text-indigo-300 font-mono flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping" />
+              <span>18.4K members online</span>
+            </span>
+            <button
+              type="button"
+              onClick={handleJoinCommunity}
+              className="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-black rounded-xl shadow-lg shadow-indigo-600/20 hover:shadow-indigo-500/30 transition-all uppercase tracking-wider flex items-center gap-1.5 cursor-pointer hover:scale-[1.02] active:scale-[0.98]"
+            >
+              <span>Join Channel Now</span>
+              <ArrowRightCircle className="w-4 h-4" />
+            </button>
+          </div>
         </div>
       )}
 
