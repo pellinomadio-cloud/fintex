@@ -97,27 +97,44 @@ export default function FinancePage({ user, transactions, onUpdateUser }: Financ
     }
   }, [isAdminLoggedIn]);
 
-  const loadAdminData = async () => {
-    // 1. Load users from Firestore
-    try {
-      const usersSnap = await getDocs(collection(db, 'users'));
+  // Subscribe to users and approvals in real-time when logged in as admin
+  useEffect(() => {
+    if (!isAdminLoggedIn) return;
+
+    // Listen to users collection in real-time
+    const unsubscribeUsers = onSnapshot(collection(db, 'users'), (snap) => {
       const fbUsers: User[] = [];
-      usersSnap.forEach((docSnap) => {
+      snap.forEach((docSnap) => {
         fbUsers.push(docSnap.data() as User);
       });
       if (fbUsers.length > 0) {
         setUsersList(fbUsers);
         localStorage.setItem('fintex_users', JSON.stringify(fbUsers));
-      } else {
-        const users: User[] = JSON.parse(localStorage.getItem('fintex_users') || '[]');
-        setUsersList(users);
       }
-    } catch (err) {
-      console.error("Failed to fetch users from firestore", err);
-      const users: User[] = JSON.parse(localStorage.getItem('fintex_users') || '[]');
-      setUsersList(users);
-    }
+    }, (err) => {
+      console.error("Failed to subscribe to users list:", err);
+    });
 
+    // Listen to approvals collection in real-time
+    const unsubscribeApprovals = onSnapshot(collection(db, 'approvals'), (snap) => {
+      const fbApprovals: any[] = [];
+      snap.forEach((docSnap) => {
+        fbApprovals.push(docSnap.data());
+      });
+      fbApprovals.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      setPendingApprovals(fbApprovals);
+      localStorage.setItem('fintex_pending_approvals', JSON.stringify(fbApprovals));
+    }, (err) => {
+      console.error("Failed to subscribe to approvals:", err);
+    });
+
+    return () => {
+      unsubscribeUsers();
+      unsubscribeApprovals();
+    };
+  }, [isAdminLoggedIn]);
+
+  const loadAdminData = async () => {
     // Load gateways config
     try {
       const gatewaysDoc = await getDoc(doc(db, 'settings', 'gateways'));
@@ -145,22 +162,6 @@ export default function FinancePage({ user, transactions, onUpdateUser }: Financ
       setNairaBank(localStorage.getItem('fintex_gateway_naira_bank') || 'Opay Digital Bank');
       setNairaAccountNum(localStorage.getItem('fintex_gateway_naira_acc') || '8062940251');
       setNairaAccountNm(localStorage.getItem('fintex_gateway_naira_name') || 'UX-trade International Hub');
-    }
-
-    // 2. Load pending approvals queue from Firestore
-    try {
-      const approvalsSnap = await getDocs(collection(db, 'approvals'));
-      const fbApprovals: any[] = [];
-      approvalsSnap.forEach((docSnap) => {
-        fbApprovals.push(docSnap.data());
-      });
-      fbApprovals.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-      setPendingApprovals(fbApprovals);
-      localStorage.setItem('fintex_pending_approvals', JSON.stringify(fbApprovals));
-    } catch (err) {
-      console.error("Failed to fetch approvals from firestore", err);
-      const approvals = JSON.parse(localStorage.getItem('fintex_pending_approvals') || '[]');
-      setPendingApprovals(approvals);
     }
   };
 
@@ -282,56 +283,66 @@ export default function FinancePage({ user, transactions, onUpdateUser }: Financ
   };
 
   const handleApprovePayload = async (approvalId: string) => {
-    const approvals = JSON.parse(localStorage.getItem('fintex_pending_approvals') || '[]');
-    const appIndex = approvals.findIndex((a: any) => a.id === approvalId);
-    if (appIndex === -1) return;
+    // 1. Find the approval from state or fallback
+    let approval = pendingApprovals.find((a: any) => a.id === approvalId);
+    if (!approval) {
+      const approvals = JSON.parse(localStorage.getItem('fintex_pending_approvals') || '[]');
+      approval = approvals.find((a: any) => a.id === approvalId);
+    }
+    if (!approval) {
+      alert("Approval details could not be resolved.");
+      return;
+    }
 
-    const approval = approvals[appIndex];
     if (approval.status === 'approved' || approval.status === 'rejected') {
       console.warn("Approval request already processed.");
       return;
     }
-    
-    approval.status = 'approved';
-    localStorage.setItem('fintex_pending_approvals', JSON.stringify(approvals));
 
-    // Update global approvals on Firestore
+    // 2. Direct user doc update from Firestore (no localStorage dependence!)
+    try {
+      const userRef = doc(db, 'users', approval.userId);
+      const userSnap = await getDoc(userRef);
+      if (userSnap.exists()) {
+        const u = userSnap.data() as User;
+        if (approval.type.startsWith('upgrade_tier_')) {
+          u.tier = approval.type === 'upgrade_tier_3' ? 3 : 2;
+        } else {
+          u.balance = parseFloat((u.balance + parseFloat(approval.amount)).toFixed(2));
+        }
+
+        await updateDoc(userRef, {
+          tier: u.tier || 1,
+          balance: u.balance
+        });
+
+        if (u.id === user.id && onUpdateUser) {
+          onUpdateUser(u);
+        }
+      } else {
+        console.error("User document not found in Firestore during approval.");
+      }
+    } catch (err) {
+      console.error("Failed to update user profile in Firestore", err);
+    }
+
+    // 3. Update global approval in Firestore
     try {
       await updateDoc(doc(db, 'approvals', approvalId), { status: 'approved' });
     } catch (err) {
       console.error("Failed to update approval in Firestore", err);
     }
 
-    // Update global users list
-    const list = JSON.parse(localStorage.getItem('fintex_users') || '[]');
-    const uIndex = list.findIndex((u: User) => u.id === approval.userId);
-    if (uIndex !== -1) {
-      const u = list[uIndex];
-      if (approval.type.startsWith('upgrade_tier_')) {
-        u.tier = approval.type === 'upgrade_tier_3' ? 3 : 2;
-      } else {
-        u.balance = parseFloat((u.balance + parseFloat(approval.amount)).toFixed(2));
-      }
-      list[uIndex] = u;
-      localStorage.setItem('fintex_users', JSON.stringify(list));
-      setUsersList(list);
-
-      // Sync user profile changes to Firestore
-      try {
-        await updateDoc(doc(db, 'users', u.id), {
-          tier: u.tier,
-          balance: u.balance
-        });
-      } catch (err) {
-        console.error("Failed to sync updated user in Firestore", err);
-      }
-
-      if (u.id === user.id && onUpdateUser) {
-        onUpdateUser(u);
-      }
+    // 4. Mark corresponding transaction complete in user's subcollection
+    try {
+      await updateDoc(doc(db, 'users', approval.userId, 'transactions', approval.txId), {
+        status: 'completed'
+      });
+    } catch (err) {
+      console.error("Failed to sync approved transaction in Firestore", err);
     }
 
-    // Mark corresponding transaction complete in user's index
+    // Fallback sync local storage representation
     try {
       const userTxs = JSON.parse(localStorage.getItem(`fintex_txs_${approval.userId}`) || '[]');
       const txIndex = userTxs.findIndex((t: any) => t.id === approval.txId);
@@ -339,46 +350,47 @@ export default function FinancePage({ user, transactions, onUpdateUser }: Financ
         userTxs[txIndex].status = 'completed';
         localStorage.setItem(`fintex_txs_${approval.userId}`, JSON.stringify(userTxs));
       }
-
-      // Sync transaction update to Firestore
-      try {
-        await updateDoc(doc(db, 'users', approval.userId, 'transactions', approval.txId), {
-          status: 'completed'
-        });
-      } catch (err) {
-        console.error("Failed to sync approved transaction in Firestore", err);
-      }
     } catch (e) {
       console.error(e);
     }
 
-    // Refresh display queues
-    setPendingApprovals(approvals);
     alert('Request approved successfully! Balance/Tier has been credited.');
   };
 
   const handleRejectPayload = async (approvalId: string) => {
-    const approvals = JSON.parse(localStorage.getItem('fintex_pending_approvals') || '[]');
-    const appIndex = approvals.findIndex((a: any) => a.id === approvalId);
-    if (appIndex === -1) return;
+    // 1. Find the approval from state or fallback
+    let approval = pendingApprovals.find((a: any) => a.id === approvalId);
+    if (!approval) {
+      const approvals = JSON.parse(localStorage.getItem('fintex_pending_approvals') || '[]');
+      approval = approvals.find((a: any) => a.id === approvalId);
+    }
+    if (!approval) {
+      alert("Approval details could not be resolved.");
+      return;
+    }
 
-    const approval = approvals[appIndex];
     if (approval.status === 'approved' || approval.status === 'rejected') {
       console.warn("Approval request already processed.");
       return;
     }
 
-    approval.status = 'rejected';
-    localStorage.setItem('fintex_pending_approvals', JSON.stringify(approvals));
-
-    // Update global approvals on Firestore
+    // 2. Update global approval in Firestore
     try {
       await updateDoc(doc(db, 'approvals', approvalId), { status: 'rejected' });
     } catch (err) {
       console.error("Failed to update rejected approval in Firestore", err);
     }
 
-    // Mark corresponding transaction as failed
+    // 3. Mark corresponding transaction as failed in Firestore
+    try {
+      await updateDoc(doc(db, 'users', approval.userId, 'transactions', approval.txId), {
+        status: 'failed'
+      });
+    } catch (err) {
+      console.error("Failed to sync rejected transaction in Firestore", err);
+    }
+
+    // Fallback sync local storage representation
     try {
       const userTxs = JSON.parse(localStorage.getItem(`fintex_txs_${approval.userId}`) || '[]');
       const txIndex = userTxs.findIndex((t: any) => t.id === approval.txId);
@@ -386,20 +398,10 @@ export default function FinancePage({ user, transactions, onUpdateUser }: Financ
         userTxs[txIndex].status = 'failed';
         localStorage.setItem(`fintex_txs_${approval.userId}`, JSON.stringify(userTxs));
       }
-
-      // Sync transaction update to Firestore
-      try {
-        await updateDoc(doc(db, 'users', approval.userId, 'transactions', approval.txId), {
-          status: 'failed'
-        });
-      } catch (err) {
-        console.error("Failed to sync rejected transaction in Firestore", err);
-      }
     } catch (e) {
       console.error(e);
     }
 
-    setPendingApprovals(approvals);
     alert('Payment proof rejected. Request has been cancelled.');
   };
 
