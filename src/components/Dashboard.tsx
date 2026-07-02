@@ -54,7 +54,7 @@ export default function Dashboard({
   
   // Transfer / Cashout states
   const [transferStep, setTransferStep] = useState<'select' | 'naira_form' | 'usdt_form' | 'processing_transfer'>('select');
-  const [cashoutBank, setCashoutBank] = useState<string>('OPay');
+  const [cashoutBank, setCashoutBank] = useState<string>('PalmPay');
   const [cashoutAccountNumber, setCashoutAccountNumber] = useState<string>('');
   const [cashoutAccountName, setCashoutAccountName] = useState<string>('');
   const [cashoutAmount, setCashoutAmount] = useState<string>('');
@@ -1441,6 +1441,7 @@ export default function Dashboard({
                     value={cashoutBank}
                     onChange={(e) => setCashoutBank(e.target.value)}
                   >
+                    <option value="PalmPay">PalmPay Limited</option>
                     <option value="OPay">OPay Digital Bank</option>
                     <option value="Moniepoint">Moniepoint Microfinance</option>
                     <option value="Kuda Bank">Kuda Microfinance</option>
@@ -1448,6 +1449,18 @@ export default function Dashboard({
                     <option value="Zenith Bank">Zenith Bank Plc</option>
                     <option value="Access Bank">Access Bank Plc</option>
                     <option value="United Bank for Africa (UBA)">United Bank for Africa (UBA)</option>
+                    <option value="First Bank of Nigeria (FBN)">First Bank of Nigeria (FBN)</option>
+                    <option value="Wema Bank">Wema Bank (ALAT)</option>
+                    <option value="Fidelity Bank">Fidelity Bank Plc</option>
+                    <option value="Sterling Bank">Sterling Bank Plc</option>
+                    <option value="Union Bank of Nigeria">Union Bank of Nigeria</option>
+                    <option value="Stanbic IBTC Bank">Stanbic IBTC Bank</option>
+                    <option value="First City Monument Bank (FCMB)">First City Monument Bank (FCMB)</option>
+                    <option value="Keystone Bank">Keystone Bank</option>
+                    <option value="Polaris Bank">Polaris Bank</option>
+                    <option value="Providus Bank">Providus Bank</option>
+                    <option value="Taj Bank">Taj Bank</option>
+                    <option value="Jaiz Bank">Jaiz Bank</option>
                   </select>
                 </div>
 
