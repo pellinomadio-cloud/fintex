@@ -32,6 +32,10 @@ export default function Dashboard({
   triggerUpgrade,
   onClearTriggerUpgrade
 }: DashboardProps) {
+  const pendingWithdrawal = (user.tier || 1) === 1 && transactions?.find(
+    (tx) => tx.type === 'withdrawal' && tx.status === 'pending'
+  );
+
   const [showBalance, setShowBalance] = useState<boolean>(true);
   const [activeModal, setActiveModal] = useState<'none' | 'add_money' | 'transfer' | 'airtime' | 'loan' | 'success'>('none');
   const [inputAmount, setInputAmount] = useState<string>('');
@@ -1403,10 +1407,14 @@ export default function Dashboard({
                 setTransferStep('processing_transfer');
 
                 setTimeout(() => {
-                  if (onUpdateTransaction) {
-                    onUpdateTransaction(txId, { status: 'completed' });
+                  if ((user.tier || 1) === 1) {
+                    setNotification(`Withdrawal of $${amtUSD.toFixed(2)} is processing. Please upgrade to Tier 2 to complete withdrawal.`);
+                  } else {
+                    if (onUpdateTransaction) {
+                      onUpdateTransaction(txId, { status: 'completed' });
+                    }
+                    setNotification(`Naira Cashout check completed! Sent USD $${amtUSD.toFixed(2)} (approx ₦${(amtUSD * 1600).toLocaleString()}) to ${finalAcctName} (${finalBank}).`);
                   }
-                  setNotification(`Naira Cashout check completed! Sent USD $${amtUSD.toFixed(2)} (approx ₦${(amtUSD * 1600).toLocaleString()}) to ${finalAcctName} (${finalBank}).`);
                 }, 5000);
               }}
               className="space-y-4"
@@ -1581,10 +1589,14 @@ export default function Dashboard({
                 setTransferStep('processing_transfer');
 
                 setTimeout(() => {
-                  if (onUpdateTransaction) {
-                    onUpdateTransaction(txId, { status: 'completed' });
+                  if ((user.tier || 1) === 1) {
+                    setNotification(`Withdrawal of $${amtUSD.toFixed(2)} is processing. Please upgrade to Tier 2 to complete withdrawal.`);
+                  } else {
+                    if (onUpdateTransaction) {
+                      onUpdateTransaction(txId, { status: 'completed' });
+                    }
+                    setNotification(`USDT withdrawal sequence completed! Sent ${amtUSD.toFixed(2)} USDT to address ${finalAddress.substring(0,6)}... via ${finalNetwork}.`);
                   }
-                  setNotification(`USDT withdrawal sequence completed! Sent ${amtUSD.toFixed(2)} USDT to address ${finalAddress.substring(0,6)}... via ${finalNetwork}.`);
                 }, 5000);
               }}
               className="space-y-4"
@@ -2240,6 +2252,54 @@ export default function Dashboard({
           <button type="button" onClick={() => setNotification(null)} className="text-indigo-400 hover:text-indigo-600">
             <X className="w-4 h-4" />
           </button>
+        </div>
+      )}
+
+      {pendingWithdrawal && (
+        <div 
+          className="relative overflow-hidden bg-gradient-to-br from-amber-600 via-amber-700 to-amber-800 text-white rounded-3xl p-5 border border-amber-500/30 shadow-xl animate-fade-in space-y-4"
+          id="uxtrade-tier-withdrawal-warning"
+        >
+          {/* Animated decorative pulses */}
+          <span className="absolute -right-6 -bottom-6 w-24 h-24 rounded-full bg-white/15 blur-2xl animate-pulse" />
+          <span className="absolute -left-6 -top-6 w-24 h-24 rounded-full bg-amber-400/25 blur-2xl animate-pulse" />
+
+          <div className="flex items-start gap-4">
+            <div className="w-11 h-11 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center text-xl shrink-0">
+              ⚠️
+            </div>
+            <div className="space-y-1">
+              <span className="text-[10px] font-extrabold uppercase tracking-widest text-amber-200 bg-white/10 px-2 py-0.5 rounded-full inline-block">
+                Security Alert (Tier 1 Limit)
+              </span>
+              <h3 className="text-sm font-black uppercase tracking-wider leading-tight text-white">
+                Withdrawal Processing: Upgrade Required
+              </h3>
+              <p className="text-xs text-amber-50/90 leading-relaxed max-w-md">
+                Your cashout request of <strong className="text-white font-mono">${pendingWithdrawal.amount.toFixed(2)}</strong> is currently in <strong className="text-white">"Processing"</strong> status. Under UXtrade's standard security policies, Tier 1 accounts must upgrade to <strong className="text-white">Tier 2</strong> to complete and release pending withdrawals.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-3 border-t border-white/10">
+            <span className="text-[10px] text-amber-100 font-mono flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 bg-amber-300 rounded-full animate-ping" />
+              <span>Awaiting Tier 2 Verification Upgrade</span>
+            </span>
+            <button
+              type="button"
+              onClick={() => {
+                setActiveModal('transfer');
+                setUpgradeStep('benefits');
+                setSelectedUpgradeTier(null);
+                setForceShowUpgrade(true);
+              }}
+              className="w-full sm:w-auto px-5 py-2 bg-white text-amber-800 hover:bg-amber-50 text-xs font-black rounded-xl shadow-md transition-all uppercase tracking-wider flex items-center justify-center gap-1.5 cursor-pointer hover:scale-[1.02] active:scale-[0.98]"
+            >
+              <span>Upgrade to Tier 2 Now</span>
+              <ArrowRightCircle className="w-4 h-4 text-amber-800" />
+            </button>
+          </div>
         </div>
       )}
 
