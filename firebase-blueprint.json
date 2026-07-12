@@ -117,9 +117,26 @@
         "authorName": { "type": "string" }
       },
       "required": ["id", "message", "createdAt", "expiresAt"]
+    },
+    "BankVerification": {
+      "title": "BankVerification",
+      "description": "Cache or persistent record of verified bank account names",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "bankCode": { "type": "string" },
+        "accountNumber": { "type": "string" },
+        "accountName": { "type": "string" },
+        "verifiedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "bankCode", "accountNumber", "accountName", "verifiedAt"]
     }
   },
   "firestore": {
+    "/bankVerifications/{verificationId}": {
+      "schema": "BankVerification",
+      "description": "Verified bank account cache shared across all users"
+    },
     "/users/{userId}": {
       "schema": "User",
       "description": "Main user records"

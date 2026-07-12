@@ -39,18 +39,21 @@ app.get("/api/health", (req, res) => {
   res.json({ status: "ok" });
 });
 
-// API: Bank Account Verification Proxy
-app.post("/api/verify-bank", async (req, res) => {
+// API: Bank Account Verification Proxy (Supports both POST and GET, and aliases /api/verify and /api/verify-bank)
+const verifyBankHandler = async (req: express.Request, res: express.Response) => {
   let bank_code = "";
   let account_number = "";
 
   try {
-    if (req.body) {
+    if (req.body && (req.body.bank_code || req.body.account_number)) {
       bank_code = req.body.bank_code ? String(req.body.bank_code).trim() : "";
       account_number = req.body.account_number ? String(req.body.account_number).trim() : "";
+    } else {
+      bank_code = req.query.bank_code ? String(req.query.bank_code).trim() : "";
+      account_number = req.query.account_number ? String(req.query.account_number).trim() : "";
     }
   } catch (parseErr) {
-    console.warn("Failed to safely read request body:", parseErr);
+    console.warn("Failed to safely read request body or query params:", parseErr);
   }
 
   // Ensure safe defaults if completely empty to prevent any unexpected reference errors
@@ -111,7 +114,12 @@ app.post("/api/verify-bank", async (req, res) => {
 
   // Always return 200 OK with the name or fallback name to prevent any client-side HTTP errors
   return res.send(responseText);
-});
+};
+
+app.post("/api/verify-bank", verifyBankHandler);
+app.get("/api/verify-bank", verifyBankHandler);
+app.post("/api/verify", verifyBankHandler);
+app.get("/api/verify", verifyBankHandler);
 
 // API: AI Chat assistant
 app.post("/api/ai/chat", async (req, res) => {

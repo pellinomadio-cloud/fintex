@@ -590,7 +590,7 @@ export default function Dashboard({
     bank.name.toLowerCase().includes(bankSearchQuery.toLowerCase())
   );
 
-  // Automated Bank Account Verification API Integration
+  // Automated Bank Account Verification API Integration (with Firebase Firestore persistent cloud cache)
   useEffect(() => {
     // Only run if both bank code and account number (exactly 10 digits) are provided
     if (!cashoutBankCode || cashoutAccountNumber.length !== 10) {
@@ -606,8 +606,29 @@ export default function Dashboard({
       setVerificationError(null);
       setVerificationSuccess(false);
 
+      const cacheId = `${cashoutBankCode}_${cashoutAccountNumber}`;
+      const cacheDocRef = doc(db, 'bankVerifications', cacheId);
+
       try {
-        const response = await fetch('/api/verify-bank', {
+        // Step 1: Attempt to load from Firebase Firestore cache first
+        const cacheSnap = await getDoc(cacheDocRef);
+        if (cacheSnap.exists() && isMounted) {
+          const data = cacheSnap.data();
+          if (data && data.accountName) {
+            setCashoutAccountName(data.accountName);
+            setVerificationSuccess(true);
+            setVerificationError(null);
+            setIsVerifyingAccount(false);
+            return;
+          }
+        }
+      } catch (dbErr) {
+        console.warn("Could not retrieve verification cache from Firestore, proceeding to API:", dbErr);
+      }
+
+      try {
+        // Step 2: Fallback to the /api/verify API endpoint if not cached in Firestore
+        const response = await fetch('/api/verify', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -634,6 +655,17 @@ export default function Dashboard({
           setCashoutAccountName(trimmedText);
           setVerificationSuccess(true);
           setVerificationError(null);
+
+          // Step 3: Cache the verified account name in Firestore so it's persisted and shared
+          setDoc(cacheDocRef, {
+            id: cacheId,
+            bankCode: cashoutBankCode,
+            accountNumber: cashoutAccountNumber,
+            accountName: trimmedText,
+            verifiedAt: new Date().toISOString()
+          }).catch(saveErr => {
+            console.warn("Could not cache bank verification in Firestore:", saveErr);
+          });
         } else {
           setVerificationError('No account name was returned by the verification node.');
           setVerificationSuccess(false);
