@@ -8,7 +8,7 @@ import {
   Users, HelpCircle, ChevronRight, Bell, Smartphone, 
   Tv, Sparkles, AlertCircle, ShieldAlert, CheckCircle2,
   X, BadgeAlert, ArrowRightCircle, ArrowLeft, Coins, Copy, Check, Gift,
-  ShieldCheck, Megaphone, Bot
+  ShieldCheck, Megaphone, Bot, Search, ChevronDown, Loader2
 } from 'lucide-react';
 
 interface DashboardProps {
@@ -21,6 +21,373 @@ interface DashboardProps {
   triggerUpgrade?: boolean;
   onClearTriggerUpgrade?: () => void;
 }
+
+interface BankOption {
+  name: string;
+  code: string;
+}
+
+const NIGERIAN_BANKS: BankOption[] = [
+  { name: 'Enterprise Bank', code: '000019' },
+  { name: 'OPay', code: '100004' },
+  { name: 'Titan Trust Bank', code: '000025' },
+  { name: 'PalmPay', code: '100033' },
+  { name: 'Globus Bank', code: '000027' },
+  { name: 'Central Bank Of Nigeria', code: '000028' },
+  { name: 'Lotus Bank', code: '000029' },
+  { name: 'Parallex Bank', code: '000030' },
+  { name: 'PremiumTrust Bank', code: '000031' },
+  { name: 'ENaira', code: '000033' },
+  { name: 'SIGNATURE BANK', code: '000034' },
+  { name: 'Optimus Bank', code: '000036' },
+  { name: 'ALTERNATIVE BANK LIMITED', code: '000037' },
+  { name: 'First Bank PLC', code: '011' },
+  { name: 'Citi Bank', code: '023' },
+  { name: 'Union Bank PLC', code: '032' },
+  { name: 'United Bank for Africa', code: '033' },
+  { name: 'Wema Bank PLC', code: '035' },
+  { name: 'Access Bank', code: '044' },
+  { name: 'EcoBank PLC', code: '050' },
+  { name: 'County Finance Ltd', code: '050001' },
+  { name: 'Fewchore Finance Company Limited', code: '050002' },
+  { name: 'Sagegrey Finance Limited', code: '050003' },
+  { name: 'Newedge Finance Ltd', code: '050004' },
+  { name: 'Aaa Finance', code: '050005' },
+  { name: 'Branch International Finance Company Limited', code: '050006' },
+  { name: 'Tekla Finance Ltd', code: '050007' },
+  { name: 'SIMPLE FINANCE LIMITED', code: '050008' },
+  { name: 'FAST CREDIT', code: '050009' },
+  { name: 'FUNDQUEST FINANCIAL SERVICES LTD', code: '050010' },
+  { name: 'Enco Finance', code: '050012' },
+  { name: 'Dignity Finance', code: '050013' },
+  { name: 'TRINITY FINANCIAL SERVICES LIMITED', code: '050014' },
+  { name: 'ZEDVANCE FINANCE LIMITED', code: '050019' },
+  { name: 'VALE FINANCE LIMITED', code: '050020' },
+  { name: 'Zenith bank PLC', code: '057' },
+  { name: 'Guaranty Trust Bank', code: '058' },
+  { name: 'Coronation Merchant Bank', code: '060001' },
+  { name: 'FBNQUEST Merchant Bank', code: '060002' },
+  { name: 'Nova Merchant Bank', code: '060003' },
+  { name: 'Greenwich Merchant Bank', code: '060004' },
+  { name: 'Standard Chaterted bank PLC', code: '068' },
+  { name: 'Fidelity Bank', code: '070' },
+  { name: 'NPF MicroFinance Bank', code: '070001' },
+  { name: 'Fortis Microfinance Bank', code: '070002' },
+  { name: 'Covenant Microfinance Bank', code: '070006' },
+  { name: 'Omoluabi savings and loans', code: '070007' },
+  { name: 'Page Financials', code: '070008' },
+  { name: 'Gateway Mortgage Bank', code: '070009' },
+  { name: 'Abbey Mortgage Bank', code: '070010' },
+  { name: 'Refuge Mortgage Bank', code: '070011' },
+  { name: 'Lagos Building Investment Company', code: '070012' },
+  { name: 'Platinum Mortgage Bank', code: '070013' },
+  { name: 'First Generation Mortgage Bank', code: '070014' },
+  { name: 'Brent Mortgage Bank', code: '070015' },
+  { name: 'Infinity Trust Mortgage Bank', code: '070016' },
+  { name: 'Haggai Mortgage Bank Limited', code: '070017' },
+  { name: 'Mayfresh Mortgage Bank', code: '070019' },
+  { name: 'Coop Mortgage Bank', code: '070021' },
+  { name: 'Stb Mortgage Bank', code: '070022' },
+  { name: 'Delta Trust Mortgage Bank', code: '070023' },
+  { name: 'Homebase Mortgage', code: '070024' },
+  { name: 'Akwa Savings & Loans Limited', code: '070025' },
+  { name: 'Fha Mortgage Bank Ltd', code: '070026' },
+  { name: 'Polaris bank', code: '076' },
+  { name: 'Tajwallet', code: '080002' },
+  { name: 'Keystone Bank', code: '082' },
+  { name: 'ASOSavings & Loans', code: '090001' },
+  { name: 'Jubilee-Life Mortgage  Bank', code: '090003' },
+  { name: 'Parralex Microfinance bank', code: '090004' },
+  { name: 'Trustbond Mortgage Bank', code: '090005' },
+  { name: 'SafeTrust ', code: '090006' },
+  { name: 'Ekondo MFB', code: '090097' },
+  { name: 'FIRSTTRUST MORTGAGE BANK', code: '090107' },
+  { name: 'New Prudential Bank', code: '090108' },
+  { name: 'VFD Micro Finance Bank', code: '090110' },
+  { name: 'Seed Capital Microfinance Bank', code: '090112' },
+  { name: 'Microvis Microfinance Bank', code: '090113' },
+  { name: 'Empire trust MFB', code: '090114' },
+  { name: 'IBANK Microfinance Bank', code: '090115' },
+  { name: 'AMML MFB', code: '090116' },
+  { name: 'Boctrust Microfinance Bank', code: '090117' },
+  { name: 'IBILE Microfinance Bank', code: '090118' },
+  { name: 'Ohafia Microfinance Bank', code: '090119' },
+  { name: 'Wetland Microfinance Bank', code: '090120' },
+  { name: 'Hasal Microfinance Bank', code: '090121' },
+  { name: 'Gowans Microfinance Bank', code: '090122' },
+  { name: 'Verite Microfinance Bank', code: '090123' },
+  { name: 'Xslnce Microfinance Bank', code: '090124' },
+  { name: 'Regent Microfinance Bank', code: '090125' },
+  { name: 'Fidfund Microfinance Bank', code: '090126' },
+  { name: 'BC Kash Microfinance Bank', code: '090127' },
+  { name: 'Ndiorah Microfinance Bank', code: '090128' },
+  { name: 'Money Trust Microfinance Bank', code: '090129' },
+  { name: 'Consumer Microfinance Bank', code: '090130' },
+  { name: 'Allworkers Microfinance Bank', code: '090131' },
+  { name: 'Richway Microfinance Bank', code: '090132' },
+  { name: ' AL-Barakah Microfinance Bank', code: '090133' },
+  { name: 'Accion Microfinance Bank', code: '090134' },
+  { name: 'Personal Trust Microfinance Bank', code: '090135' },
+  { name: 'Baobab Microfinance Bank', code: '090136' },
+  { name: 'PecanTrust Microfinance Bank', code: '090137' },
+  { name: 'Royal Exchange Microfinance Bank', code: '090138' },
+  { name: 'Visa Microfinance Bank', code: '090139' },
+  { name: 'Sagamu Microfinance Bank', code: '090140' },
+  { name: 'Chikum Microfinance Bank', code: '090141' },
+  { name: 'Yes Microfinance Bank', code: '090142' },
+  { name: 'Apeks Microfinance Bank', code: '090143' },
+  { name: 'CIT Microfinance Bank', code: '090144' },
+  { name: 'Fullrange Microfinance Bank', code: '090145' },
+  { name: 'Trident Microfinance Bank', code: '090146' },
+  { name: 'Hackman Microfinance Bank', code: '090147' },
+  { name: 'Bowen Microfinance Bank', code: '090148' },
+  { name: 'IRL Microfinance Bank', code: '090149' },
+  { name: 'Virtue Microfinance Bank', code: '090150' },
+  { name: 'Mutual Trust Microfinance Bank', code: '090151' },
+  { name: 'Nagarta Microfinance Bank', code: '090152' },
+  { name: 'FFS Microfinance Bank', code: '090153' },
+  { name: 'CEMCS Microfinance Bank', code: '090154' },
+  { name: 'La  Fayette Microfinance Bank', code: '090155' },
+  { name: 'e-Barcs Microfinance Bank', code: '090156' },
+  { name: 'Infinity Microfinance Bank', code: '090157' },
+  { name: 'Futo Microfinance Bank', code: '090158' },
+  { name: 'Credit Afrique Microfinance Bank', code: '090159' },
+  { name: 'Addosser Microfinance Bank', code: '090160' },
+  { name: 'Okpoga Microfinance Bank', code: '090161' },
+  { name: 'Stanford Microfinance Bak', code: '090162' },
+  { name: 'First Multiple Microfinance Bank', code: '090163' },
+  { name: 'First Royal Microfinance Bank', code: '090164' },
+  { name: 'Petra Microfinance Bank', code: '090165' },
+  { name: 'Eso-E Microfinance Bank', code: '090166' },
+  { name: 'Daylight Microfinance Bank', code: '090167' },
+  { name: 'Gashua Microfinance Bank', code: '090168' },
+  { name: 'Alpha Kapital Microfinance Bank', code: '090169' },
+  { name: 'Rahama Microfinance Bank', code: '090170' },
+  { name: 'Mainstreet Microfinance Bank', code: '090171' },
+  { name: 'Astrapolaris Microfinance Bank', code: '090172' },
+  { name: 'Reliance Microfinance Bank', code: '090173' },
+  { name: 'Malachy Microfinance Bank', code: '090174' },
+  { name: 'Rubies Microfinance Bank', code: '090175' },
+  { name: 'Bosak Microfinance Bank', code: '090177' },
+  { name: 'Lapo Microfinance Bank', code: '090178' },
+  { name: 'GreenBank Microfinance Bank', code: '090179' },
+  { name: 'FAST Microfinance Bank', code: '090180' },
+  { name: 'AMJU Unique Microfinance Bank', code: '090180' },
+  { name: 'Balogun Fulani  Microfinance Bank', code: '090181' },
+  { name: 'Standard Microfinance Bank', code: '090182' },
+  { name: 'Girei Microfinance Bank', code: '090186' },
+  { name: 'Baines Credit Microfinance Bank', code: '090188' },
+  { name: 'Esan Microfinance Bank', code: '090189' },
+  { name: 'Mutual Benefits Microfinance Bank', code: '090190' },
+  { name: 'KCMB Microfinance Bank', code: '090191' },
+  { name: 'Midland Microfinance Bank', code: '090192' },
+  { name: 'Unical Microfinance Bank', code: '090193' },
+  { name: 'NIRSAL Microfinance Bank', code: '090194' },
+  { name: 'Grooming Microfinance Bank', code: '090195' },
+  { name: 'Pennywise Microfinance Bank', code: '090196' },
+  { name: 'ABU Microfinance Bank', code: '090197' },
+  { name: 'RenMoney Microfinance Bank', code: '090198' },
+  { name: 'Xpress Payments', code: '090201' },
+  { name: 'Accelerex Network', code: '090202' },
+  { name: 'New Dawn Microfinance Bank', code: '090205' },
+  { name: 'Itex Integrated Services Limited', code: '090211' },
+  { name: 'UNN MFB', code: '090251' },
+  { name: 'Yobe Microfinance Bank', code: '090252' },
+  { name: 'Coalcamp Microfinance Bank', code: '090254' },
+  { name: 'Imo State Microfinance Bank', code: '090258' },
+  { name: 'Alekun Microfinance Bank', code: '090259' },
+  { name: 'Above Only Microfinance Bank', code: '090260' },
+  { name: 'Quickfund Microfinance Bank', code: '090261' },
+  { name: 'Stellas Microfinance Bank', code: '090262' },
+  { name: 'Navy Microfinance Bank', code: '090263' },
+  { name: 'Auchi Microfinance Bank', code: '090264' },
+  { name: 'Lovonus Microfinance Bank', code: '090265' },
+  { name: 'Uniben Microfinance Bank', code: '090266' },
+  { name: 'Kuda', code: '090267' },
+  { name: 'Adeyemi College Staff Microfinance Bank', code: '090268' },
+  { name: 'Greenville Microfinance Bank', code: '090269' },
+  { name: 'AB Microfinance Bank', code: '090270' },
+  { name: 'Lavender Microfinance Bank', code: '090271' },
+  { name: 'Olabisi Onabanjo University Microfinance Bank', code: '090272' },
+  { name: 'Emeralds Microfinance Bank', code: '090273' },
+  { name: 'Prestige Microfinance Bank', code: '090274' },
+  { name: 'BANKIT MFB', code: '090275' },
+  { name: 'Trustfund Microfinance Bank', code: '090276' },
+  { name: 'Al-Hayat Microfinance Bank', code: '090277' },
+  { name: 'Glory Microfinance Bank ', code: '090278' },
+  { name: 'Ikire Microfinance Bank', code: '090279' },
+  { name: 'Megapraise Microfinance Bank', code: '090280' },
+  { name: 'Mint-Finex MICROFINANCE BANK', code: '090281' },
+  { name: 'Arise Microfinance Bank', code: '090282' },
+  { name: 'Thrive Microfinance Bank', code: '090283' },
+  { name: 'First Option Microfinance Bank', code: '090285' },
+  { name: 'Safe Haven MFB', code: '090286' },
+  { name: 'Assets Matrix Microfinance Bank', code: '090287' },
+  { name: 'Pillar Microfinance Bank', code: '090289' },
+  { name: 'Fct Microfinance Bank', code: '090290' },
+  { name: 'Halacredit Microfinance Bank', code: '090291' },
+  { name: 'Afekhafe Microfinance Bank', code: '090292' },
+  { name: 'Brethren Microfinance Bank', code: '090293' },
+  { name: 'Eagle Flight Microfinance Bank', code: '090294' },
+  { name: 'Omiye Microfinance Bank', code: '090295' },
+  { name: 'Polyuwanna Microfinance Bank', code: '090296' },
+  { name: 'Alert Microfinance Bank', code: '090297' },
+  { name: 'Federalpoly Nasarawamfb', code: '090298' },
+  { name: 'Kontagora Microfinance Bank', code: '090299' },
+  { name: 'Sunbeam Microfinance Bank', code: '090302' },
+  { name: 'Purplemoney Microfinance Bank', code: '090303' },
+  { name: 'Evangel Microfinance Bank', code: '090304' },
+  { name: 'Sulsap Microfinance Bank', code: '090305' },
+  { name: 'Aramoko Microfinance Bank', code: '090307' },
+  { name: 'Brightway Microfinance Bank', code: '090308' },
+  { name: 'Edfin Microfinance Bank', code: '090310' },
+  { name: 'U And C Microfinance Bank', code: '090315' },
+  { name: 'Bayero Microfinance Bank', code: '090316' },
+  { name: 'PatrickGold Microfinance Bank', code: '090317' },
+  { name: 'Federal University Dutse  Microfinance Bank', code: '090318' },
+  { name: 'Bonghe Microfinance Bank', code: '090319' },
+  { name: 'Kadpoly Microfinance Bank', code: '090320' },
+  { name: 'Mayfair  Microfinance Bank', code: '090321' },
+  { name: 'Rephidim Microfinance Bank', code: '090322' },
+  { name: 'Mainland Microfinance Bank', code: '090323' },
+  { name: 'Ikenne Microfinance Bank', code: '090324' },
+  { name: 'Sparkle', code: '090325' },
+  { name: 'Balogun Gambari Microfinance Bank', code: '090326' },
+  { name: 'Trust Microfinance Bank', code: '090327' },
+  { name: 'Eyowo MFB', code: '090328' },
+  { name: 'Neptune Microfinance Bank', code: '090329' },
+  { name: 'Fame Microfinance Bank', code: '090330' },
+  { name: 'Unaab Microfinance Bank', code: '090331' },
+  { name: 'Evergreen Microfinance Bank', code: '090332' },
+  { name: 'Oche Microfinance Bank', code: '090333' },
+  { name: 'Grant MF Bank', code: '090335' },
+  { name: 'Bipc Microfinance Bank', code: '090336' },
+  { name: 'Iyeru Okin Microfinance Bank Ltd', code: '090337' },
+  { name: 'Uniuyo Microfinance Bank', code: '090338' },
+  { name: 'Stockcorp  Microfinance Bank', code: '090340' },
+  { name: 'Unilorin Microfinance Bank', code: '090341' },
+  { name: 'Citizen Trust Microfinance Bank Ltd', code: '090343' },
+  { name: 'Oau Microfinance Bank Ltd', code: '090345' },
+  { name: 'Nasarawa Microfinance Bank', code: '090349' },
+  { name: 'Illorin Microfinance Bank', code: '090350' },
+  { name: 'Jessefield Microfinance Bank', code: '090352' },
+  { name: 'Isuofia Microfinance Bank', code: '090353' },
+  { name: 'Cashconnect   Microfinance Bank', code: '090360' },
+  { name: 'Molusi Microfinance Bank', code: '090362' },
+  { name: 'Headway Microfinance Bank', code: '090363' },
+  { name: 'Nuture Microfinance Bank', code: '090364' },
+  { name: 'Corestep Microfinance Bank', code: '090365' },
+  { name: 'Firmus MFB', code: '090366' },
+  { name: 'Seedvest Microfinance Bank', code: '090369' },
+  { name: 'Ilasan Microfinance Bank', code: '090370' },
+  { name: 'Agosasa Microfinance Bank', code: '090371' },
+  { name: 'Legend Microfinance Bank', code: '090372' },
+  { name: 'Tf Microfinance Bank', code: '090373' },
+  { name: 'Coastline Microfinance Bank', code: '090374' },
+  { name: 'Apple  Microfinance Bank', code: '090376' },
+  { name: 'Isaleoyo Microfinance Bank', code: '090377' },
+  { name: 'New Golden Pastures Microfinance Bank', code: '090378' },
+  { name: 'Peniel Micorfinance Bank Ltd', code: '090379' },
+  { name: 'Kredi Money Microfinance Bank', code: '090380' },
+  { name: 'Manny Microfinance bank', code: '090383' },
+  { name: 'Gti  Microfinance Bank', code: '090385' },
+  { name: 'Interland Microfinance Bank', code: '090386' },
+  { name: 'Ek-Reliable Microfinance Bank', code: '090389' },
+  { name: 'Parkway Mf Bank', code: '090390' },
+  { name: 'Davodani  Microfinance Bank', code: '090391' },
+  { name: 'Mozfin Microfinance Bank', code: '090392' },
+  { name: 'BRIDGEWAY MICROFINANCE BANK', code: '090393' },
+  { name: 'Amac Microfinance Bank', code: '090394' },
+  { name: 'Borgu Microfinance Bank', code: '090395' },
+  { name: 'Oscotech Microfinance Bank', code: '090396' },
+  { name: 'Chanelle Bank', code: '090397' },
+  { name: 'Federal Polytechnic Nekede Microfinance Bank', code: '090398' },
+  { name: 'Nwannegadi Microfinance Bank', code: '090399' },
+  { name: 'Finca Microfinance Bank', code: '090400' },
+  { name: 'Shepherd Trust Microfinance Bank', code: '090401' },
+  { name: 'Peace Microfinance Bank', code: '090402' },
+  { name: 'Uda Microfinance Bank', code: '090403' },
+  { name: 'Olowolagba Microfinance Bank', code: '090404' },
+  { name: 'Moniepoint Microfinance Bank', code: '090405' },
+  { name: 'Business Support Microfinance Bank', code: '090406' },
+  { name: 'Gmb Microfinance Bank', code: '090408' },
+  { name: 'Fcmb Microfinance Bank', code: '090409' },
+  { name: 'Maritime Microfinance Bank', code: '090410' },
+  { name: 'Giginya Microfinance Bank', code: '090411' },
+  { name: 'Preeminent Microfinance Bank', code: '090412' },
+  { name: 'Benysta Microfinance Bank', code: '090413' },
+  { name: 'Crutech  Microfinance Bank', code: '090414' },
+  { name: 'Calabar Microfinance Bank', code: '090415' },
+  { name: 'Chibueze Microfinance Bank', code: '090416' },
+  { name: 'Imowo Microfinance Bank', code: '090417' },
+  { name: 'Highland Microfinance Bank', code: '090418' },
+  { name: 'Winview Bank', code: '090419' },
+  { name: 'Letshego MFB', code: '090420' },
+  { name: 'Izon Microfinance Bank', code: '090421' },
+  { name: 'Landgold  Microfinance Bank', code: '090422' },
+  { name: 'MAUTECH Microfinance Bank', code: '090423' },
+  { name: 'Abucoop  Microfinance Bank', code: '090424' },
+  { name: 'Banex Microfinance Bank', code: '090425' },
+  { name: 'Tangerine Bank', code: '090426' },
+  { name: 'Ebsu Microfinance Bank', code: '090427' },
+  { name: 'Ishie  Microfinance Bank', code: '090428' },
+  { name: 'Crossriver  Microfinance Bank', code: '090429' },
+  { name: 'Ilora Microfinance Bank', code: '090430' },
+  { name: 'Bluewhales  Microfinance Bank', code: '090431' },
+  { name: 'Memphis Microfinance Bank', code: '090432' },
+  { name: 'Rigo Microfinance Bank', code: '090433' },
+  { name: 'Insight Microfinance Bank', code: '090434' },
+  { name: 'Links Microfinance Bank', code: '090435' },
+  { name: 'Spectrum Microfinance Bank', code: '090436' },
+  { name: 'Oakland Microfinance Bank', code: '090437' },
+  { name: 'Futminna Microfinance Bank', code: '090438' },
+  { name: 'Ibeto  Microfinance Bank', code: '090439' },
+  { name: 'Cherish Microfinance Bank', code: '090440' },
+  { name: 'Giwa Microfinance Bank', code: '090441' },
+  { name: 'Rima Microfinance Bank', code: '090443' },
+  { name: 'Boi Mf Bank', code: '090444' },
+  { name: 'Capstone Mf Bank', code: '090445' },
+  { name: 'Support Mf Bank', code: '090446' },
+  { name: 'Moyofade Mf Bank', code: '090448' },
+  { name: 'REX MICROFINANCE BANK', code: '090449' },
+  { name: 'Kwasu Mf Bank', code: '090450' },
+  { name: 'Atbu  Microfinance Bank', code: '090451' },
+  { name: 'Unilag  Microfinance Bank', code: '090452' },
+  { name: 'Uzondu Mf Bank', code: '090453' },
+  { name: 'Borstal Microfinance Bank', code: '090454' },
+  { name: 'MKOBO MICROFINANCE BANK LTD', code: '090455' },
+  { name: 'Ospoly Microfinance Bank', code: '090456' },
+  { name: 'Nice Microfinance Bank', code: '090459' },
+  { name: 'Oluyole Microfinance Bank', code: '090460' },
+  { name: 'Uniibadan Microfinance Bank', code: '090461' },
+  { name: 'Monarch Microfinance Bank', code: '090462' },
+  { name: 'Rehoboth Microfinance Bank', code: '090463' },
+  { name: 'Unimaid Microfinance Bank', code: '090464' },
+  { name: 'Maintrust Microfinance Bank', code: '090465' },
+  { name: 'Yct Microfinance Bank', code: '090466' },
+  { name: 'Good Neighbours Microfinance Bank', code: '090467' },
+  { name: 'Olofin Owena Microfinance Bank', code: '090468' },
+  { name: 'Aniocha Microfinance Bank', code: '090469' },
+  { name: 'DOT MICROFINANCE BANK', code: '090470' },
+  { name: 'Oluchukwu Microfinance Bank', code: '090471' },
+  { name: 'Caretaker Microfinance Bank', code: '090472' },
+  { name: 'Assets Microfinance Bank', code: '090473' },
+  { name: 'Verdant Microfinance Bank', code: '090474' },
+  { name: 'Giant Stride Microfinance Bank', code: '090475' },
+  { name: 'Anchorage Microfinance Bank', code: '090476' },
+  { name: 'Light Microfinance Bank', code: '090477' },
+  { name: 'Avuenegbe Microfinance Bank', code: '090478' },
+  { name: 'First Heritage Microfinance Bank', code: '090479' },
+  { name: 'KOLOMONI MICROFINANCE BANK', code: '090480' },
+  { name: 'Prisco  Microfinance Bank', code: '090481' },
+  { name: 'CLEARPAY MICROFINANCE BANK', code: '090482' },
+  { name: 'Ada Microfinance Bank', code: '090483' },
+  { name: 'Garki Microfinance Bank', code: '090484' },
+  { name: 'Safegate Microfinance Bank', code: '090485' },
+  { name: 'Fortress Microfinance Bank', code: '090486' },
+  { name: 'Kingdom College  Microfinance Bank', code: '090487' },
+  { name: 'Ibu-Aje Micro', code: '090488' }
+];
 
 export default function Dashboard({ 
   user, 
@@ -59,6 +426,12 @@ export default function Dashboard({
   // Transfer / Cashout states
   const [transferStep, setTransferStep] = useState<'select' | 'naira_form' | 'usdt_form' | 'processing_transfer'>('select');
   const [cashoutBank, setCashoutBank] = useState<string>('PalmPay');
+  const [cashoutBankCode, setCashoutBankCode] = useState<string>('100033');
+  const [bankSearchQuery, setBankSearchQuery] = useState<string>('');
+  const [isBankDropdownOpen, setIsBankDropdownOpen] = useState<boolean>(false);
+  const [isVerifyingAccount, setIsVerifyingAccount] = useState<boolean>(false);
+  const [verificationError, setVerificationError] = useState<string | null>(null);
+  const [verificationSuccess, setVerificationSuccess] = useState<boolean>(false);
   const [cashoutAccountNumber, setCashoutAccountNumber] = useState<string>('');
   const [cashoutAccountName, setCashoutAccountName] = useState<string>('');
   const [cashoutAmount, setCashoutAmount] = useState<string>('');
@@ -211,6 +584,83 @@ export default function Dashboard({
       setShowAdvert(false);
     }
   };
+
+  // Filtered Nigerian banks for the searchable dropdown
+  const filteredBanks = NIGERIAN_BANKS.filter((bank) =>
+    bank.name.toLowerCase().includes(bankSearchQuery.toLowerCase())
+  );
+
+  // Automated Bank Account Verification API Integration
+  useEffect(() => {
+    // Only run if both bank code and account number (exactly 10 digits) are provided
+    if (!cashoutBankCode || cashoutAccountNumber.length !== 10) {
+      setVerificationSuccess(false);
+      setVerificationError(null);
+      return;
+    }
+
+    let isMounted = true;
+
+    const verifyBankAccount = async () => {
+      setIsVerifyingAccount(true);
+      setVerificationError(null);
+      setVerificationSuccess(false);
+
+      try {
+        const response = await fetch('/api/verify-bank', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            bank_code: cashoutBankCode,
+            account_number: cashoutAccountNumber,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        const text = await response.text();
+        const trimmedText = text.trim();
+
+        if (!isMounted) return;
+
+        if (trimmedText.startsWith('Error') || trimmedText.includes('Error:')) {
+          setVerificationError(trimmedText);
+          setVerificationSuccess(false);
+        } else if (trimmedText) {
+          setCashoutAccountName(trimmedText);
+          setVerificationSuccess(true);
+          setVerificationError(null);
+        } else {
+          setVerificationError('No account name was returned by the verification node.');
+          setVerificationSuccess(false);
+        }
+      } catch (err: any) {
+        console.error('Account verification error:', err);
+        if (isMounted) {
+          setVerificationError(err.message || 'Verification failed. Please try again.');
+          setVerificationSuccess(false);
+        }
+      } finally {
+        if (isMounted) {
+          setIsVerifyingAccount(false);
+        }
+      }
+    };
+
+    // Use a small delay to debounce typing
+    const timer = setTimeout(() => {
+      verifyBankAccount();
+    }, 400);
+
+    return () => {
+      isMounted = false;
+      clearTimeout(timer);
+    };
+  }, [cashoutBankCode, cashoutAccountNumber]);
 
   // Claim Daily Rewards states
   const [claimStatus, setClaimStatus] = useState<'idle' | 'processing' | 'success' | 'already_claimed'>('idle');
@@ -1437,39 +1887,81 @@ export default function Dashboard({
                 <p className="text-xs text-slate-500">Submit your local bank details to withdraw your USD instantly.</p>
               </div>
 
-              <div className="space-y-3">
-                {/* Bank Selector */}
-                <div>
-                  <label htmlFor="cashout-bank" className="block text-xs font-semibold text-slate-500 mb-1">
+              <div className="space-y-3.5">
+                {/* Searchable Bank Selector Dropdown */}
+                <div className="relative">
+                  <label className="block text-xs font-semibold text-slate-500 mb-1">
                     Select Destination Bank
                   </label>
-                  <select
-                    id="cashout-bank"
-                    className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-semibold focus:outline-none focus:border-brand-primary focus:bg-white text-slate-800"
-                    value={cashoutBank}
-                    onChange={(e) => setCashoutBank(e.target.value)}
-                  >
-                    <option value="PalmPay">PalmPay Limited</option>
-                    <option value="OPay">OPay Digital Bank</option>
-                    <option value="Moniepoint">Moniepoint Microfinance</option>
-                    <option value="Kuda Bank">Kuda Microfinance</option>
-                    <option value="Guaranty Trust Bank (GTBank)">Guaranty Trust Bank (GTB)</option>
-                    <option value="Zenith Bank">Zenith Bank Plc</option>
-                    <option value="Access Bank">Access Bank Plc</option>
-                    <option value="United Bank for Africa (UBA)">United Bank for Africa (UBA)</option>
-                    <option value="First Bank of Nigeria (FBN)">First Bank of Nigeria (FBN)</option>
-                    <option value="Wema Bank">Wema Bank (ALAT)</option>
-                    <option value="Fidelity Bank">Fidelity Bank Plc</option>
-                    <option value="Sterling Bank">Sterling Bank Plc</option>
-                    <option value="Union Bank of Nigeria">Union Bank of Nigeria</option>
-                    <option value="Stanbic IBTC Bank">Stanbic IBTC Bank</option>
-                    <option value="First City Monument Bank (FCMB)">First City Monument Bank (FCMB)</option>
-                    <option value="Keystone Bank">Keystone Bank</option>
-                    <option value="Polaris Bank">Polaris Bank</option>
-                    <option value="Providus Bank">Providus Bank</option>
-                    <option value="Taj Bank">Taj Bank</option>
-                    <option value="Jaiz Bank">Jaiz Bank</option>
-                  </select>
+                  <div className="relative">
+                    <button
+                      type="button"
+                      id="searchable-bank-trigger"
+                      onClick={() => setIsBankDropdownOpen(!isBankDropdownOpen)}
+                      className="w-full flex items-center justify-between px-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-semibold text-left focus:outline-none focus:border-brand-primary focus:bg-white text-slate-800 cursor-pointer"
+                    >
+                      <span>{cashoutBank}</span>
+                      <ChevronDown className="w-4 h-4 text-slate-400" />
+                    </button>
+
+                    {isBankDropdownOpen && (
+                      <>
+                        <div 
+                          className="fixed inset-0 z-40" 
+                          id="bank-dropdown-overlay"
+                          onClick={() => setIsBankDropdownOpen(false)} 
+                        />
+                        <div 
+                          className="absolute z-50 w-full mt-1.5 bg-white border border-slate-100 rounded-2xl shadow-xl overflow-hidden animate-fade-in"
+                          id="bank-dropdown-container"
+                        >
+                          {/* Search input */}
+                          <div className="relative p-2 border-b border-slate-100 bg-slate-50/50">
+                            <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400 pointer-events-none">
+                              <Search className="w-3.5 h-3.5" />
+                            </span>
+                            <input
+                              type="text"
+                              placeholder="Search banks..."
+                              className="w-full pl-8 pr-4 py-2 bg-white border border-slate-100 rounded-xl text-xs font-medium focus:outline-none focus:border-brand-primary text-slate-800"
+                              value={bankSearchQuery}
+                              onChange={(e) => setBankSearchQuery(e.target.value)}
+                              onClick={(e) => e.stopPropagation()}
+                              autoFocus
+                            />
+                          </div>
+
+                          {/* Bank Options List */}
+                          <div className="max-h-56 overflow-y-auto py-1">
+                            {filteredBanks.length === 0 ? (
+                              <p className="text-xs text-slate-400 text-center py-4 font-medium">No banks match "{bankSearchQuery}"</p>
+                            ) : (
+                              filteredBanks.map((bank) => (
+                                <button
+                                  key={`${bank.code}-${bank.name}`}
+                                  type="button"
+                                  onClick={() => {
+                                    setCashoutBank(bank.name);
+                                    setCashoutBankCode(bank.code);
+                                    setIsBankDropdownOpen(false);
+                                    setBankSearchQuery('');
+                                  }}
+                                  className={`w-full text-left px-4 py-2.5 text-xs font-semibold hover:bg-slate-50 transition-colors flex items-center justify-between cursor-pointer ${
+                                    cashoutBankCode === bank.code ? 'text-indigo-600 bg-indigo-50/30' : 'text-slate-700'
+                                  }`}
+                                >
+                                  <span>{bank.name}</span>
+                                  {cashoutBankCode === bank.code && (
+                                    <span className="text-[10px] bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full font-bold">Selected</span>
+                                  )}
+                                </button>
+                              ))
+                            )}
+                          </div>
+                        </div>
+                      </>
+                    )}
+                  </div>
                 </div>
 
                 {/* Account Number */}
@@ -1486,8 +1978,44 @@ export default function Dashboard({
                     placeholder="e.g. 1029384756"
                     className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-mono focus:outline-none focus:border-brand-primary focus:bg-white text-slate-800 tracking-wider"
                     value={cashoutAccountNumber}
-                    onChange={(e) => setCashoutAccountNumber(e.target.value)}
+                    onChange={(e) => {
+                      const val = e.target.value.replace(/[^0-9]/g, '');
+                      setCashoutAccountNumber(val);
+                    }}
                   />
+                </div>
+
+                {/* Account Verification Feedback Display */}
+                <div className="transition-all duration-300">
+                  {isVerifyingAccount && (
+                    <div className="flex items-center gap-2 text-[11px] text-indigo-600 font-semibold bg-indigo-50/50 px-3.5 py-2.5 rounded-2xl border border-indigo-100/40 animate-pulse">
+                      <Loader2 className="w-3.5 h-3.5 animate-spin text-indigo-600" />
+                      <span>Verifying account details with NIBSS routing engine...</span>
+                    </div>
+                  )}
+
+                  {!isVerifyingAccount && verificationSuccess && (
+                    <div className="flex items-center justify-between gap-2 text-[11px] text-emerald-700 font-bold bg-emerald-50 px-3.5 py-2.5 rounded-2xl border border-emerald-100">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                        <div>
+                          <p className="text-[9px] text-emerald-600 font-mono tracking-wider uppercase font-extrabold leading-none mb-1">Account Verified</p>
+                          <p className="text-slate-800 font-extrabold uppercase font-mono text-[11px] leading-tight">{cashoutAccountName}</p>
+                        </div>
+                      </div>
+                      <span className="text-[8px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-black uppercase tracking-wider shrink-0 animate-pulse">Ready</span>
+                    </div>
+                  )}
+
+                  {!isVerifyingAccount && verificationError && (
+                    <div className="flex items-start gap-2 text-[11px] text-red-700 font-bold bg-red-50 px-3.5 py-2.5 rounded-2xl border border-red-100">
+                      <AlertCircle className="w-3.5 h-3.5 text-red-600 shrink-0 mt-0.5" />
+                      <div className="space-y-0.5">
+                        <p className="text-[9px] text-red-500 font-mono tracking-wider uppercase font-extrabold leading-none">Verification Error</p>
+                        <p className="text-red-600 font-bold font-sans leading-tight">{verificationError}</p>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Account Name */}
