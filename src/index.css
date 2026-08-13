@@ -141,3 +141,17 @@ body.dark .text-brand-primary {
 .animate-pulse-subtle {
   animation: pulse-subtle 3s infinite ease-in-out;
 }
+
+@keyframes progress5s {
+  0% { width: 0%; }
+  100% { width: 100%; }
+}
+
+@keyframes popup-slide-down {
+  0% { opacity: 0; transform: translateY(-8px) scale(0.98); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.animate-popup-slide {
+  animation: popup-slide-down 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}

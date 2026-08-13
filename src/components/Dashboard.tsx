@@ -390,6 +390,39 @@ const NIGERIAN_BANKS: BankOption[] = [
   { name: 'Ibu-Aje Micro', code: '090488' }
 ];
 
+interface CashoutTestimony {
+  id: string;
+  name: string;
+  amountFormatted: string;
+  type: 'naira' | 'usd';
+  destination: string;
+  location: string;
+  timeAgo: string;
+}
+
+const CASHOUT_TESTIMONIES: CashoutTestimony[] = [
+  { id: '1', name: 'Chinedu O.', amountFormatted: '₦320,000.00', type: 'naira', destination: 'Kuda MFB', location: 'Lagos, NG', timeAgo: 'Just now' },
+  { id: '2', name: 'Blessing M.', amountFormatted: '$450.00 USDT', type: 'usd', destination: 'Binance TRC20', location: 'Abuja, NG', timeAgo: '2s ago' },
+  { id: '3', name: 'Tunde A.', amountFormatted: '₦580,000.00', type: 'naira', destination: 'Moniepoint MFB', location: 'Ibadan, NG', timeAgo: 'Just now' },
+  { id: '4', name: 'Sarah W.', amountFormatted: '$1,200.00 USD', type: 'usd', destination: 'USDT TRC20 Wallet', location: 'Port Harcourt, NG', timeAgo: '3s ago' },
+  { id: '5', name: 'Amina B.', amountFormatted: '₦215,000.00', type: 'naira', destination: 'OPay Bank', location: 'Kano, NG', timeAgo: 'Just now' },
+  { id: '6', name: 'David K.', amountFormatted: '$850.00 USDT', type: 'usd', destination: 'Bybit Crypto Wallet', location: 'Enugu, NG', timeAgo: '1s ago' },
+  { id: '7', name: 'Emmanuel N.', amountFormatted: '₦460,000.00', type: 'naira', destination: 'GTBank PLC', location: 'Asaba, NG', timeAgo: 'Just now' },
+  { id: '8', name: 'Funke I.', amountFormatted: '₦195,000.00', type: 'naira', destination: 'PalmPay', location: 'Abeokuta, NG', timeAgo: '4s ago' },
+  { id: '9', name: 'Michael R.', amountFormatted: '$2,500.00 USD', type: 'usd', destination: 'Trust Wallet ERC20', location: 'Accra, GH', timeAgo: 'Just now' },
+  { id: '10', name: 'Ibrahim S.', amountFormatted: '₦720,000.00', type: 'naira', destination: 'First Bank PLC', location: 'Kaduna, NG', timeAgo: '2s ago' },
+  { id: '11', name: 'Chioma E.', amountFormatted: '₦340,000.00', type: 'naira', destination: 'Zenith Bank', location: 'Owerri, NG', timeAgo: 'Just now' },
+  { id: '12', name: 'Kelvin T.', amountFormatted: '$650.00 USDT', type: 'usd', destination: 'OKX Wallet', location: 'Benin City, NG', timeAgo: '1s ago' },
+  { id: '13', name: 'Grace A.', amountFormatted: '₦180,000.00', type: 'naira', destination: 'Access Bank', location: 'Calabar, NG', timeAgo: 'Just now' },
+  { id: '14', name: 'Victor U.', amountFormatted: '$1,800.00 USD', type: 'usd', destination: 'Coinbase Wallet', location: 'Warri, NG', timeAgo: '3s ago' },
+  { id: '15', name: 'Fatima Y.', amountFormatted: '₦950,000.00', type: 'naira', destination: 'UBA PLC', location: 'Jos, NG', timeAgo: 'Just now' },
+  { id: '16', name: 'Usman K.', amountFormatted: '₦260,000.00', type: 'naira', destination: 'Stanbic IBTC', location: 'Sokoto, NG', timeAgo: 'Just now' },
+  { id: '17', name: 'Jennifer O.', amountFormatted: '$920.00 USDT', type: 'usd', destination: 'Kraken Wallet', location: 'Lagos, NG', timeAgo: '2s ago' },
+  { id: '18', name: 'Babajide R.', amountFormatted: '₦610,000.00', type: 'naira', destination: 'Fidelity Bank', location: 'Akure, NG', timeAgo: 'Just now' },
+  { id: '19', name: 'Sandra P.', amountFormatted: '$3,400.00 USD', type: 'usd', destination: 'USDT TRC20 Wallet', location: 'Nairobi, KE', timeAgo: 'Just now' },
+  { id: '20', name: 'Suleiman H.', amountFormatted: '₦410,000.00', type: 'naira', destination: 'Sterling Bank', location: 'Ilorin, NG', timeAgo: '1s ago' }
+];
+
 export default function Dashboard({ 
   user, 
   onUpdateUser, 
@@ -413,6 +446,18 @@ export default function Dashboard({
   const [inputCarrier, setInputCarrier] = useState<string>('Airtel Network');
   const [notification, setNotification] = useState<string | null>(null);
   const [primaryCurrency, setPrimaryCurrency] = useState<'USD' | 'NGN'>('USD');
+  
+  // Cashout testimony pop-up timer (changes every 5 seconds)
+  const [testimonyIndex, setTestimonyIndex] = useState<number>(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTestimonyIndex((prev) => (prev + 1) % CASHOUT_TESTIMONIES.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const currentTestimony = CASHOUT_TESTIMONIES[testimonyIndex];
   
   // Multi-step deposit states
   const [addMoneyStep, setAddMoneyStep] = useState<'select' | 'usdt_input' | 'usdt_address' | 'naira_transfer' | 'card_deposit' | 'processing_usdt'>('select');
@@ -2872,7 +2917,78 @@ export default function Dashboard({
   const todayFormatted = new Date().toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short' });
 
   return (
-    <div className="space-y-5 pb-28 font-sans" id="dashboard-tab-content">
+    <div className="space-y-4 pb-28 font-sans" id="dashboard-tab-content">
+      {/* Dynamic Live Cashout Testimony Popup (Changes every 5 seconds) */}
+      <div 
+        key={`testimony-${currentTestimony.id}-${testimonyIndex}`}
+        className="bg-gradient-to-r from-emerald-950/95 via-[#0d1627] to-slate-950 border border-emerald-500/40 shadow-[0_4px_22px_rgba(16,185,129,0.22)] rounded-2xl p-3 relative overflow-hidden backdrop-blur-md animate-popup-slide text-white"
+        id="live-cashout-testimony-popup"
+      >
+        {/* Subtle background glow effect */}
+        <div className="absolute -right-6 -top-6 w-28 h-28 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none" />
+        <div className="absolute -left-6 -bottom-6 w-24 h-24 bg-amber-500/10 rounded-full blur-xl pointer-events-none" />
+
+        <div className="flex items-center justify-between gap-2.5 relative z-10">
+          {/* Left Side: Avatar/Currency Icon & Details */}
+          <div className="flex items-center gap-2.5 min-w-0">
+            {/* Currency Type Shield Badge */}
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-black text-base shrink-0 shadow-inner border ${
+              currentTestimony.type === 'naira' 
+                ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-400' 
+                : 'bg-amber-500/20 border-amber-500/40 text-amber-400'
+            }`}>
+              {currentTestimony.type === 'naira' ? '₦' : '$'}
+            </div>
+
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <span className="text-xs font-black text-white tracking-tight truncate flex items-center gap-1">
+                  {currentTestimony.name}
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 inline shrink-0" />
+                </span>
+                <span className="inline-flex items-center gap-1 text-[9px] bg-slate-800/90 text-slate-200 border border-slate-700/80 px-2 py-0.5 rounded-full font-bold">
+                  {currentTestimony.type === 'naira' ? '🏦' : '⚡'} {currentTestimony.destination}
+                </span>
+              </div>
+              
+              <div className="flex items-center gap-1.5 text-[10px] text-slate-400 mt-0.5 font-medium">
+                <span className="flex items-center gap-1 text-emerald-400 font-bold shrink-0">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+                  Live Cashout
+                </span>
+                <span className="text-slate-600">•</span>
+                <span className="truncate">{currentTestimony.location}</span>
+                <span className="text-slate-600">•</span>
+                <span className="text-slate-300 font-mono shrink-0">{currentTestimony.timeAgo}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Side: Cash Amount & Verified Stamp */}
+          <div className="text-right shrink-0">
+            <div className={`font-mono font-black text-sm sm:text-base tracking-tight ${
+              currentTestimony.type === 'naira' ? 'text-emerald-400 drop-shadow-[0_0_8px_rgba(52,211,153,0.3)]' : 'text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.3)]'
+            }`}>
+              {currentTestimony.amountFormatted}
+            </div>
+            <div className="inline-flex items-center gap-1 bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-[8px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full mt-0.5">
+              <ShieldCheck className="w-2.5 h-2.5 text-emerald-400" />
+              <span>PAID OUT</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Live 5-Second Timer Bar at Bottom */}
+        <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-slate-900/90 overflow-hidden">
+          <div 
+            className="h-full bg-gradient-to-r from-emerald-500 via-amber-400 to-emerald-400"
+            style={{
+              animation: 'progress5s 5s linear infinite'
+            }}
+          />
+        </div>
+      </div>
+
       {/* Top Bar matching screenshot: Logo Left | Avatar & Bell Right */}
       <div className="flex items-center justify-between" id="user-header-profile-bar">
         {/* Left Cardano/App Icon Logo */}
