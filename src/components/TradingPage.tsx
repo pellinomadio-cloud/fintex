@@ -231,21 +231,70 @@ export default function TradingPage({ user, onUpdateUser, onAddTransaction, onNa
   const renderSmoothChart = () => {
     const width = 360;
     const height = 260;
-    const padX = 20;
-    const padY = 30;
+    const padY = 35;
 
-    // Fixed realistic point curve matching the image visually:
-    // Peaks and valleys: start mid-low, spike high, drop low to target point, rise up, double peak, drop down to NOW.
+    // Check if there is an active position for the currently selected asset
+    const activeTradeForAsset = activeTrades.find(t => t.asset === currentAsset.symbol);
+
+    let livePnL = 0;
+    let livePnlPct = 0;
+    let isInProfit = true;
+    let lineStrokeColor = "#E2E8F0"; // Default smooth white
+    let lineGlowColor = "#FFFFFF";
+
+    if (activeTradeForAsset) {
+      const priceDiff = currentAsset.price - activeTradeForAsset.entryPrice;
+      const rawRatio = priceDiff / activeTradeForAsset.entryPrice;
+      const leveragedRatio = activeTradeForAsset.type === 'BUY' 
+        ? rawRatio * activeTradeForAsset.leverage 
+        : -rawRatio * activeTradeForAsset.leverage;
+
+      livePnL = parseFloat((activeTradeForAsset.amount * leveragedRatio).toFixed(2));
+      livePnlPct = parseFloat((leveragedRatio * 100).toFixed(2));
+      isInProfit = livePnL >= 0;
+
+      // Color active trade curve green for profit, red for loss
+      lineStrokeColor = isInProfit ? "#10B981" : "#F43F5E";
+      lineGlowColor = isInProfit ? "#10B981" : "#F43F5E";
+    }
+
+    // Dynamic trajectory calculation based on history and current price
+    // Base Y values for points
+    let p1Y = 190;
+    let p2Y = 120;
+    let p3Y = 175;
+    let p4Y = 95;
+    let p5Y = 110;
+    let p6Y = 70;
+    let p7Y = 55;
+
+    // Calculate end Y position dynamically based on live price movement vs baseline
+    // Lower Y = Higher on chart canvas
+    let endY = 105;
+    if (activeTradeForAsset) {
+      const priceDelta = currentAsset.price - activeTradeForAsset.entryPrice;
+      // Scale delta to SVG pixels (max +/- 80px shift)
+      const yOffset = Math.max(-75, Math.min(75, priceDelta * 12));
+      endY = 105 - yOffset; // Upward if price increase, downward if decrease
+    }
+
     const normalizedPoints = [
-      { x: 15, y: 190, val: -42.0 },
-      { x: 65, y: 120, val: -18.5 },
-      { x: 105, y: 175, val: -82.0 }, // Target point from screenshot (-82.0 pill)
-      { x: 165, y: 95, val: -12.0 },
-      { x: 215, y: 110, val: -28.0 },
-      { x: 255, y: 70, val: -5.0 },
-      { x: 295, y: 55, val: +15.0 },
-      { x: 345, y: 105, val: currentAsset.changeValue }
+      { x: 15, y: p1Y, val: -42.0 },
+      { x: 65, y: p2Y, val: -18.5 },
+      { x: 105, y: p3Y, val: -82.0 },
+      { x: 165, y: p4Y, val: -12.0 },
+      { x: 215, y: p5Y, val: -28.0 },
+      { x: 255, y: p6Y, val: -5.0 },
+      { x: 295, y: p7Y, val: +15.0 },
+      { x: 345, y: endY, val: currentAsset.changeValue }
     ];
+
+    // Compute entry price Y position if trade exists
+    let entryY = 105;
+    if (activeTradeForAsset) {
+      // Entry line fixed relative to mid
+      entryY = 105;
+    }
 
     // Build smooth cubic bezier SVG path
     let d = `M ${normalizedPoints[0].x} ${normalizedPoints[0].y}`;
@@ -262,101 +311,180 @@ export default function TradingPage({ user, onUpdateUser, onAddTransaction, onNa
     // Closed path for subtle dark area gradient
     const areaD = `${d} L ${normalizedPoints[normalizedPoints.length - 1].x} ${height} L ${normalizedPoints[0].x} ${height} Z`;
 
-    const hoverPt = normalizedPoints[activeHoverPointIndex] || normalizedPoints[2];
+    const hoverPt = normalizedPoints[activeHoverPointIndex] || normalizedPoints[7];
 
     return (
-      <div className="relative w-full h-[280px] select-none my-2">
-        {/* Background dark grid lines */}
-        <div className="absolute inset-0 flex flex-col justify-between pointer-events-none opacity-[0.04]">
-          <div className="border-b border-white w-full" />
-          <div className="border-b border-white w-full" />
-          <div className="border-b border-white w-full" />
-          <div className="border-b border-white w-full" />
-        </div>
+      <div className="relative w-full select-none my-2">
+        {/* Active Position Banner Overlay if Trade is Open */}
+        {activeTradeForAsset && (
+          <div className="mb-2 p-3 bg-[#121826] border border-slate-700/80 rounded-2xl flex items-center justify-between shadow-xl animate-fade-in">
+            <div className="flex items-center gap-2.5">
+              <span className={`w-2.5 h-2.5 rounded-full animate-ping ${isInProfit ? 'bg-emerald-400' : 'bg-rose-500'}`} />
+              <div>
+                <div className="flex items-center gap-1.5">
+                  <span className={`text-[9px] font-black uppercase px-1.5 py-0.5 rounded ${activeTradeForAsset.type === 'BUY' ? 'bg-blue-500/20 text-blue-400' : 'bg-rose-500/20 text-rose-400'}`}>
+                    {activeTradeForAsset.type} {activeTradeForAsset.leverage}x
+                  </span>
+                  <span className="text-xs font-bold text-white font-mono">
+                    ${activeTradeForAsset.entryPrice}
+                  </span>
+                </div>
+                <span className="text-[10px] text-slate-400 block font-mono">
+                  Current: ${currentAsset.price}
+                </span>
+              </div>
+            </div>
 
-        {/* Faint Y-Axis labels on right side */}
-        <div className="absolute right-2 top-28 space-y-12 text-[10px] font-mono text-slate-600 pointer-events-none text-right">
-          <div>-$95.0</div>
-          <div>-$75.0</div>
-        </div>
+            <div className="flex items-center gap-3">
+              <div className="text-right">
+                <span className={`text-xs font-black font-mono block ${isInProfit ? 'text-emerald-400' : 'text-rose-400'}`}>
+                  {isInProfit ? '+' : ''}${livePnL.toFixed(2)}
+                </span>
+                <span className={`text-[10px] font-bold font-mono block ${isInProfit ? 'text-emerald-400/90' : 'text-rose-400/90'}`}>
+                  {isInProfit ? '+' : ''}{livePnlPct}%
+                </span>
+              </div>
 
-        <svg 
-          className="w-full h-full overflow-visible" 
-          viewBox={`0 0 ${width} ${height}`} 
-          preserveAspectRatio="none"
-        >
-          <defs>
-            <linearGradient id="chartFillGradient" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.12" />
-              <stop offset="60%" stopColor="#FFFFFF" stopOpacity="0.03" />
-              <stop offset="100%" stopColor="#000000" stopOpacity="0.0" />
-            </linearGradient>
+              <button
+                type="button"
+                onClick={() => handleCloseTrade(activeTradeForAsset.id)}
+                className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white text-xs font-extrabold rounded-xl transition-all cursor-pointer shadow-md active:scale-95"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        )}
 
-            <filter id="glowEffect" x="-20%" y="-20%" width="140%" height="140%">
-              <feGaussianBlur stdDeviation="2" result="blur" />
-              <feComposite in="SourceGraphic" in2="blur" operator="over" />
-            </filter>
-          </defs>
+        <div className="relative w-full h-[280px]">
+          {/* Background dark grid lines */}
+          <div className="absolute inset-0 flex flex-col justify-between pointer-events-none opacity-[0.04]">
+            <div className="border-b border-white w-full" />
+            <div className="border-b border-white w-full" />
+            <div className="border-b border-white w-full" />
+            <div className="border-b border-white w-full" />
+          </div>
 
-          {/* Area Fill */}
-          <path d={areaD} fill="url(#chartFillGradient)" />
+          {/* Faint Y-Axis labels on right side */}
+          <div className="absolute right-2 top-28 space-y-12 text-[10px] font-mono text-slate-600 pointer-events-none text-right">
+            <div>-${(currentAsset.price * 0.05).toFixed(1)}</div>
+            <div>+${(currentAsset.price * 0.05).toFixed(1)}</div>
+          </div>
 
-          {/* Smooth White Curved Line */}
-          <path 
-            d={d} 
-            fill="none" 
-            stroke="#E2E8F0" 
-            strokeWidth="2.8" 
-            strokeLinecap="round" 
-            strokeLinejoin="round" 
-            filter="url(#glowEffect)"
-          />
+          <svg 
+            className="w-full h-full overflow-visible" 
+            viewBox={`0 0 ${width} ${height}`} 
+            preserveAspectRatio="none"
+          >
+            <defs>
+              <linearGradient id="chartFillGradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor={lineGlowColor} stopOpacity={activeTradeForAsset ? "0.22" : "0.12"} />
+                <stop offset="60%" stopColor={lineGlowColor} stopOpacity="0.03" />
+                <stop offset="100%" stopColor="#000000" stopOpacity="0.0" />
+              </linearGradient>
 
-          {/* Interactive Dotted vertical line down to x-axis */}
-          <line
-            x1={hoverPt.x}
-            y1={hoverPt.y}
-            x2={hoverPt.x}
-            y2={height}
-            stroke="#ffffff"
-            strokeWidth="1.5"
-            strokeDasharray="3 3"
-            strokeOpacity="0.7"
-          />
+              <filter id="glowEffect" x="-20%" y="-20%" width="140%" height="140%">
+                <feGaussianBlur stdDeviation="2.5" result="blur" />
+                <feComposite in="SourceGraphic" in2="blur" operator="over" />
+              </filter>
+            </defs>
 
-          {/* Active Marker Dot */}
-          <circle
-            cx={hoverPt.x}
-            cy={hoverPt.y}
-            r="4"
-            fill="#FFFFFF"
-            stroke="#2563EB"
-            strokeWidth="2.5"
-          />
+            {/* Area Fill */}
+            <path d={areaD} fill="url(#chartFillGradient)" />
 
-          {/* Interactive click zones for graph points */}
-          {normalizedPoints.map((pt, idx) => (
-            <circle
-              key={idx}
-              cx={pt.x}
-              cy={pt.y}
-              r="16"
-              fill="transparent"
-              className="cursor-pointer"
-              onClick={() => setActiveHoverPointIndex(idx)}
+            {/* Entry Price Horizontal Reference Line if Trade is active */}
+            {activeTradeForAsset && (
+              <g id="entry-price-line-group">
+                <line
+                  x1="0"
+                  y1={entryY}
+                  x2={width}
+                  y2={entryY}
+                  stroke="#38BDF8"
+                  strokeWidth="1.5"
+                  strokeDasharray="4 4"
+                  strokeOpacity="0.8"
+                />
+                <text
+                  x="8"
+                  y={entryY - 4}
+                  fill="#38BDF8"
+                  fontSize="9"
+                  fontWeight="bold"
+                  fontFamily="monospace"
+                >
+                  ENTRY ${activeTradeForAsset.entryPrice}
+                </text>
+              </g>
+            )}
+
+            {/* Dynamic Market Line (Turns Green for Profit, Red for Loss) */}
+            <path 
+              d={d} 
+              fill="none" 
+              stroke={lineStrokeColor} 
+              strokeWidth="3.2" 
+              strokeLinecap="round" 
+              strokeLinejoin="round" 
+              filter="url(#glowEffect)"
             />
-          ))}
-        </svg>
 
-        {/* Floating Blue Pill Tag Badge matching screenshot `-$82.0` */}
-        <div 
-          className="absolute transform -translate-x-1/2 -translate-y-full mb-2 bg-[#2563EB] text-white text-[11px] font-black font-mono px-3 py-1 rounded-full shadow-lg shadow-blue-600/40 pointer-events-none animate-bounce-slow"
-          style={{
-            left: `${(hoverPt.x / width) * 100}%`,
-            top: `${(hoverPt.y / height) * 100}%`
-          }}
-        >
-          {hoverPt.val > 0 ? `+${hoverPt.val.toFixed(1)}` : hoverPt.val.toFixed(1)}
+            {/* Interactive Dotted vertical line down to x-axis */}
+            <line
+              x1={hoverPt.x}
+              y1={hoverPt.y}
+              x2={hoverPt.x}
+              y2={height}
+              stroke={lineStrokeColor}
+              strokeWidth="1.5"
+              strokeDasharray="3 3"
+              strokeOpacity="0.7"
+            />
+
+            {/* Active Marker Dot */}
+            <circle
+              cx={hoverPt.x}
+              cy={hoverPt.y}
+              r="5"
+              fill="#FFFFFF"
+              stroke={lineStrokeColor}
+              strokeWidth="3"
+            />
+
+            {/* Interactive click zones for graph points */}
+            {normalizedPoints.map((pt, idx) => (
+              <circle
+                key={idx}
+                cx={pt.x}
+                cy={pt.y}
+                r="16"
+                fill="transparent"
+                className="cursor-pointer"
+                onClick={() => setActiveHoverPointIndex(idx)}
+              />
+            ))}
+          </svg>
+
+          {/* Floating Pill Tag Badge matching live state */}
+          <div 
+            className={`absolute transform -translate-x-1/2 -translate-y-full mb-2 text-white text-[10.5px] font-black font-mono px-3 py-1 rounded-full shadow-lg pointer-events-none transition-all flex items-center gap-1 ${
+              activeTradeForAsset
+                ? (isInProfit ? 'bg-emerald-600 shadow-emerald-600/40' : 'bg-rose-600 shadow-rose-600/40')
+                : 'bg-[#2563EB] shadow-blue-600/40'
+            }`}
+            style={{
+              left: `${(hoverPt.x / width) * 100}%`,
+              top: `${(hoverPt.y / height) * 100}%`
+            }}
+          >
+            <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+            <span>
+              {activeTradeForAsset 
+                ? `${isInProfit ? '+' : ''}$${livePnL.toFixed(2)} (${isInProfit ? '+' : ''}${livePnlPct}%)`
+                : (hoverPt.val > 0 ? `+${hoverPt.val.toFixed(1)}` : hoverPt.val.toFixed(1))
+              }
+            </span>
+          </div>
         </div>
       </div>
     );
