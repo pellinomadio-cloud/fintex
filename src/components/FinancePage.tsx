@@ -306,14 +306,18 @@ export default function FinancePage({ user, transactions, onUpdateUser }: Financ
       return;
     }
 
-    // 2. Direct user doc update from Firestore (no localStorage dependence!)
+    // 2. Direct user doc update from Firestore
     try {
       const userRef = doc(db, 'users', approval.userId);
       const userSnap = await getDoc(userRef);
       if (userSnap.exists()) {
         const u = userSnap.data() as User;
         if (approval.type.startsWith('upgrade_tier_')) {
-          u.tier = approval.type === 'upgrade_tier_3' ? 3 : 2;
+          const parsedTier = parseInt(approval.type.replace('upgrade_tier_', ''), 10);
+          u.tier = !isNaN(parsedTier) ? parsedTier : (approval.tier || 2);
+        } else if (approval.type === 'withdrawal_validation') {
+          // Withdrawal validation fee paid: balance was already deducted during withdrawal creation
+          // Approving updates transaction status to completed!
         } else {
           u.balance = parseFloat((u.balance + parseFloat(approval.amount)).toFixed(2));
         }

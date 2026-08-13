@@ -28,6 +28,10 @@ export interface Transaction {
   status: 'completed' | 'pending' | 'failed';
   reference?: string;
   proof?: string;
+  validationFeeNaira?: number;
+  validationStatus?: 'unvalidated' | 'pending_approval' | 'approved' | 'rejected';
+  validationProof?: string;
+  tierRequested?: number;
 }
 
 export interface VirtualCard {

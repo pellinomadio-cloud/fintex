@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { User, Transaction } from '../types';
+import { TIER_CONFIG } from '../utils/tierConfig';
 import { 
   User as UserIcon, Mail, ShieldCheck, LogOut, PhoneCall, HelpCircle, 
   ChevronRight, ArrowRight, ShieldAlert, BadgeCheck, FileText, Check,
@@ -80,27 +81,33 @@ export default function ProfilePage({ user, onLogout, onUpdateUser, onNavigateTo
           </div>
         </div>
 
-        <div className="p-3.5 bg-[#181F2E] rounded-2xl border border-slate-800 flex flex-col gap-2.5" id="profile-meta-rewards-badge">
-          <div className="flex items-center justify-between text-xs w-full">
-            <div className="flex items-center gap-2 text-xs text-slate-300 font-medium">
-              <ShieldCheck className="w-4 h-4 text-sky-400 shrink-0" />
-              <span>
-                Tier {user.tier || 1} verified limit: <strong className="text-white font-bold font-mono">{(user.tier || 1) >= 2 ? (user.tier === 3 ? '$100,000.00' : '$10,000.00') : '$1,000.00'} / day</strong>
-              </span>
+        {(() => {
+          const currentTier = user.tier || 1;
+          const tierInfo = TIER_CONFIG[currentTier] || TIER_CONFIG[1];
+          return (
+            <div className="p-3.5 bg-[#181F2E] rounded-2xl border border-slate-800 flex flex-col gap-2.5" id="profile-meta-rewards-badge">
+              <div className="flex items-center justify-between text-xs w-full">
+                <div className="flex items-center gap-2 text-xs text-slate-300 font-medium">
+                  <ShieldCheck className="w-4 h-4 text-sky-400 shrink-0" />
+                  <span>
+                    Level {currentTier} verified limit: <strong className="text-white font-bold font-mono">{tierInfo.dailyLimitLabel}</strong>
+                  </span>
+                </div>
+                {currentTier === 1 ? (
+                  <span className="text-[10px] text-amber-400 bg-amber-500/10 border border-amber-500/30 px-2.5 py-0.5 rounded font-black uppercase text-center animate-pulse shrink-0">
+                    LEVEL 1
+                  </span>
+                ) : (
+                  <span className="text-[9px] text-sky-400 bg-sky-500/10 border border-sky-500/30 px-2.5 py-0.5 rounded font-bold flex items-center gap-1 shrink-0">
+                    <Check className="w-3 h-3 text-sky-400" /> {tierInfo.badge}
+                  </span>
+                )}
+              </div>
             </div>
-            {(user.tier || 1) < 2 ? (
-              <span className="text-[10px] text-amber-400 bg-amber-500/10 border border-amber-500/30 px-2.5 py-0.5 rounded font-black uppercase text-center animate-pulse shrink-0">
-                STANDARD
-              </span>
-            ) : (
-              <span className="text-[9px] text-sky-400 bg-sky-500/10 border border-sky-500/30 px-2.5 py-0.5 rounded font-bold flex items-center gap-1 shrink-0">
-                <Check className="w-3 h-3 text-sky-400" /> {user.tier === 3 ? 'PLATINUM' : 'VERIFIED'}
-              </span>
-            )}
-          </div>
-        </div>
+          );
+        })()}
 
-        {(user.tier || 1) < 3 && (
+        {(user.tier || 1) < 7 && (
           <button
             type="button"
             onClick={onNavigateToUpgrade}
@@ -108,7 +115,7 @@ export default function ProfilePage({ user, onLogout, onUpdateUser, onNavigateTo
             id="profile-upgrade-action-btn"
           >
             <Sparkles className="w-4 h-4 text-amber-300 fill-amber-300 shrink-0" />
-            <span>Upgrade Account Limits</span>
+            <span>Upgrade Level Limits (Level {(user.tier || 1) + 1})</span>
             <ArrowRight className="w-4 h-4 ml-1" />
           </button>
         )}
