@@ -2990,21 +2990,60 @@ export default function Dashboard({
       >
         <div className="flex items-start justify-between">
           <div className="space-y-1">
-            <span className="text-[10px] uppercase tracking-widest text-slate-400 font-extrabold block">
-              MY WALLET
-            </span>
-            <div className="flex items-baseline gap-2">
-              <span className="text-3xl sm:text-4xl font-extrabold text-white font-mono tracking-tight" id="main-balance-text">
-                {showBalance 
-                  ? (primaryCurrency === 'USD' 
-                      ? `${user.balance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` 
-                      : `₦${(user.balance * 1600).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`)
-                  : '••••••'
-                }
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] uppercase tracking-widest text-slate-400 font-extrabold block">
+                MY WALLET
               </span>
+              {/* Currency Selector Pill */}
+              <div className="inline-flex items-center bg-[#182030] border border-slate-800 p-0.5 rounded-lg text-[9px] font-bold">
+                <button
+                  type="button"
+                  onClick={() => setPrimaryCurrency('USD')}
+                  className={`px-1.5 py-0.5 rounded transition-all cursor-pointer ${
+                    primaryCurrency === 'USD' ? 'bg-blue-600 text-white font-black' : 'text-slate-400 hover:text-white'
+                  }`}
+                  id="btn-currency-usd"
+                >
+                  $ USD
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPrimaryCurrency('NGN')}
+                  className={`px-1.5 py-0.5 rounded transition-all cursor-pointer ${
+                    primaryCurrency === 'NGN' ? 'bg-emerald-600 text-white font-black' : 'text-slate-400 hover:text-white'
+                  }`}
+                  id="btn-currency-ngn"
+                >
+                  ₦ NGN
+                </button>
+              </div>
+            </div>
+
+            <div className="flex items-baseline gap-1 pt-1">
+              {showBalance ? (
+                primaryCurrency === 'USD' ? (
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-base sm:text-xl font-bold text-slate-400 font-sans">$</span>
+                    <span className="text-3xl sm:text-4xl font-extrabold text-white font-mono tracking-tight" id="main-balance-text">
+                      {user.balance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </span>
+                  </div>
+                ) : (
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-base sm:text-xl font-bold text-emerald-400 font-sans">₦</span>
+                    <span className="text-3xl sm:text-4xl font-extrabold text-white font-mono tracking-tight" id="main-balance-text">
+                      {(user.balance * 1600).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </span>
+                  </div>
+                )
+              ) : (
+                <span className="text-3xl sm:text-4xl font-extrabold text-white font-mono tracking-tight" id="main-balance-text">
+                  ••••••
+                </span>
+              )}
               <button 
                 type="button" 
-                className="text-slate-400 hover:text-white transition-colors cursor-pointer p-1" 
+                className="text-slate-400 hover:text-white transition-colors cursor-pointer p-1 ml-1" 
                 onClick={() => setShowBalance(!showBalance)}
                 id="toggle-visibility-btn"
                 title={showBalance ? "Hide Balance" : "Show Balance"}
@@ -3023,6 +3062,34 @@ export default function Dashboard({
               +88.32%
             </span>
           </div>
+        </div>
+
+        {/* Live Naira Valuation & Conversion Strip */}
+        <div className="flex items-center justify-between p-2.5 bg-[#182030] border border-slate-800/80 rounded-xl text-xs">
+          <div className="flex items-center gap-2">
+            <div className="w-6 h-6 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 flex items-center justify-center font-bold text-xs shrink-0">
+              ₦
+            </div>
+            <div>
+              <span className="text-[9px] text-slate-400 font-extrabold uppercase tracking-wider block leading-none">Naira Value (Rate: ₦1,600 / $1)</span>
+              <span className="text-xs font-bold text-emerald-400 font-mono">
+                {showBalance 
+                  ? `₦${(user.balance * 1600).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} NGN`
+                  : '••••••'
+                }
+              </span>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setPrimaryCurrency(primaryCurrency === 'USD' ? 'NGN' : 'USD')}
+            className="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700/80 rounded-lg text-[10px] font-bold transition-all cursor-pointer flex items-center gap-1 shadow-xs"
+            id="btn-convert-naira-toggle"
+          >
+            <Coins className="w-3 h-3 text-amber-400" />
+            <span>{primaryCurrency === 'USD' ? 'Convert to ₦ NGN' : 'Switch to $ USD'}</span>
+          </button>
         </div>
 
         {/* Action Buttons: Withdraw & Deposit matching image circles */}
