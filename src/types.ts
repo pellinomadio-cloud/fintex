@@ -8,6 +8,7 @@ export interface User {
   balance: number;
   savingsBalance: number;
   createdAt: string;
+  avatar?: string;
   tier?: number;
   banned?: boolean;
   lastCheckInDate?: string;

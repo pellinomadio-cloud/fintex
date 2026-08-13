@@ -2760,56 +2760,86 @@ export default function Dashboard({
     );
   }
 
+  const getGreetingTime = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Good Morning!';
+    if (hour < 18) return 'Good Afternoon!';
+    return 'Good Evening!';
+  };
+
+  const todayFormatted = new Date().toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short' });
+
   return (
-    <div className="space-y-6 pb-24" id="dashboard-tab-content">
-      {/* Header Profile Info Bar */}
-      <div className="flex items-center justify-between bg-white px-4 py-3 rounded-2xl border border-slate-100 shadow-sm" id="user-header-profile-bar">
-        <div className="flex items-center gap-3" id="profile-meta-left">
-          <div className="w-10 h-10 rounded-full bg-slate-100 border border-brand-primary flex items-center justify-center font-bold text-brand-dark" id="avatar-circle">
-            {user.name.charAt(0).toUpperCase()}
-          </div>
-          <div id="welcome-text-labels">
-            <span className="text-xs text-slate-500 block leading-none">Good day</span>
-            <span className="font-bold tracking-tight text-brand-dark text-sm" id="dashboard-user-name">
-              Hi, {user.name.toUpperCase()}
-            </span>
-          </div>
+    <div className="space-y-5 pb-28 font-sans" id="dashboard-tab-content">
+      {/* Top Bar matching screenshot: Logo Left | Avatar & Bell Right */}
+      <div className="flex items-center justify-between" id="user-header-profile-bar">
+        {/* Left Cardano/App Icon Logo */}
+        <div className="w-11 h-11 rounded-2xl bg-[#141A28] border border-slate-800 flex items-center justify-center p-2 shadow-lg shadow-black/20">
+          <img src="/icon.svg" alt="UXtrade Logo" className="w-7 h-7 rounded-lg" />
         </div>
-        <div className="flex items-center gap-2" id="profile-meta-shortcuts">
+
+        {/* Right Avatar & Bell Notification pill */}
+        <div className="flex items-center gap-2.5" id="profile-meta-shortcuts">
+          <div className="w-11 h-11 rounded-2xl overflow-hidden border border-slate-800 bg-[#141A28] flex items-center justify-center shadow-lg">
+            {user.avatar ? (
+              <img src={user.avatar} alt="User Avatar" className="w-full h-full object-cover" />
+            ) : (
+              <div className="w-full h-full bg-gradient-to-tr from-amber-500 to-indigo-600 flex items-center justify-center font-bold text-white text-sm">
+                {user.name.charAt(0).toUpperCase()}
+              </div>
+            )}
+          </div>
+
           <button 
             type="button"
-            className="w-10 h-10 rounded-xl bg-slate-50 hover:bg-sky-50 flex items-center justify-center text-brand-dark border border-slate-100 relative transition-all"
+            className="w-11 h-11 rounded-2xl bg-[#141A28] hover:bg-[#1C2538] flex items-center justify-center text-slate-200 border border-slate-800 relative transition-all shadow-lg cursor-pointer"
             id="notif-bell-btn"
-            onClick={() => setNotification("Welcome to UX-trade! Zero hidden fees.")}
+            onClick={() => setNotification("Welcome back! UXtrade live system active.")}
           >
-            <Bell className="w-5 h-5 text-brand-dark" />
-            <span className="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-rose-500 animate-ping-subtle" />
-          </button>
-          <button 
-            type="button"
-            onClick={() => {
-              if ((user.tier || 1) < 2) {
-                setNotification("You are on Tier 1 status. Navigate to the 'Profile' tab to upgrade to Tier 2 and unlock daily limits of $10,000 / day!");
-              } else {
-                setNotification(`You are on the premium Tier ${user.tier || 2} status with complete limits verified.`);
-              }
-            }}
-            className="bg-sky-50 hover:bg-sky-100 text-brand-medium text-xs font-semibold px-2.5 py-1.5 rounded-xl border border-sky-100 flex items-center gap-1.5 transition-colors cursor-pointer"
-            id="user-tier-indicator-badge"
-          >
-            <Sparkles className="w-3.5 h-3.5 text-brand-primary" />
-            Tier {user.tier || 1} User
+            <Bell className="w-4 h-4 text-slate-200" />
+            <span className="absolute top-3 right-3 w-2 h-2 rounded-full bg-sky-400 animate-ping-subtle" />
           </button>
         </div>
       </div>
 
+      {/* Dynamic Greeting Header */}
+      <div className="space-y-0.5 pt-1" id="greeting-header">
+        <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight flex items-center gap-2" id="dashboard-user-name">
+          <span>Hi {user.name.split(' ')[0] || 'User'},</span>
+        </h1>
+        <p className="text-xl sm:text-2xl font-bold text-slate-400 tracking-tight">
+          {getGreetingTime()}
+        </p>
+      </div>
+
+      {/* Date & Filter Badges Row */}
+      <div className="flex items-center gap-2.5" id="date-filter-row">
+        <div className="flex items-center gap-2 px-3.5 py-2 bg-[#141A28] border border-slate-800/80 rounded-xl text-xs font-semibold text-slate-300">
+          <span className="text-slate-400">📅</span>
+          <span>{todayFormatted}</span>
+        </div>
+
+        <div className="w-8 h-8 rounded-xl bg-blue-600 text-white font-extrabold text-xs flex items-center justify-center shadow-lg shadow-blue-500/25">
+          5
+        </div>
+
+        <button 
+          type="button" 
+          onClick={() => onNavigateToTab('trade')}
+          className="ml-auto w-10 h-10 rounded-xl bg-[#141A28] border border-slate-800/80 text-slate-300 flex items-center justify-center hover:text-white transition-colors cursor-pointer"
+          title="Search assets"
+        >
+          <Search className="w-4 h-4" />
+        </button>
+      </div>
+
       {notification && (
-        <div className="p-3 bg-indigo-50 border border-indigo-100 rounded-xl text-indigo-700 flex items-center justify-between text-xs font-medium" id="system-notif-bar">
+        <div className="p-3 bg-indigo-950/80 border border-indigo-800/50 rounded-2xl text-indigo-200 flex items-center justify-between text-xs font-medium backdrop-blur-md" id="system-notif-bar">
           <div className="flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 text-brand-primary shrink-0" />
+            <AlertCircle className="w-4 h-4 text-sky-400 shrink-0" />
             <span>{notification}</span>
           </div>
-          <button type="button" onClick={() => setNotification(null)} className="text-indigo-400 hover:text-indigo-600">
+          <button type="button" onClick={() => setNotification(null)} className="text-indigo-400 hover:text-white">
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -2820,7 +2850,6 @@ export default function Dashboard({
           className="relative overflow-hidden bg-gradient-to-br from-amber-600 via-amber-700 to-amber-800 text-white rounded-3xl p-5 border border-amber-500/30 shadow-xl animate-fade-in space-y-4"
           id="uxtrade-tier-withdrawal-warning"
         >
-          {/* Animated decorative pulses */}
           <span className="absolute -right-6 -bottom-6 w-24 h-24 rounded-full bg-white/15 blur-2xl animate-pulse" />
           <span className="absolute -left-6 -top-6 w-24 h-24 rounded-full bg-amber-400/25 blur-2xl animate-pulse" />
 
@@ -2863,60 +2892,6 @@ export default function Dashboard({
         </div>
       )}
 
-      {showAdvert && !user.joinedCommunity && (
-        <div 
-          className="relative overflow-hidden bg-gradient-to-r from-indigo-900 via-[#101524] to-indigo-950 text-white rounded-3xl p-5 border border-indigo-500/25 shadow-xl animate-fade-in space-y-3"
-          id="uxtrade-community-advert-banner"
-        >
-          {/* Animated Background Pulse decoration */}
-          <span className="absolute -right-6 -bottom-6 w-24 h-24 rounded-full bg-brand-primary/20 blur-2xl animate-pulse" />
-          <span className="absolute -left-6 -top-6 w-24 h-24 rounded-full bg-indigo-500/10 blur-2xl animate-pulse" />
-
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-2xl bg-indigo-550/20 border border-indigo-500/40 flex items-center justify-center text-xl shrink-0 animate-bounce-slow">
-                📢
-              </div>
-              <div>
-                <span className="text-[10px] font-extrabold uppercase tracking-widest text-indigo-400 bg-indigo-500/15 px-2 py-0.5 rounded-full inline-block mb-1">
-                  Official Community
-                </span>
-                <h3 className="text-sm font-black uppercase tracking-wider leading-tight text-white">
-                  Join the UXtrade Community Channel
-                </h3>
-                <p className="text-xs text-slate-300 leading-relaxed mt-0.5 max-w-md">
-                  Connect with thousands of active traders, receive exclusive daily trading insights, market analysis, and hot trading signals directly in our official channel!
-                </p>
-              </div>
-            </div>
-
-            <button 
-              type="button" 
-              onClick={() => setShowAdvert(false)}
-              className="p-1.5 hover:bg-white/10 rounded-xl text-slate-300 hover:text-white transition-all cursor-pointer shrink-0"
-              title="Dismiss advert (will reappear in 7 seconds)"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-
-          <div className="flex items-center justify-between gap-2 pt-1 border-t border-white/5">
-            <span className="text-[10px] text-indigo-300 font-mono flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping" />
-              <span>18.4K members online</span>
-            </span>
-            <button
-              type="button"
-              onClick={handleJoinCommunity}
-              className="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-black rounded-xl shadow-lg shadow-indigo-600/20 hover:shadow-indigo-500/30 transition-all uppercase tracking-wider flex items-center gap-1.5 cursor-pointer hover:scale-[1.02] active:scale-[0.98]"
-            >
-              <span>Join Channel Now</span>
-              <ArrowRightCircle className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
-      )}
-
       {/* Global Priority Support Broadcasts Alert */}
       {activeSupportMessages
         .filter((msg) => !dismissedMessages.includes(msg.id))
@@ -2926,26 +2901,25 @@ export default function Dashboard({
           return (
             <div 
               key={msg.id} 
-              className="p-3.5 bg-gradient-to-r from-rose-50/95 to-amber-50/95 border border-rose-100 rounded-3xl text-slate-850 flex items-start gap-2.5 shadow-xs relative overflow-hidden" 
+              className="p-3.5 bg-gradient-to-r from-rose-950/80 to-amber-950/80 border border-rose-800/40 rounded-3xl text-slate-100 flex items-start gap-2.5 shadow-xs relative overflow-hidden" 
               id={`support-broadcast-${msg.id}`}
             >
-              <div className="absolute right-0 top-0 w-20 h-20 bg-rose-500/5 rounded-full blur-xl pointer-events-none" />
               <div className="w-7.5 h-7.5 rounded-xl bg-gradient-to-br from-rose-500 to-rose-600 text-white flex items-center justify-center shrink-0 mt-0.5 shadow-xs">
                 <Megaphone className="w-3.5 h-3.5 text-white animate-bounce-slow" />
               </div>
               <div className="flex-1 space-y-0.5 text-xs">
                 <div className="flex items-center gap-1.5 flex-wrap">
-                  <span className="font-black uppercase tracking-wider text-[8px] text-rose-605 bg-rose-100/80 px-2 py-0.5 rounded-full">Support Broadcast</span>
-                  <span className="text-[8px] font-bold text-slate-450 bg-slate-205/60 px-1.5 py-0.5 rounded">
+                  <span className="font-black uppercase tracking-wider text-[8px] text-rose-300 bg-rose-500/20 px-2 py-0.5 rounded-full border border-rose-500/30">Support Broadcast</span>
+                  <span className="text-[8px] font-bold text-slate-400 bg-slate-800 px-1.5 py-0.5 rounded">
                     Expires in {remMin}m
                   </span>
                 </div>
-                <p className="font-bold text-slate-800 leading-normal text-[11px] pr-2 whitespace-pre-wrap">{msg.message}</p>
+                <p className="font-bold text-slate-200 leading-normal text-[11px] pr-2 whitespace-pre-wrap">{msg.message}</p>
               </div>
               <button 
                 type="button" 
                 onClick={() => setDismissedMessages(prev => [...prev, msg.id])} 
-                className="text-slate-400 hover:text-rose-600 p-1 rounded-xl hover:bg-white/60 transition-all cursor-pointer shrink-0"
+                className="text-slate-400 hover:text-rose-400 p-1 rounded-xl transition-all cursor-pointer shrink-0"
                 id={`dismiss-support-${msg.id}`}
               >
                 <X className="w-3.5 h-3.5" />
@@ -2954,140 +2928,65 @@ export default function Dashboard({
           );
         })}
 
-      {/* Hero Card - Balance Display Block (White, Light Blue, Dark Blue) */}
+      {/* MY WALLET Main Balance Display Card */}
       <div 
-        className="relative bg-gradient-to-br from-slate-950 via-brand-dark to-slate-900 text-white rounded-[32px] p-6.5 shadow-2xl shadow-brand-dark/30 overflow-hidden border border-slate-800/85" 
+        className="relative bg-[#131926] border border-slate-800/90 rounded-[28px] p-5.5 shadow-2xl space-y-4" 
         id="dashboard-available-balance-module"
       >
-        {/* Background art patterns for premium aesthetic */}
-        <div className="absolute -right-16 -bottom-16 w-56 h-56 rounded-full bg-brand-primary/10 blur-3xl pointer-events-none animate-pulse-subtle" />
-        <div className="absolute left-12 -top-24 w-40 h-40 rounded-full bg-sky-500/10 blur-3xl pointer-events-none" />
-        
-        {/* Card Holographic Badge */}
-        <div className="absolute right-6 top-6 opacity-10 font-black text-[22px] tracking-widest font-mono select-none pointer-events-none">
-          PREMIUM
-        </div>
-
-        <div className="flex items-center justify-between mb-4" id="balance-title-row">
-          <div className="flex items-center gap-2" id="balance-label-trigger">
-            <div className="w-7 h-7 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center shadow-xs">
-              <Landmark className="w-3.5 h-3.5 text-brand-light" />
-            </div>
-            <div className="flex flex-col">
-              <span className="text-[9px] text-slate-400 font-bold uppercase tracking-widest leading-none">Available Portfolio</span>
-              <span className="text-xs text-sky-100/90 font-medium tracking-wide mt-0.5 flex items-center gap-1.5">
-                Active Ledger
-                <button 
-                  type="button" 
-                  className="text-sky-300/80 hover:text-white transition-colors cursor-pointer" 
-                  onClick={() => setShowBalance(!showBalance)}
-                  id="toggle-visibility-btn"
-                  title={showBalance ? "Hide Balance" : "Show Balance"}
-                >
-                  {showBalance ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
-                </button>
+        <div className="flex items-start justify-between">
+          <div className="space-y-1">
+            <span className="text-[10px] uppercase tracking-widest text-slate-400 font-extrabold block">
+              MY WALLET
+            </span>
+            <div className="flex items-baseline gap-2">
+              <span className="text-3xl sm:text-4xl font-extrabold text-white font-mono tracking-tight" id="main-balance-text">
+                {showBalance 
+                  ? (primaryCurrency === 'USD' 
+                      ? `${user.balance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` 
+                      : `₦${(user.balance * 1600).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`)
+                  : '••••••'
+                }
               </span>
+              <button 
+                type="button" 
+                className="text-slate-400 hover:text-white transition-colors cursor-pointer p-1" 
+                onClick={() => setShowBalance(!showBalance)}
+                id="toggle-visibility-btn"
+                title={showBalance ? "Hide Balance" : "Show Balance"}
+              >
+                {showBalance ? <Eye className="w-4 h-4 text-slate-400" /> : <EyeOff className="w-4 h-4 text-slate-400" />}
+              </button>
             </div>
           </div>
-          
+
+          {/* Growth indicator stats matching image (+ $1,921.21 / +88.32%) */}
+          <div className="text-right space-y-0.5">
+            <span className="text-xs sm:text-sm font-bold text-sky-400 block font-mono">
+              +${(user.balance * 0.375).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </span>
+            <span className="text-xs font-bold text-sky-400/90 block font-mono">
+              +88.32%
+            </span>
+          </div>
+        </div>
+
+        {/* Action Buttons: Withdraw & Deposit matching image circles */}
+        <div className="grid grid-cols-2 gap-3 pt-2" id="balance-core-actions">
           <button 
             type="button"
-            onClick={() => onNavigateToTab('history')}
-            className="text-[11px] text-sky-100 hover:text-white flex items-center gap-1 font-bold bg-white/5 hover:bg-white/10 px-3 py-1.5 rounded-xl border border-white/10 transition-all shadow-xs"
-            id="tx-history-nav-btn"
+            onClick={() => {
+              setInputAmount('');
+              setActiveModal('transfer');
+            }}
+            className="flex items-center justify-center gap-2.5 py-3 bg-[#1C2436] hover:bg-[#222C42] border border-slate-700/50 text-white rounded-2xl text-xs font-bold transition-all cursor-pointer active:scale-95 shadow-md"
+            id="btn-send-money-modal"
           >
-            Ledger History <ChevronRight className="w-3 h-3" />
+            <div className="w-6 h-6 rounded-full bg-white text-slate-900 flex items-center justify-center shrink-0 shadow-xs">
+              <ArrowUpRight className="w-3.5 h-3.5 text-slate-900" />
+            </div>
+            <span>Withdraw</span>
           </button>
-        </div>
 
-        {/* Balance Amount and currency switches */}
-        <div className="mb-6 flex flex-col sm:flex-row sm:items-end justify-between gap-5" id="balance-number-display-wrapper">
-          <div className="space-y-1.5">
-            <div className="flex items-center gap-2">
-              <span className="font-mono text-3.5xl sm:text-4.5xl font-extrabold flex items-baseline gap-1 text-white tracking-tight" id="main-balance-text">
-                {showBalance ? (primaryCurrency === 'USD' ? `$${user.balance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : `₦${(user.balance * 1600).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`) : '••••••'}
-              </span>
-              <span className="text-[9px] font-bold uppercase px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 select-none">
-                Live
-              </span>
-            </div>
-            
-            <div className="flex flex-col gap-1 mt-1 text-[11px] text-slate-400">
-              <div className="flex items-center gap-1.5 font-medium">
-                <span className="text-slate-500">Cross-border Value:</span>
-                <span className="text-slate-300 font-mono">
-                  {showBalance ? (primaryCurrency === 'USD' ? `₦${(user.balance * 1600).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : `$${user.balance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`) : '••••••'}
-                </span>
-              </div>
-              <div className="flex items-center gap-1.5 font-medium">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-slate-500">Protected Safebox:</span>
-                <span className="text-slate-300 font-mono">
-                  {showBalance ? (primaryCurrency === 'USD' ? `$${user.savingsBalance.toFixed(2)}` : `₦${(user.savingsBalance * 1600).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`) : '••••••'}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Premium Currency Glassmorphism Selector */}
-          <div className="inline-flex self-start sm:self-end bg-white/5 p-1 rounded-xl border border-white/10 backdrop-blur-xs shrink-0" id="currency-display-toggle-bar">
-            <button
-              type="button"
-              className={`px-3.5 py-2 text-[10px] font-black tracking-wider rounded-lg transition-all cursor-pointer ${
-                primaryCurrency === 'USD' 
-                  ? 'bg-white text-slate-950 shadow-xs' 
-                  : 'text-sky-100/70 hover:text-white hover:bg-white/5'
-              }`}
-              onClick={() => setPrimaryCurrency('USD')}
-              id="currency-switch-usd"
-            >
-              $ USD
-            </button>
-            <button
-              type="button"
-              className={`px-3.5 py-2 text-[10px] font-black tracking-wider rounded-lg transition-all cursor-pointer ${
-                primaryCurrency === 'NGN' 
-                  ? 'bg-white text-slate-950 shadow-xs' 
-                  : 'text-sky-100/70 hover:text-white hover:bg-white/5'
-              }`}
-              onClick={() => setPrimaryCurrency('NGN')}
-              id="currency-switch-ngn"
-            >
-              ₦ NGN
-            </button>
-          </div>
-        </div>
-
-        {/* Dynamic decorative element: chip + NFC layout for realistic metal card aesthetic */}
-        <div className="flex items-center justify-between border-t border-white/5 pt-5 mt-2" id="balance-card-details-row">
-          <div className="flex items-center gap-4 text-[9px] uppercase tracking-widest text-slate-400 font-bold select-none">
-            <div className="flex flex-col">
-              <span className="text-[8px] text-slate-500">Cardholder</span>
-              <span className="text-slate-200 font-semibold mt-0.5">{user.name.toUpperCase()}</span>
-            </div>
-            <div className="flex flex-col">
-              <span className="text-[8px] text-slate-500">Tier Status</span>
-              <span className="text-amber-400 font-semibold mt-0.5">Gold Tier {user.tier || 1}</span>
-            </div>
-          </div>
-          
-          <div className="flex items-center gap-2 shrink-0">
-            {/* EMV Microchip Representation */}
-            <div className="w-7 h-5.5 rounded-md bg-gradient-to-br from-amber-200 to-amber-500 border border-amber-600/30 opacity-75 relative overflow-hidden" title="Secure EMV Chip">
-              <div className="absolute inset-x-0 top-1/2 h-[1px] bg-amber-700/45" />
-              <div className="absolute inset-y-0 left-1/2 w-[1px] bg-amber-700/45" />
-            </div>
-            {/* Wireless pay signal vector */}
-            <div className="flex gap-0.5 items-end rotate-90 text-slate-400/80 w-3.5 h-3.5">
-              <span className="w-[1.5px] h-1.5 bg-current rounded-full" />
-              <span className="w-[1.5px] h-2.5 bg-current rounded-full" />
-              <span className="w-[1.5px] h-3.5 bg-current rounded-full" />
-            </div>
-          </div>
-        </div>
-
-        {/* Floating Quick deposit/withdrawal links */}
-        <div className="grid grid-cols-2 gap-3.5 mt-5" id="balance-core-actions">
           <button 
             type="button"
             onClick={() => {
@@ -3097,276 +2996,216 @@ export default function Dashboard({
               setAddMoneyStep('select');
               setActiveModal('add_money');
             }}
-            className="w-full py-3.5 bg-gradient-to-r from-emerald-500 via-emerald-600 to-teal-600 hover:from-emerald-600 hover:via-teal-600 hover:to-teal-700 text-white font-black text-xs tracking-widest rounded-2xl active:scale-95 transition-all inline-flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/25 cursor-pointer uppercase border border-emerald-400/20"
+            className="flex items-center justify-center gap-2.5 py-3 bg-[#1C2436] hover:bg-[#222C42] border border-slate-700/50 text-white rounded-2xl text-xs font-bold transition-all cursor-pointer active:scale-95 shadow-md"
             id="btn-add-money-modal"
           >
-            <Plus className="w-4 h-4 text-white animate-bounce" />
-            Deposit
+            <div className="w-6 h-6 rounded-full bg-white text-slate-900 flex items-center justify-center shrink-0 shadow-xs">
+              <ArrowDownLeft className="w-3.5 h-3.5 text-slate-900" />
+            </div>
+            <span>Deposit</span>
           </button>
-          <button 
+        </div>
+      </div>
+
+      {/* FUNDS Section matching screenshot */}
+      <div className="space-y-2.5" id="dashboard-funds-section">
+        <span className="text-[10px] uppercase tracking-widest text-slate-400 font-extrabold block pl-1">
+          FUNDS
+        </span>
+
+        <div className="flex items-center gap-3 overflow-x-auto pb-2 scrollbar-none">
+          {/* Plus action button card */}
+          <button
             type="button"
             onClick={() => {
-              setInputAmount('');
-              setActiveModal('transfer');
+              setAddMoneyStep('select');
+              setActiveModal('add_money');
             }}
-            className="w-full py-3.5 bg-white/10 hover:bg-white/15 border border-white/15 text-white font-extrabold text-xs tracking-wider rounded-2xl active:scale-98 transition-all inline-flex items-center justify-center gap-2 cursor-pointer uppercase"
-            id="btn-send-money-modal"
+            className="w-12 h-36 bg-[#131926] border border-slate-800 rounded-2xl flex items-center justify-center text-slate-300 hover:text-white hover:border-slate-700 transition-all shrink-0 cursor-pointer shadow-md"
+            title="Add crypto asset"
           >
-            <Send className="w-4 h-4 text-brand-light" />
-            Transfer
+            <Plus className="w-5 h-5 text-slate-300" />
           </button>
-        </div>
-      </div>
 
-      {/* Quick Action Category Options - OPay style transfer circles */}
-      <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm" id="dashboard-transfer-destinations">
-        <div className="grid grid-cols-4 gap-2" id="quick-transfer-grid">
-          <button 
-            type="button"
-            onClick={() => onNavigateToTab('trade')}
-            className="flex flex-col items-center justify-center p-3 rounded-2xl bg-sky-50/50 hover:bg-sky-50 border border-transparent hover:border-sky-100 transition-all text-center"
-            id="action-opay-mail"
-          >
-            <div className="w-11 h-11 bg-white text-brand-primary rounded-xl flex items-center justify-center shadow-sm mb-2">
-              <Sparkles className="w-5 h-5 text-brand-primary" />
+          {/* Bitcoin (BTC) Card */}
+          <div className="w-44 p-4 bg-[#131926] border border-slate-800/90 rounded-2xl shrink-0 space-y-2 shadow-lg">
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-400 flex items-center justify-center font-bold text-xs shrink-0">
+                ₿
+              </div>
+              <div>
+                <p className="text-xs font-bold text-white leading-none">Bitcoin</p>
+                <p className="text-[10px] text-slate-400 font-mono mt-0.5">BTC</p>
+              </div>
             </div>
-            <span className="text-xs font-bold text-brand-dark leading-none">UX-trade Trade</span>
-            <span className="text-[8px] text-slate-400 mt-1 leading-none">Trade to Earn</span>
-          </button>
-          <button 
-            type="button"
-            onClick={() => onNavigateToTab('bots')}
-            className="flex flex-col items-center justify-center p-3 rounded-2xl bg-gradient-to-br from-indigo-50 to-violet-50/50 hover:from-indigo-100 hover:to-violet-100/50 border border-indigo-100/40 hover:border-indigo-300 transition-all text-center group"
-            id="action-opay-bots"
-          >
-            <div className="w-11 h-11 bg-gradient-to-r from-indigo-500 to-violet-500 text-white rounded-xl flex items-center justify-center shadow-md mb-2 group-hover:scale-105 transition-transform">
-              <Bot className="w-5 h-5 text-white animate-pulse" />
-            </div>
-            <span className="text-xs font-black text-indigo-950 leading-none">Trading Bots</span>
-            <span className="text-[8px] text-indigo-500/80 font-bold mt-1 leading-none">24/7 AI LOBBY</span>
-          </button>
-          <button 
-            type="button"
-            onClick={() => { 
-              setActiveModal('transfer'); 
-              setUpgradeStep('benefits');
-              setSelectedUpgradeTier(null);
-              setForceShowUpgrade(true);
-            }}
-            className="flex flex-col items-center justify-center p-3 rounded-2xl bg-gradient-to-br from-amber-50 to-yellow-50/50 hover:from-amber-100 hover:to-yellow-100/50 border border-amber-200/40 hover:border-amber-400 transition-all text-center group"
-            id="action-upgrade-tier"
-          >
-            <div className="w-11 h-11 bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 rounded-xl flex items-center justify-center shadow-md mb-2 group-hover:scale-105 transition-transform">
-              <ShieldCheck className="w-5 h-5 text-slate-950" />
-            </div>
-            <span className="text-xs font-black text-amber-950 leading-none">Upgrade Tier</span>
-            <span className="text-[8px] text-amber-600/90 font-bold mt-1 leading-none">TIER 2 & 3 VIP</span>
-          </button>
-          <button 
-            type="button"
-            onClick={() => {
-              setClaimStatus('idle');
-              setActiveModal('claim_reward');
-            }}
-            className="flex flex-col items-center justify-center p-3 rounded-2xl bg-sky-50/50 hover:bg-sky-50 border border-transparent hover:border-sky-100 transition-all text-center"
-            id="action-claim-reward"
-          >
-            <div className="w-11 h-11 bg-white text-amber-500 rounded-xl flex items-center justify-center shadow-sm mb-2">
-              <Gift className="w-5 h-5 text-amber-500" />
-            </div>
-            <span className="text-xs font-bold text-brand-dark leading-none">Claim Gift</span>
-            <span className="text-[8px] text-slate-400 mt-1 leading-none">Daily $5.00</span>
-          </button>
-        </div>
-      </div>
 
-      {/* Services Grid (Telegram Support & Refer and Earn) */}
-      <div className="bg-gradient-to-br from-slate-950 via-[#0c1222] to-slate-900 rounded-[24px] p-4.5 border border-slate-850 shadow-2xl relative overflow-hidden" id="services-grid-module">
-        <div className="absolute -left-12 -top-12 w-28 h-28 bg-brand-primary/5 blur-2xl pointer-events-none" />
-        
-        <div className="flex items-center justify-between mb-3" id="services-header-row">
-          <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">Core Utilities</span>
-          <span className="text-[9px] font-extrabold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20 uppercase tracking-wider">Quick Access</span>
-        </div>
-        
-        <div className="grid grid-cols-2 gap-3" id="grid-list-services">
-          <a 
-            href="https://t.me/uxtrade"
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="flex items-center gap-2.5 p-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 transition-all text-left group cursor-pointer"
-            id="service-btn-support"
-          >
-            <div className="w-8 h-8 bg-sky-500/10 text-sky-400 rounded-lg flex items-center justify-center shrink-0 border border-sky-500/15 group-hover:scale-105 transition-transform">
-              <Send className="w-4 h-4" />
+            {/* Sparkline Blue Line Chart */}
+            <div className="h-8 w-full my-1">
+              <svg className="w-full h-full overflow-visible" viewBox="0 0 100 30">
+                <path d="M0 22 Q 25 12, 50 18 T 100 6" fill="none" stroke="#38BDF8" strokeWidth="2.5" strokeLinecap="round" />
+              </svg>
             </div>
+
             <div>
-              <span className="text-xs font-bold text-slate-100 block leading-tight">Telegram</span>
-              <span className="text-[9px] text-slate-500 mt-0.5 block">Online Desk</span>
-            </div>
-          </a>
-
-          <button 
-            type="button" 
-            onClick={() => onNavigateToTab('rewards')}
-            className="flex items-center gap-2.5 p-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 transition-all text-left group cursor-pointer"
-            id="service-btn-refer"
-          >
-            <div className="w-8 h-8 bg-amber-500/10 text-amber-400 rounded-lg flex items-center justify-center shrink-0 border border-amber-500/15 group-hover:scale-105 transition-transform">
-              <Users className="w-4 h-4" />
-            </div>
-            <div>
-              <span className="text-xs font-bold text-slate-100 block leading-tight">Refer & Earn</span>
-              <span className="text-[9px] text-slate-500 mt-0.5 block">Get $10.00</span>
-            </div>
-          </button>
-        </div>
-      </div>
-
-      {/* Special Carousel / Dynamic Notification Cards */}
-      <div 
-        className="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm flex items-center justify-between" 
-        id="dashboard-promo-cards"
-      >
-        <div className="flex-1 pr-6" id="promo-slide-info">
-          <span className="inline-flex items-center gap-1 text-[10px] font-bold text-brand-primary uppercase tracking-widest bg-sky-50 px-2 py-0.5 rounded-full mb-1">
-            <Sparkles className="w-3 h-3 text-brand-primary" />
-            Special Bonus For You
-          </span>
-          <h4 className="text-sm font-bold text-brand-dark transition-all duration-300">
-            {promoCarousels[promoMessageIndex].title}
-          </h4>
-          <p className="text-xs text-slate-500 mt-1 transition-all duration-300">
-            {promoCarousels[promoMessageIndex].desc}
-          </p>
-        </div>
-        <button 
-          type="button"
-          onClick={() => {
-            if (promoMessageIndex === 0) onNavigateToTab('rewards');
-            if (promoMessageIndex === 1) onNavigateToTab('rewards');
-            if (promoMessageIndex === 2) onNavigateToTab('rewards');
-          }}
-          className="px-4 py-2.5 bg-brand-primary hover:bg-brand-medium text-white text-xs font-bold rounded-xl transition-all shadow-sm shadow-sky-400/10 shrink-0 select-none"
-          id="promo-action-btn"
-        >
-          {promoCarousels[promoMessageIndex].btnText}
-        </button>
-      </div>
-
-      {/* Security Test Card Section */}
-      <div className="bg-sky-50 border border-sky-100 rounded-3xl p-5" id="security-quiz-section">
-        <label className="flex items-center gap-2 mb-2">
-          <ShieldAlert className="w-5 h-5 text-brand-primary" />
-          <span className="text-xs font-bold text-brand-dark uppercase tracking-wider">Security Awareness</span>
-        </label>
-        <h4 className="text-xs font-semibold text-brand-dark mb-2 leading-snug">
-          Question: What should I immediately do if my phone gets stolen?
-        </h4>
-        <div className="space-y-2 mt-3" id="security-quiz-options">
-          <button 
-            type="button" 
-            onClick={() => setSelectedSecurityAnswer('A')}
-            className={`w-full text-left p-3 rounded-2xl text-xs transition-all border ${
-              selectedSecurityAnswer === 'A' 
-                ? 'bg-brand-dark border-brand-dark text-white' 
-                : 'bg-white border-slate-100 hover:border-sky-300 text-slate-700'
-            }`}
-          >
-            <strong className="font-bold mr-1">Option A:</strong> Block my account instanly, lock generated virtual cards, and immediately reach support to prevent unauthorized actions.
-          </button>
-          <button 
-            type="button" 
-            onClick={() => setSelectedSecurityAnswer('B')}
-            className={`w-full text-left p-3 rounded-2xl text-xs transition-all border ${
-              selectedSecurityAnswer === 'B' 
-                ? 'bg-brand-dark border-brand-dark text-white' 
-                : 'bg-white border-slate-100 hover:border-sky-300 text-slate-700'
-            }`}
-          >
-            <strong className="font-bold mr-1">Option B:</strong> Wait for cell carrier updates and buy another device to check.
-          </button>
-        </div>
-        
-        {selectedSecurityAnswer && (
-          <div className="mt-4 p-3 rounded-xl bg-white/80 border border-sky-100 text-xs font-medium text-slate-600 flex items-start gap-2">
-            <Sparkles className="w-4 h-4 text-brand-primary shrink-0 mt-0.5" />
-            <div>
-              {selectedSecurityAnswer === 'A' ? (
-                <span><strong className="text-brand-dark font-bold">Excellent choice!</strong> You are 100% correct. Security starts by reporting issues instantly. Always lock virtual cards from the Cards tab if suspicious.</span>
-              ) : (
-                <span><strong className="text-rose-500 font-bold">Safe Tip:</strong> Option A is much safer. Instant action saves balances! Use UX-trade locks to keep funds perfectly insulated on the go.</span>
-              )}
+              <p className="text-xs font-extrabold text-white font-mono">
+                ${user.balance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </p>
+              <p className="text-[10px] font-bold text-sky-400 font-mono mt-0.5">
+                +268.12  +0.92%
+              </p>
             </div>
           </div>
-        )}
-      </div>
 
-      {/* Transaction Feed Mini list */}
-      <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm" id="dashboard-mini-feed">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-xs font-bold text-brand-dark uppercase tracking-wider">
-            Recent Activities
-          </h3>
-          <button 
-            type="button"
-            onClick={() => onNavigateToTab('history')} 
-            className="text-xs font-semibold text-brand-primary flex items-center hover:underline"
-            id="see-all-transactions"
-          >
-            See All <ChevronRight className="w-4 h-4" />
-          </button>
-        </div>
+          {/* Solana (SLN) Card */}
+          <div className="w-44 p-4 bg-[#131926] border border-slate-800/90 rounded-2xl shrink-0 space-y-2 shadow-lg">
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-full bg-fuchsia-500/20 border border-fuchsia-500/40 text-fuchsia-400 flex items-center justify-center font-bold text-xs shrink-0">
+                S
+              </div>
+              <div>
+                <p className="text-xs font-bold text-white leading-none">Solana</p>
+                <p className="text-[10px] text-slate-400 font-mono mt-0.5">SLN</p>
+              </div>
+            </div>
 
-        {currentTxs.length === 0 ? (
-          <div className="text-center py-6 text-slate-400 text-xs" id="empty-tx-placeholder">
-            No transactions posted yet. balance is $0.00.
-            <div className="mt-3">
-              <button 
-                type="button"
-                onClick={() => { setInputAmount('50.00'); setActiveModal('add_money'); }} 
-                className="text-xs font-extrabold text-emerald-600 hover:text-emerald-700 inline-flex items-center gap-1.5 border border-emerald-200 bg-emerald-50/70 hover:bg-emerald-50 px-4 py-2 rounded-full shadow-sm hover:scale-[1.01] transition-all cursor-pointer"
-                id="quick-fund-btn"
-              >
-                Fund $50 Demo Now <ArrowUpRight className="w-3.5 h-3.5 text-emerald-600 animate-pulse" />
-              </button>
+            {/* Sparkline Pink Line Chart */}
+            <div className="h-8 w-full my-1">
+              <svg className="w-full h-full overflow-visible" viewBox="0 0 100 30">
+                <path d="M0 18 Q 25 24, 50 10 T 100 12" fill="none" stroke="#EC4899" strokeWidth="2.5" strokeLinecap="round" />
+              </svg>
+            </div>
+
+            <div>
+              <p className="text-xs font-extrabold text-white font-mono">
+                $2,122.31
+              </p>
+              <p className="text-[10px] font-bold text-pink-400 font-mono mt-0.5">
+                -82.0  -5.62%
+              </p>
             </div>
           </div>
-        ) : (
-          <div className="divide-y divide-slate-50" id="mini-feed-list">
-            {currentTxs.map((tx) => (
-              <div key={tx.id} className="py-3 flex items-center justify-between" id={`tx-item-${tx.id}`}>
-                <div className="flex items-center gap-3">
-                  <div className={`w-9 h-9 rounded-full flex items-center justify-center ${
-                    tx.type === 'deposit' || tx.type === 'reward' 
-                      ? 'bg-emerald-50 text-emerald-600' 
-                      : 'bg-rose-50 text-rose-600'
-                  }`} id={`tx-icon-${tx.id}`}>
-                    {tx.type === 'deposit' || tx.type === 'reward' ? <ArrowDownLeft className="w-4.5 h-4.5" /> : <ArrowUpRight className="w-4.5 h-4.5" />}
-                  </div>
-                  <div>
-                    <p className="text-xs font-bold text-brand-dark leading-snug">{tx.description}</p>
-                    <p className="text-[10px] text-slate-400">{new Date(tx.date).toLocaleDateString()}</p>
-                  </div>
+
+          {/* Wecoin Card */}
+          <div className="w-44 p-4 bg-[#131926] border border-slate-800/90 rounded-2xl shrink-0 space-y-2 shadow-lg">
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-full bg-cyan-500/20 border border-cyan-500/40 text-cyan-400 flex items-center justify-center font-bold text-xs shrink-0">
+                W
+              </div>
+              <div>
+                <p className="text-xs font-bold text-white leading-none">Wecoin</p>
+                <p className="text-[10px] text-slate-400 font-mono mt-0.5">3WCN</p>
+              </div>
+            </div>
+
+            {/* Sparkline Cyan Line Chart */}
+            <div className="h-8 w-full my-1">
+              <svg className="w-full h-full overflow-visible" viewBox="0 0 100 30">
+                <path d="M0 25 Q 25 8, 50 18 T 100 4" fill="none" stroke="#06B6D4" strokeWidth="2.5" strokeLinecap="round" />
+              </svg>
+            </div>
+
+            <div>
+              <p className="text-xs font-extrabold text-white font-mono">
+                $1,764.46
+              </p>
+              <p className="text-[10px] font-bold text-sky-400 font-mono mt-0.5">
+                +124.50  +7.80%
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* RECENT ACTIONS Section matching screenshot */}
+      <div className="space-y-2.5" id="dashboard-recent-actions">
+        <span className="text-[10px] uppercase tracking-widest text-slate-400 font-extrabold block pl-1">
+          RECENT ACTIONS
+        </span>
+
+        <div className="bg-[#131926] border border-slate-800/90 rounded-2xl p-4 space-y-3.5 shadow-lg">
+          {/* Default Wecoin action from image */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-[#1C2436] border border-slate-700/60 flex items-center justify-center p-2 shrink-0">
+                <img src="/icon.svg" alt="Wecoin Logo" className="w-6 h-6 rounded-md" />
+              </div>
+              <div>
+                <p className="text-xs font-bold text-white leading-tight">Wecoin</p>
+                <p className="text-[10px] text-slate-400 font-mono">3WCN</p>
+              </div>
+            </div>
+
+            <span className="text-xs font-black text-sky-400 font-mono">
+              + $1764.46
+            </span>
+          </div>
+
+          {/* User recent transactions feed */}
+          {currentTxs.slice(0, 3).map((tx) => (
+            <div key={tx.id} className="flex items-center justify-between border-t border-slate-800/60 pt-3">
+              <div className="flex items-center gap-3">
+                <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
+                  tx.type === 'deposit' || tx.type === 'reward' 
+                    ? 'bg-emerald-500/10 text-emerald-400' 
+                    : 'bg-rose-500/10 text-rose-400'
+                }`}>
+                  {tx.type === 'deposit' || tx.type === 'reward' ? <ArrowDownLeft className="w-4 h-4" /> : <ArrowUpRight className="w-4 h-4" />}
                 </div>
-                <div className="text-right">
-                  <p className={`text-xs font-mono font-bold ${
-                    tx.type === 'deposit' || tx.type === 'reward' ? 'text-emerald-600' : 'text-slate-800'
-                  }`}>
-                    {tx.type === 'deposit' || tx.type === 'reward' ? '+' : '-'}${tx.amount.toFixed(2)}
-                  </p>
-                  <span className={`text-[8.5px] px-1.5 py-0.5 rounded font-mono font-bold uppercase ${
-                    tx.status === 'pending' 
-                      ? 'bg-amber-50 text-amber-600 border border-amber-100 animate-pulse' 
-                      : 'bg-emerald-50 text-emerald-600 border border-emerald-100'
-                  }`}>
-                    {tx.status === 'pending' ? 'Processing Payment' : tx.status}
-                  </span>
+                <div>
+                  <p className="text-xs font-bold text-slate-200 leading-tight">{tx.description}</p>
+                  <p className="text-[10px] text-slate-400">{new Date(tx.date).toLocaleDateString()}</p>
                 </div>
               </div>
-            ))}
-          </div>
-        )}
+
+              <span className={`text-xs font-extrabold font-mono ${
+                tx.type === 'deposit' || tx.type === 'reward' ? 'text-emerald-400' : 'text-rose-400'
+              }`}>
+                {tx.type === 'deposit' || tx.type === 'reward' ? '+' : '-'}${tx.amount.toFixed(2)}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Floating Bottom Navigation Capsule Bar matching screenshot */}
+      <div className="fixed bottom-4 inset-x-0 z-40 max-w-xs mx-auto px-4" id="floating-bottom-nav">
+        <div className="bg-[#121826]/95 border border-slate-800/90 rounded-full p-2 backdrop-blur-md shadow-2xl flex items-center justify-around">
+          <button
+            type="button"
+            onClick={() => onNavigateToTab('home')}
+            className="w-11 h-11 bg-blue-600 rounded-full text-white shadow-lg shadow-blue-500/30 flex items-center justify-center active:scale-95 transition-transform cursor-pointer"
+            title="Dashboard"
+          >
+            <Landmark className="w-5 h-5 text-white" />
+          </button>
+
+          <button
+            type="button"
+            onClick={() => onNavigateToTab('trade')}
+            className="p-3 text-slate-400 hover:text-white rounded-full transition-colors cursor-pointer"
+            title="Trading"
+          >
+            <Sparkles className="w-5 h-5" />
+          </button>
+
+          <button
+            type="button"
+            onClick={() => onNavigateToTab('bots')}
+            className="p-3 text-slate-400 hover:text-white rounded-full transition-colors cursor-pointer"
+            title="AI Bots"
+          >
+            <Bot className="w-5 h-5" />
+          </button>
+
+          <button
+            type="button"
+            onClick={() => onNavigateToTab('history')}
+            className="p-3 text-slate-400 hover:text-white rounded-full transition-colors cursor-pointer"
+            title="History"
+          >
+            <Users className="w-5 h-5" />
+          </button>
+        </div>
       </div>
 
       {/* Interactive Modals Block */}
