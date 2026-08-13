@@ -21,18 +21,13 @@ export default function ProfilePage({ user, onLogout, onUpdateUser, onNavigateTo
   const [nameError, setNameError] = useState<string>('');
 
   const [darkMode, setDarkMode] = useState<boolean>(() => {
-    return localStorage.getItem('uxtrade_dark_mode') === 'true';
+    return localStorage.getItem('uxtrade_dark_mode') !== 'false';
   });
 
   // Sync dark mode class and localStorage
   useEffect(() => {
-    if (darkMode) {
-      document.body.classList.add('dark');
-      localStorage.setItem('uxtrade_dark_mode', 'true');
-    } else {
-      document.body.classList.remove('dark');
-      localStorage.setItem('uxtrade_dark_mode', 'false');
-    }
+    document.body.classList.add('dark');
+    localStorage.setItem('uxtrade_dark_mode', 'true');
   }, [darkMode]);
 
   // Keep name state synchronized if updated elsewhere
@@ -60,46 +55,46 @@ export default function ProfilePage({ user, onLogout, onUpdateUser, onNavigateTo
   };
 
   return (
-    <div className="space-y-6 pb-24" id="profile-tab-content">
+    <div className="space-y-5 pb-28 text-white font-sans max-w-md mx-auto" id="profile-tab-content">
       {/* Title */}
-      <div id="profile-header-meta">
-        <h2 className="text-xl font-bold text-brand-dark tracking-tight">Personal Account</h2>
-        <p className="text-xs text-slate-500">Manage limits, security credentials & settings</p>
+      <div id="profile-header-meta" className="px-1 pt-1">
+        <h2 className="text-xl font-black text-white tracking-tight">Personal Account</h2>
+        <p className="text-xs text-slate-400">Manage limits, security credentials & settings</p>
       </div>
 
-      {/* Profile Overview Card (White, Light Blue, Dark Blue) */}
-      <div className="bg-white border border-slate-100 rounded-3xl p-5 shadow-sm space-y-4" id="profile-hero-card">
+      {/* Profile Overview Card (#131926 Dark Dashboard Theme) */}
+      <div className="bg-[#131926] border border-slate-800/90 rounded-3xl p-5 shadow-xl space-y-4" id="profile-hero-card">
         <div className="flex items-center gap-4" id="profile-hero-top">
-          <div className="w-14 h-14 bg-sky-50 text-brand-primary border-2 border-brand-primary rounded-full flex items-center justify-center font-bold text-lg text-brand-dark" id="profile-avatar-giant">
+          <div className="w-14 h-14 bg-[#1C2436] text-sky-400 border-2 border-sky-500/80 rounded-2xl flex items-center justify-center font-bold text-xl text-white shadow-md shrink-0" id="profile-avatar-giant">
             {user.name.charAt(0).toUpperCase()}
           </div>
           <div>
             <div className="flex items-center gap-1.5" id="profile-level-badge-row">
-              <h3 className="font-display font-bold text-slate-800 text-sm">{user.name}</h3>
-              <BadgeCheck className="w-4.5 h-4.5 text-brand-primary" />
+              <h3 className="font-bold text-white text-base">{user.name}</h3>
+              <BadgeCheck className="w-4.5 h-4.5 text-sky-400" />
             </div>
-            <p className="text-xs text-slate-500">{user.email}</p>
-            <p className="text-[10px] text-brand-primary font-mono tracking-wider mt-1 uppercase font-bold text-left">
+            <p className="text-xs text-slate-400">{user.email}</p>
+            <p className="text-[10px] text-sky-400 font-mono tracking-wider mt-1 uppercase font-bold text-left">
               Account ID: F9J-{user.referralCode}
             </p>
           </div>
         </div>
 
-        <div className="p-3 bg-sky-50/50 rounded-2xl border border-sky-100 flex flex-col gap-2.5" id="profile-meta-rewards-badge">
+        <div className="p-3.5 bg-[#181F2E] rounded-2xl border border-slate-800 flex flex-col gap-2.5" id="profile-meta-rewards-badge">
           <div className="flex items-center justify-between text-xs w-full">
-            <div className="flex items-center gap-1.5 text-xs text-brand-dark font-medium">
-              <ShieldCheck className="w-4 h-4 text-brand-primary shrink-0" />
+            <div className="flex items-center gap-2 text-xs text-slate-300 font-medium">
+              <ShieldCheck className="w-4 h-4 text-sky-400 shrink-0" />
               <span>
-                Tier {user.tier || 1} verified account limit: <strong>{(user.tier || 1) >= 2 ? (user.tier === 3 ? '$100,000.00' : '$10,000.00') : '$1,000.00'} / day</strong>
+                Tier {user.tier || 1} verified limit: <strong className="text-white font-bold font-mono">{(user.tier || 1) >= 2 ? (user.tier === 3 ? '$100,000.00' : '$10,000.00') : '$1,000.00'} / day</strong>
               </span>
             </div>
             {(user.tier || 1) < 2 ? (
-              <span className="text-[10px] text-amber-600 bg-amber-50 px-2.5 py-1 rounded font-black uppercase text-center animate-pulse">
+              <span className="text-[10px] text-amber-400 bg-amber-500/10 border border-amber-500/30 px-2.5 py-0.5 rounded font-black uppercase text-center animate-pulse shrink-0">
                 STANDARD
               </span>
             ) : (
-              <span className="text-[9px] text-brand-primary bg-sky-105 px-2.5 py-1 rounded font-bold flex items-center gap-1 shrink-0">
-                <Check className="w-3 h-3 text-brand-primary" /> {user.tier === 3 ? 'PLATINUM' : 'VERIFIED'}
+              <span className="text-[9px] text-sky-400 bg-sky-500/10 border border-sky-500/30 px-2.5 py-0.5 rounded font-bold flex items-center gap-1 shrink-0">
+                <Check className="w-3 h-3 text-sky-400" /> {user.tier === 3 ? 'PLATINUM' : 'VERIFIED'}
               </span>
             )}
           </div>
@@ -109,25 +104,25 @@ export default function ProfilePage({ user, onLogout, onUpdateUser, onNavigateTo
           <button
             type="button"
             onClick={onNavigateToUpgrade}
-            className="w-full py-3 px-4 bg-brand-dark hover:bg-brand-medium text-white font-bold text-xs rounded-2xl flex items-center justify-center gap-2 transition-all hover:scale-[1.01] hover:shadow-md cursor-pointer duration-200"
+            className="w-full py-3.5 px-4 bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-extrabold text-xs rounded-2xl flex items-center justify-center gap-2 transition-all shadow-lg shadow-blue-600/30 cursor-pointer active:scale-95"
             id="profile-upgrade-action-btn"
           >
-            <Sparkles className="w-4 h-4 text-amber-400 fill-amber-400 shrink-0" />
-            <span>Upgrade Account Verification (Unlock limits)</span>
+            <Sparkles className="w-4 h-4 text-amber-300 fill-amber-300 shrink-0" />
+            <span>Upgrade Account Limits</span>
             <ArrowRight className="w-4 h-4 ml-1" />
           </button>
         )}
       </div>
 
-      {/* Profile Settings (Edit Name, Locked Email, Persistent Dark Mode) */}
-      <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm space-y-4" id="profile-settings-module">
-        <h3 className="text-xs font-bold text-brand-dark uppercase tracking-wider mb-2">
+      {/* Profile Settings */}
+      <div className="bg-[#131926] rounded-3xl p-5 border border-slate-800/90 shadow-xl space-y-4" id="profile-settings-module">
+        <h3 className="text-xs font-extrabold text-slate-400 uppercase tracking-widest">
           Profile Settings
         </h3>
 
         {/* Name Input Section */}
         <div className="space-y-2" id="field-group-name-change">
-          <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide">
+          <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider">
             Your Full Name
           </label>
           {isEditingName ? (
@@ -137,7 +132,7 @@ export default function ProfilePage({ user, onLogout, onUpdateUser, onNavigateTo
                   type="text"
                   value={tempName}
                   onChange={(e) => setTempName(e.target.value)}
-                  className="w-full text-xs px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-1 focus:ring-brand-primary"
+                  className="w-full text-xs px-3.5 py-2.5 bg-[#181F2E] border border-slate-700 rounded-xl focus:outline-none focus:border-blue-500 text-white font-bold"
                   id="profile-name-textbox"
                   placeholder="Enter full name"
                   disabled={savingName}
@@ -146,7 +141,7 @@ export default function ProfilePage({ user, onLogout, onUpdateUser, onNavigateTo
                   type="button"
                   onClick={handleSaveName}
                   disabled={savingName}
-                  className="px-4 py-2 bg-brand-primary hover:bg-brand-medium text-white text-xs font-bold rounded-xl cursor-pointer"
+                  className="px-4 py-2 bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-xs font-extrabold rounded-xl cursor-pointer transition-colors"
                   id="profile-save-name-btn"
                 >
                   {savingName ? 'Saving...' : 'Save'}
@@ -159,21 +154,21 @@ export default function ProfilePage({ user, onLogout, onUpdateUser, onNavigateTo
                     setNameError('');
                   }}
                   disabled={savingName}
-                  className="px-3 py-2 bg-slate-100/80 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl cursor-pointer"
+                  className="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold rounded-xl cursor-pointer"
                   id="profile-cancel-name-btn"
                 >
                   Cancel
                 </button>
               </div>
-              {nameError && <p className="text-[10px] text-red-500 font-semibold">{nameError}</p>}
+              {nameError && <p className="text-[10px] text-rose-400 font-semibold">{nameError}</p>}
             </div>
           ) : (
-            <div className="flex items-center justify-between p-3 bg-slate-50 border border-slate-100 rounded-xl" id="profile-display-name-row">
-              <span className="text-xs font-medium text-slate-800">{user.name}</span>
+            <div className="flex items-center justify-between p-3.5 bg-[#181F2E] border border-slate-800 rounded-2xl" id="profile-display-name-row">
+              <span className="text-xs font-bold text-white">{user.name}</span>
               <button
                 type="button"
                 onClick={() => setIsEditingName(true)}
-                className="text-xs text-brand-primary hover:text-brand-medium font-bold flex items-center gap-1 cursor-pointer"
+                className="text-xs text-sky-400 hover:text-sky-300 font-extrabold flex items-center gap-1 cursor-pointer"
                 id="profile-edit-name-toggle"
               >
                 <Edit2 className="w-3.5 h-3.5" />
@@ -186,129 +181,112 @@ export default function ProfilePage({ user, onLogout, onUpdateUser, onNavigateTo
         {/* Locked Email Section (KYC Locked) */}
         <div className="space-y-2" id="field-group-email-display">
           <div className="flex items-center justify-between">
-            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide">
+            <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider">
               Registered Email Address
             </label>
-            <span className="text-[9px] bg-amber-50 text-amber-600 px-2 py-0.5 rounded font-bold uppercase tracking-wider flex items-center gap-1 border border-amber-100/30">
+            <span className="text-[9px] bg-amber-500/10 text-amber-400 border border-amber-500/30 px-2 py-0.5 rounded font-bold uppercase tracking-wider flex items-center gap-1">
               <Lock className="w-2.5 h-2.5" /> Identity Verified
             </span>
           </div>
-          <div className="flex items-center gap-2.5 p-3 bg-slate-100/70 border border-slate-200/50 rounded-xl" id="profile-display-email-row">
+          <div className="flex items-center gap-2.5 p-3.5 bg-[#181F2E] border border-slate-800 rounded-2xl" id="profile-display-email-row">
             <Mail className="w-4 h-4 text-slate-400" />
-            <span className="text-xs font-medium text-slate-400 select-none outline-none">{user.email}</span>
+            <span className="text-xs font-medium text-slate-300 font-mono select-none outline-none">{user.email}</span>
           </div>
-          <p className="text-[10px] text-slate-400 mt-1 leading-normal">
+          <p className="text-[10px] text-slate-500 mt-1 leading-normal">
             For anti-money laundering (AML) protocols and security verification, email addresses cannot be modified.
           </p>
         </div>
 
         {/* Theme Preferences */}
-        <div className="pt-2 border-t border-slate-100" id="field-group-theme-preference">
+        <div className="pt-2 border-t border-slate-800" id="field-group-theme-preference">
           <div className="flex items-center justify-between py-2">
             <div>
-              <label className="block text-xs font-bold text-slate-800">
+              <label className="block text-xs font-bold text-white">
                 Application Theme
               </label>
-              <span className="text-[10px] text-slate-400">Enable premium eye-safe dark theme</span>
+              <span className="text-[10px] text-slate-400">Eye-safe dark theme active</span>
             </div>
-            <button
-              type="button"
-              onClick={() => setDarkMode(!darkMode)}
-              className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                darkMode ? 'bg-brand-primary' : 'bg-slate-200'
-              }`}
-              id="theme-toggle-switch"
-            >
-              <span
-                className={`pointer-events-none relative inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out flex items-center justify-center ${
-                  darkMode ? 'translate-x-5' : 'translate-x-0'
-                }`}
-              >
-                {darkMode ? (
-                  <Moon className="w-3" />
-                ) : (
-                  <Sun className="w-3 text-amber-500" />
-                )}
-              </span>
-            </button>
+            <div className="p-1 bg-[#181F2E] border border-slate-700/80 rounded-full flex items-center gap-1">
+              <Moon className="w-4 h-4 text-sky-400 p-0.5" />
+            </div>
           </div>
         </div>
       </div>
 
       {/* Customer support desk links */}
-      <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm space-y-3" id="profile-helpdesk-module">
-        <h3 className="text-xs font-bold text-brand-dark uppercase tracking-wider mb-2">
-          UX-trade Customer Help Desk
+      <div className="bg-[#131926] rounded-3xl p-5 border border-slate-800/90 shadow-xl space-y-3" id="profile-helpdesk-module">
+        <h3 className="text-xs font-extrabold text-slate-400 uppercase tracking-widest">
+          UXtrade Customer Desk
         </h3>
 
         <a 
           href="mailto:pellinomadio@gmail.com" 
-          className="p-3.5 bg-slate-50 hover:bg-slate-100 rounded-2xl flex items-center justify-between text-xs transition-all border border-slate-100"
+          className="p-3.5 bg-[#181F2E] hover:bg-[#1C2538] rounded-2xl flex items-center justify-between text-xs transition-all border border-slate-800"
           id="help-btn-email"
         >
           <div className="flex items-center gap-2.5">
-            <Mail className="w-4 h-4 text-brand-primary" />
+            <Mail className="w-4 h-4 text-sky-400" />
             <div>
-              <strong className="font-bold text-slate-800 block">System Administrator</strong>
-              <span className="text-[10px] text-slate-400">pellinomadio@gmail.com</span>
+              <strong className="font-bold text-white block">System Administrator</strong>
+              <span className="text-[10px] text-slate-400 font-mono">pellinomadio@gmail.com</span>
             </div>
           </div>
-          <ChevronRight className="w-4 h-4 text-slate-400" />
+          <ChevronRight className="w-4 h-4 text-slate-500" />
         </a>
 
         <button 
           type="button"
           onClick={() => setAlertOpen(!alertOpen)}
-          className="w-full p-3.5 bg-slate-50 hover:bg-slate-100 rounded-2xl flex items-center justify-between text-xs text-left transition-all border border-slate-100"
+          className="w-full p-3.5 bg-[#181F2E] hover:bg-[#1C2538] rounded-2xl flex items-center justify-between text-xs text-left transition-all border border-slate-800"
           id="help-btn-faq"
         >
           <div className="flex items-center gap-2.5">
-            <HelpCircle className="w-4 h-4 text-indigo-500" />
+            <HelpCircle className="w-4 h-4 text-indigo-400" />
             <div>
-              <strong className="font-bold text-slate-800 block">Frequently Asked Questions</strong>
+              <strong className="font-bold text-white block">Frequently Asked Questions</strong>
               <span className="text-[10px] text-slate-400">Read policies & compliance requirements</span>
             </div>
           </div>
-          <ChevronRight className="w-4 h-4 text-slate-400" />
+          <ChevronRight className="w-4 h-4 text-slate-500" />
         </button>
 
         {alertOpen && (
-          <div className="p-3 bg-sky-50/50 border border-sky-100 rounded-xl text-[10px] text-slate-600 space-y-1" id="faq-alert-box">
-            <p><strong>Is UX-trade safe?</strong> Yes. UX-trade is built on safe containerizations layers with real-time AES 256 backup structures.</p>
-            <p><strong>What is the maximum card balance?</strong> $10,000 USD is the default Tier 2 card limit.</p>
+          <div className="p-3.5 bg-[#181F2E] border border-slate-800 rounded-2xl text-[10.5px] text-slate-300 space-y-1.5" id="faq-alert-box">
+            <p><strong className="text-white">Is UXtrade safe?</strong> Yes. UXtrade is built on safe containerization layers with real-time AES 256 encryption.</p>
+            <p><strong className="text-white">What is the daily withdrawal limit?</strong> Tier 1: $1,000 / Day • Tier 2: $10,000 / Day • Tier 3: $100,000 / Day.</p>
           </div>
         )}
       </div>
 
-      {/* Safety Policy document download */}
-      <div className="p-4 bg-slate-50 border border-slate-100 rounded-2xl flex items-center justify-between text-xs" id="regulatory-compliance-panel">
+      {/* Regulatory Compliance PDF */}
+      <div className="p-4 bg-[#131926] border border-slate-800/90 rounded-2xl flex items-center justify-between text-xs" id="regulatory-compliance-panel">
         <div className="flex items-center gap-2">
           <FileText className="w-4.5 h-4.5 text-slate-400" />
-          <span className="text-slate-500 text-[11px]">Download consumer disclosure statement PDF</span>
+          <span className="text-slate-400 text-[11px]">Download consumer disclosure statement</span>
         </div>
         <button 
           type="button" 
           onClick={() => alert("Regulatory PDF ready for download!")} 
-          className="text-[10px] font-bold text-brand-dark bg-white border border-slate-200 px-2.5 py-1 rounded"
+          className="text-[10px] font-extrabold text-white bg-[#181F2E] border border-slate-700 px-3 py-1.5 rounded-xl hover:bg-[#1C2538] cursor-pointer transition-colors"
           id="doc-download-btn"
         >
           Download
         </button>
       </div>
 
-      {/* Logout Row Action buttons */}
+      {/* Logout Row */}
       <button
         id="btn-logout-auth"
         type="button"
-        className="w-full py-4 bg-rose-50 border border-rose-100 hover:bg-rose-100 text-rose-600 font-bold text-xs rounded-2xl transition-all duration-300 inline-flex items-center justify-center gap-2"
+        className="w-full py-4 bg-rose-500/10 border border-rose-500/30 hover:bg-rose-500/20 text-rose-400 font-extrabold text-xs rounded-2xl transition-all inline-flex items-center justify-center gap-2 cursor-pointer shadow-lg active:scale-95"
         onClick={onLogout}
       >
         <LogOut className="w-4 h-4" />
         Secure Sign Out from Device
       </button>
 
-      {/* Footer system diagnostics */}
-      <div className="text-center font-mono text-[9px] text-slate-400" id="profile-diagnostics-bar">
+      {/* Diagnostics */}
+      <div className="text-center font-mono text-[9px] text-slate-500 pt-2" id="profile-diagnostics-bar">
         FIN_SYS_SECURE • LATENCY: 12ms • SERVER: CLOUD RUN • REVISION: c989
       </div>
     </div>

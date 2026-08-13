@@ -701,13 +701,13 @@ export default function Dashboard({
 
   const renderProofUploadArea = () => {
     return (
-      <div className="space-y-1.5 p-3.5 bg-slate-50 border border-slate-200/65 rounded-2xl">
-        <label className="block text-[11px] font-black text-slate-700 uppercase tracking-widest flex items-center justify-between">
-          <span>Upload Receipt Screenshot <span className="text-red-500">*</span></span>
-          {uploadedProofBase64 && <span className="text-[10px] text-emerald-600 font-bold">✓ Loaded</span>}
+      <div className="space-y-2 p-3.5 bg-[#181F2E] border border-slate-800 rounded-2xl">
+        <label className="block text-[11px] font-black text-slate-300 uppercase tracking-widest flex items-center justify-between">
+          <span>Upload Receipt Screenshot <span className="text-rose-400">*</span></span>
+          {uploadedProofBase64 && <span className="text-[10px] text-emerald-400 font-bold">✓ Loaded</span>}
         </label>
         <div 
-          className="border-2 border-dashed border-slate-200 hover:border-brand-primary rounded-xl p-3 text-center cursor-pointer hover:bg-sky-50/15 transition-all text-xs"
+          className="border-2 border-dashed border-slate-700/80 hover:border-blue-500 rounded-xl p-3 text-center cursor-pointer hover:bg-[#1C2538] transition-all text-xs"
           onDragOver={(e) => e.preventDefault()}
           onDrop={(e) => {
             e.preventDefault();
@@ -739,13 +739,13 @@ export default function Dashboard({
         >
           {uploadedProofBase64 ? (
             <div className="space-y-1.5">
-              <img src={uploadedProofBase64} className="h-14 mx-auto rounded border border-slate-300 object-cover" alt="Proof screenshot" referrerPolicy="no-referrer" />
-              <p className="text-[9px] text-slate-400 font-semibold selection:bg-brand-primary/10">Proof loaded. Click to replace screenshot.</p>
+              <img src={uploadedProofBase64} className="h-14 mx-auto rounded border border-slate-700 object-cover" alt="Proof screenshot" referrerPolicy="no-referrer" />
+              <p className="text-[9px] text-slate-400 font-semibold">Proof loaded. Click to replace screenshot.</p>
             </div>
           ) : (
-            <div className="space-y-1.5 py-1 text-slate-500">
+            <div className="space-y-1 text-slate-400">
               <div className="text-sm">📁</div>
-              <p className="font-bold text-slate-700 text-[10.5px]">Drag & Drop payment receipt, or Click to select</p>
+              <p className="font-bold text-slate-200 text-[10.5px]">Drag & Drop payment receipt, or Click to select</p>
               <p className="text-[9.5px] text-slate-400">Supports JPG, JPEG, PNG formats</p>
             </div>
           )}
@@ -1303,7 +1303,7 @@ export default function Dashboard({
     return (
       <div className="space-y-6 pb-24 animate-fade-in font-sans" id="cashout-page-view">
         {/* Title / Back Row */}
-        <div className="flex items-center gap-3 border-b border-slate-100 pb-4" id="cashout-page-header">
+        <div className="flex items-center gap-3 border-b border-slate-800 pb-4" id="cashout-page-header">
           <button
             type="button"
             onClick={() => {
@@ -1313,20 +1313,20 @@ export default function Dashboard({
               setSelectedUpgradeTier(null);
               setForceShowUpgrade(false);
             }}
-            className="p-2 bg-slate-50 hover:bg-slate-100 border border-slate-100 rounded-xl transition-all cursor-pointer text-slate-600 flex items-center justify-center shrink-0 w-10 h-10"
+            className="p-2 bg-[#141A28] hover:bg-[#1C2538] border border-slate-800 rounded-xl transition-all cursor-pointer text-slate-200 flex items-center justify-center shrink-0 w-10 h-10 shadow-xs"
             id="cashout-back-to-dashboard-btn"
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
           <div>
-            <h2 className="text-xl font-bold text-brand-dark tracking-tight">
+            <h2 className="text-xl font-bold text-white tracking-tight">
               {isShowingUpgrade ? (
                 user.tier === 3 ? "Premium Verified Status" : 
                 user.tier === 2 ? "Upgrade Account Limits" : 
                 "Account Verification Upgrade"
               ) : "Withdraw & Cash Out"}
             </h2>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-slate-400">
               {isShowingUpgrade ? (
                 user.tier === 3 ? "Your account is active on Tier 3. Maximum privileges enabled." :
                 user.tier === 2 ? "Upgrade to Tier 3 Platinum to unlock unlimited features" :
@@ -1337,14 +1337,14 @@ export default function Dashboard({
         </div>
 
         {notification && (
-          <div className="p-3 bg-red-50 border border-red-100 rounded-xl text-brand-dark text-xs font-semibold flex items-center justify-between" id="cashout-page-toast">
-            <span className="text-rose-700">{notification}</span>
-            <button type="button" onClick={() => setNotification(null)} className="text-brand-primary font-bold hover:text-brand-dark">OK</button>
+          <div className="p-3 bg-rose-500/10 border border-rose-500/30 rounded-xl text-xs font-semibold flex items-center justify-between text-rose-300" id="cashout-page-toast">
+            <span>{notification}</span>
+            <button type="button" onClick={() => setNotification(null)} className="text-blue-400 font-bold hover:text-white">OK</button>
           </div>
         )}
 
         {/* Outer content container */}
-        <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-xs max-w-lg mx-auto animate-fade-in" id="cashout-page-content-wrapper">
+        <div className="bg-[#131926] rounded-3xl p-6 border border-slate-800/90 shadow-xl max-w-lg mx-auto animate-fade-in text-white" id="cashout-page-content-wrapper">
           
           {isShowingUpgrade ? (
             /* TIER 1 BLOCKED & UPGRADE FLOW */
@@ -1353,50 +1353,50 @@ export default function Dashboard({
               {/* STATUS 1: BENEFITS DISPLAY */}
               {upgradeStep === 'benefits' && (
                 <div className="space-y-5" id="upgrade-view-benefits">
-                  <div className="text-center pb-2 border-b border-slate-50">
+                  <div className="text-center pb-2 border-b border-slate-800">
                     {user.tier === 3 ? (
                       <>
-                        <div className="w-12 h-12 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center mx-auto mb-2.5">
+                        <div className="w-12 h-12 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-full flex items-center justify-center mx-auto mb-2.5">
                           <ShieldCheck className="w-6 h-6" />
                         </div>
-                        <h3 className="font-display font-black text-brand-dark text-base">Account Fully Verified</h3>
-                        <p className="text-xs text-slate-500">Your account is currently on <strong className="text-emerald-600">Tier 3 Platinum</strong>. You have activated maximum tier limits!</p>
+                        <h3 className="font-display font-black text-white text-base">Account Fully Verified</h3>
+                        <p className="text-xs text-slate-400">Your account is currently on <strong className="text-emerald-400">Tier 3 Platinum</strong>. You have activated maximum tier limits!</p>
                       </>
                     ) : user.tier === 2 ? (
                       <>
-                        <div className="w-12 h-12 bg-sky-50 text-brand-primary rounded-full flex items-center justify-center mx-auto mb-2.5">
+                        <div className="w-12 h-12 bg-blue-500/10 border border-blue-500/20 text-blue-400 rounded-full flex items-center justify-center mx-auto mb-2.5">
                           <Sparkles className="w-6 h-6" />
                         </div>
-                        <h3 className="font-display font-black text-brand-dark text-base">Maximize Your Limits</h3>
-                        <p className="text-xs text-slate-500">Your account is on <strong className="text-brand-dark font-bold">Tier 2</strong>. Upgrade to Tier 3 Platinum status to unlock maximum limits!</p>
+                        <h3 className="font-display font-black text-white text-base">Maximize Your Limits</h3>
+                        <p className="text-xs text-slate-400">Your account is on <strong className="text-white font-bold">Tier 2</strong>. Upgrade to Tier 3 Platinum status to unlock maximum limits!</p>
                       </>
                     ) : (
                       <>
-                        <div className="w-12 h-12 bg-amber-50 text-amber-500 rounded-full flex items-center justify-center mx-auto mb-2.5">
+                        <div className="w-12 h-12 bg-amber-500/10 border border-amber-500/20 text-amber-400 rounded-full flex items-center justify-center mx-auto mb-2.5">
                           <ShieldAlert className="w-6 h-6" />
                         </div>
-                        <h3 className="font-display font-black text-brand-dark text-base">Upgrade Your Limits</h3>
-                        <p className="text-xs text-slate-500">Your account is currently on <strong className="text-amber-600">Tier 1</strong>. Withdrawals are unlocked (min $200), but you can upgrade to unlock higher daily transaction limits!</p>
+                        <h3 className="font-display font-black text-white text-base">Upgrade Your Limits</h3>
+                        <p className="text-xs text-slate-400">Your account is currently on <strong className="text-amber-400">Tier 1</strong>. Withdrawals are unlocked (min $200), but you can upgrade to unlock higher daily transaction limits!</p>
                       </>
                     )}
                   </div>
 
                   <div className="space-y-4" id="tier-comparison">
                     {/* TIER 2 PLAN BAR */}
-                    <div className="p-4 bg-slate-50 border border-slate-100 rounded-2xl relative overflow-hidden text-left" id="tier-2-comparison-card">
+                    <div className="p-4 bg-[#181F2E] border border-slate-800 rounded-2xl relative overflow-hidden text-left" id="tier-2-comparison-card">
                       <div className="flex justify-between items-start mb-2.5">
                         <div>
-                          <span className="text-[10px] font-extrabold bg-brand-primary/10 text-brand-dark px-2.5 py-0.5 rounded-full uppercase">Tier 2 Verification</span>
-                          <h4 className="text-sm font-bold text-brand-dark mt-1">Naira & Global Access</h4>
+                          <span className="text-[10px] font-extrabold bg-blue-500/10 text-blue-400 border border-blue-500/20 px-2.5 py-0.5 rounded-full uppercase">Tier 2 Verification</span>
+                          <h4 className="text-sm font-bold text-white mt-1">Naira & Global Access</h4>
                         </div>
                         <div className="text-right">
-                          <span className="text-xs text-slate-400 block line-through">$30.00</span>
-                          <span className="text-base font-black font-mono text-emerald-600">$20.00</span>
+                          <span className="text-xs text-slate-500 block line-through">$30.00</span>
+                          <span className="text-base font-black font-mono text-emerald-400">$20.00</span>
                         </div>
                       </div>
-                      <ul className="text-[11px] text-slate-500 space-y-1.5 list-disc pl-4 mb-4">
+                      <ul className="text-[11px] text-slate-400 space-y-1.5 list-disc pl-4 mb-4">
                         <li>Withdraw & Cash Out instantly to external networks</li>
-                        <li>Daily transfer and cashout limit raised to <strong className="font-semibold text-slate-700">$10,000.00 USD / Day</strong></li>
+                        <li>Daily transfer and cashout limit raised to <strong className="font-semibold text-slate-200">$10,000.00 USD / Day</strong></li>
                         <li>Unlocks virtual debit cards & higher level interest lockbox yields</li>
                       </ul>
                       {(user.tier || 1) >= 2 ? (
@@ -1792,8 +1792,8 @@ export default function Dashboard({
               {transferStep === 'select' && (
             <div className="space-y-4" id="page-transfer-select">
               <div className="pb-2">
-                <h3 className="font-display font-bold text-brand-dark text-base">Choose Cashout Method</h3>
-                <p className="text-xs text-slate-500">Select how you want to convert and withdraw your balance.</p>
+                <h3 className="font-display font-bold text-white text-base">Choose Cashout Method</h3>
+                <p className="text-xs text-slate-400">Select how you want to convert and withdraw your balance.</p>
               </div>
 
               <div className="grid grid-cols-1 gap-3">
@@ -1801,43 +1801,43 @@ export default function Dashboard({
                 <button
                   type="button"
                   onClick={() => setTransferStep('naira_form')}
-                  className="p-4 bg-slate-50/75 hover:bg-slate-100 border border-slate-100 rounded-2xl flex items-center justify-between transition-all text-left cursor-pointer group"
+                  className="p-4 bg-[#181F2E] hover:bg-[#1C2538] border border-slate-800 rounded-2xl flex items-center justify-between transition-all text-left cursor-pointer group"
                   id="choice-naira-cashout"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-11 h-11 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center font-bold text-lg group-hover:bg-amber-100 transition-colors shrink-0">
+                    <div className="w-11 h-11 bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded-xl flex items-center justify-center font-bold text-lg group-hover:scale-105 transition-transform shrink-0">
                       ₦
                     </div>
                     <div>
-                      <p className="text-xs font-bold text-slate-800">Naira Bank Cashout (Auto-Settled)</p>
+                      <p className="text-xs font-bold text-white">Naira Bank Cashout (Auto-Settled)</p>
                       <p className="text-[10px] text-slate-400 font-medium">Direct routing to local Nigerian banks at ₦1,600 / $1</p>
                     </div>
                   </div>
-                  <ChevronRight className="w-5 h-5 text-slate-400 group-hover:text-slate-600 transition-colors shrink-0" />
+                  <ChevronRight className="w-5 h-5 text-slate-500 group-hover:text-slate-300 transition-colors shrink-0" />
                 </button>
 
                 {/* USDT Cashout Method */}
                 <button
                   type="button"
                   onClick={() => setTransferStep('usdt_form')}
-                  className="p-4 bg-slate-50/75 hover:bg-slate-100 border border-slate-100 rounded-2xl flex items-center justify-between transition-all text-left cursor-pointer group"
+                  className="p-4 bg-[#181F2E] hover:bg-[#1C2538] border border-slate-800 rounded-2xl flex items-center justify-between transition-all text-left cursor-pointer group"
                   id="choice-usdt-cashout"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-11 h-11 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center font-bold font-mono text-lg group-hover:bg-emerald-100 transition-colors shrink-0">
+                    <div className="w-11 h-11 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-xl flex items-center justify-center font-bold font-mono text-lg group-hover:scale-105 transition-transform shrink-0">
                       ₮
                     </div>
                     <div>
-                      <p className="text-xs font-bold text-slate-800">Crypto Wallet Withdrawal (USDT)</p>
+                      <p className="text-xs font-bold text-white">Crypto Wallet Withdrawal (USDT)</p>
                       <p className="text-[10px] text-slate-400 font-medium">Instant transaction to your TRC20, BEP20 or ERC20 address</p>
                     </div>
                   </div>
-                  <ChevronRight className="w-5 h-5 text-slate-400 group-hover:text-slate-600 transition-colors shrink-0" />
+                  <ChevronRight className="w-5 h-5 text-slate-500 group-hover:text-slate-300 transition-colors shrink-0" />
                 </button>
               </div>
 
-              <div className="mt-6 p-3 bg-slate-50 rounded-2xl border border-slate-100 text-center text-[10px] text-slate-400 font-medium flex items-center justify-center gap-1.5">
-                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+              <div className="mt-6 p-3 bg-[#181F2E] rounded-2xl border border-slate-800 text-center text-[10px] text-slate-400 font-medium flex items-center justify-center gap-1.5">
+                <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
                 <span>Instant settlement. Available balance: ${user.balance.toFixed(2)}</span>
               </div>
             </div>
@@ -1902,27 +1902,27 @@ export default function Dashboard({
               className="space-y-4"
               id="naira-cashout-form"
             >
-              <div className="flex items-center justify-between border-b border-slate-100 pb-2.5 mb-1">
+              <div className="flex items-center justify-between border-b border-slate-800 pb-2.5 mb-1">
                 <button
                   type="button"
                   onClick={() => setTransferStep('select')}
-                  className="text-xs text-slate-500 hover:text-brand-dark flex items-center gap-1 font-semibold transition-colors cursor-pointer"
+                  className="text-xs text-slate-400 hover:text-white flex items-center gap-1 font-semibold transition-colors cursor-pointer"
                   id="btn-back-to-select-transfer"
                 >
                   <ArrowLeft className="w-3.5 h-3.5" /> Back
                 </button>
-                <span className="text-[10px] text-amber-600 bg-amber-50 px-2.5 py-0.5 rounded font-mono font-bold">Naira Transfer Node</span>
+                <span className="text-[10px] text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2.5 py-0.5 rounded font-mono font-bold">Naira Transfer Node</span>
               </div>
 
               <div>
-                <h3 className="font-display font-bold text-brand-dark text-base">Direct Local Bank Cash Out</h3>
-                <p className="text-xs text-slate-500">Submit your local bank details to withdraw your USD instantly.</p>
+                <h3 className="font-display font-bold text-white text-base">Direct Local Bank Cash Out</h3>
+                <p className="text-xs text-slate-400">Submit your local bank details to withdraw your USD instantly.</p>
               </div>
 
               <div className="space-y-3.5">
                 {/* Searchable Bank Selector Dropdown */}
                 <div className="relative">
-                  <label className="block text-xs font-semibold text-slate-500 mb-1">
+                  <label className="block text-xs font-semibold text-slate-400 mb-1">
                     Select Destination Bank
                   </label>
                   <div className="relative">
@@ -1930,7 +1930,7 @@ export default function Dashboard({
                       type="button"
                       id="searchable-bank-trigger"
                       onClick={() => setIsBankDropdownOpen(!isBankDropdownOpen)}
-                      className="w-full flex items-center justify-between px-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-semibold text-left focus:outline-none focus:border-brand-primary focus:bg-white text-slate-800 cursor-pointer"
+                      className="w-full flex items-center justify-between px-4 py-3 bg-[#181F2E] border border-slate-700/80 rounded-2xl text-sm font-semibold text-left focus:outline-none focus:border-blue-500 text-white cursor-pointer"
                     >
                       <span>{cashoutBank}</span>
                       <ChevronDown className="w-4 h-4 text-slate-400" />
@@ -1944,18 +1944,18 @@ export default function Dashboard({
                           onClick={() => setIsBankDropdownOpen(false)} 
                         />
                         <div 
-                          className="absolute z-50 w-full mt-1.5 bg-white border border-slate-100 rounded-2xl shadow-xl overflow-hidden animate-fade-in"
+                          className="absolute z-50 w-full mt-1.5 bg-[#131926] border border-slate-800 rounded-2xl shadow-2xl overflow-hidden animate-fade-in text-white"
                           id="bank-dropdown-container"
                         >
                           {/* Search input */}
-                          <div className="relative p-2 border-b border-slate-100 bg-slate-50/50">
+                          <div className="relative p-2 border-b border-slate-800 bg-[#181F2E]">
                             <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400 pointer-events-none">
                               <Search className="w-3.5 h-3.5" />
                             </span>
                             <input
                               type="text"
                               placeholder="Search banks..."
-                              className="w-full pl-8 pr-4 py-2 bg-white border border-slate-100 rounded-xl text-xs font-medium focus:outline-none focus:border-brand-primary text-slate-800"
+                              className="w-full pl-8 pr-4 py-2 bg-[#141A28] border border-slate-700 rounded-xl text-xs font-medium focus:outline-none focus:border-blue-500 text-white placeholder-slate-500"
                               value={bankSearchQuery}
                               onChange={(e) => setBankSearchQuery(e.target.value)}
                               onClick={(e) => e.stopPropagation()}
@@ -1978,13 +1978,13 @@ export default function Dashboard({
                                     setIsBankDropdownOpen(false);
                                     setBankSearchQuery('');
                                   }}
-                                  className={`w-full text-left px-4 py-2.5 text-xs font-semibold hover:bg-slate-50 transition-colors flex items-center justify-between cursor-pointer ${
-                                    cashoutBankCode === bank.code ? 'text-indigo-600 bg-indigo-50/30' : 'text-slate-700'
+                                  className={`w-full text-left px-4 py-2.5 text-xs font-semibold hover:bg-[#1C2538] transition-colors flex items-center justify-between cursor-pointer ${
+                                    cashoutBankCode === bank.code ? 'text-blue-400 bg-blue-500/10' : 'text-slate-300'
                                   }`}
                                 >
                                   <span>{bank.name}</span>
                                   {cashoutBankCode === bank.code && (
-                                    <span className="text-[10px] bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full font-bold">Selected</span>
+                                    <span className="text-[10px] bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded-full font-bold">Selected</span>
                                   )}
                                 </button>
                               ))
@@ -1998,7 +1998,7 @@ export default function Dashboard({
 
                 {/* Account Number */}
                 <div>
-                  <label htmlFor="cashout-account-number" className="block text-xs font-semibold text-slate-500 mb-1">
+                  <label htmlFor="cashout-account-number" className="block text-xs font-semibold text-slate-400 mb-1">
                     10-Digit Account Number
                   </label>
                   <input
@@ -2008,7 +2008,7 @@ export default function Dashboard({
                     pattern="[0-9]{10}"
                     maxLength={10}
                     placeholder="e.g. 1029384756"
-                    className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-mono focus:outline-none focus:border-brand-primary focus:bg-white text-slate-800 tracking-wider"
+                    className="w-full px-4 py-3 bg-[#181F2E] border border-slate-700/80 rounded-2xl text-sm font-mono focus:outline-none focus:border-blue-500 text-white placeholder-slate-500 tracking-wider"
                     value={cashoutAccountNumber}
                     onChange={(e) => {
                       const val = e.target.value.replace(/[^0-9]/g, '');
@@ -2020,31 +2020,31 @@ export default function Dashboard({
                 {/* Account Verification Feedback Display */}
                 <div className="transition-all duration-300">
                   {isVerifyingAccount && (
-                    <div className="flex items-center gap-2 text-[11px] text-indigo-600 font-semibold bg-indigo-50/50 px-3.5 py-2.5 rounded-2xl border border-indigo-100/40 animate-pulse">
-                      <Loader2 className="w-3.5 h-3.5 animate-spin text-indigo-600" />
+                    <div className="flex items-center gap-2 text-[11px] text-blue-400 font-semibold bg-blue-500/10 px-3.5 py-2.5 rounded-2xl border border-blue-500/20 animate-pulse">
+                      <Loader2 className="w-3.5 h-3.5 animate-spin text-blue-400" />
                       <span>Verifying account details with NIBSS routing engine...</span>
                     </div>
                   )}
 
                   {!isVerifyingAccount && verificationSuccess && (
-                    <div className="flex items-center justify-between gap-2 text-[11px] text-emerald-700 font-bold bg-emerald-50 px-3.5 py-2.5 rounded-2xl border border-emerald-100">
+                    <div className="flex items-center justify-between gap-2 text-[11px] text-emerald-400 font-bold bg-emerald-500/10 px-3.5 py-2.5 rounded-2xl border border-emerald-500/20">
                       <div className="flex items-center gap-2">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
                         <div>
-                          <p className="text-[9px] text-emerald-600 font-mono tracking-wider uppercase font-extrabold leading-none mb-1">Account Verified</p>
-                          <p className="text-slate-800 font-extrabold uppercase font-mono text-[11px] leading-tight">{cashoutAccountName}</p>
+                          <p className="text-[9px] text-emerald-400 font-mono tracking-wider uppercase font-extrabold leading-none mb-1">Account Verified</p>
+                          <p className="text-white font-extrabold uppercase font-mono text-[11px] leading-tight">{cashoutAccountName}</p>
                         </div>
                       </div>
-                      <span className="text-[8px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-black uppercase tracking-wider shrink-0 animate-pulse">Ready</span>
+                      <span className="text-[8px] bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded-full font-black uppercase tracking-wider shrink-0 animate-pulse">Ready</span>
                     </div>
                   )}
 
                   {!isVerifyingAccount && verificationError && (
-                    <div className="flex items-start gap-2 text-[11px] text-red-700 font-bold bg-red-50 px-3.5 py-2.5 rounded-2xl border border-red-100">
-                      <AlertCircle className="w-3.5 h-3.5 text-red-600 shrink-0 mt-0.5" />
+                    <div className="flex items-start gap-2 text-[11px] text-rose-300 font-bold bg-rose-500/10 px-3.5 py-2.5 rounded-2xl border border-rose-500/20">
+                      <AlertCircle className="w-3.5 h-3.5 text-rose-400 shrink-0 mt-0.5" />
                       <div className="space-y-0.5">
-                        <p className="text-[9px] text-red-500 font-mono tracking-wider uppercase font-extrabold leading-none">Verification Error</p>
-                        <p className="text-red-600 font-bold font-sans leading-tight">{verificationError}</p>
+                        <p className="text-[9px] text-rose-400 font-mono tracking-wider uppercase font-extrabold leading-none">Verification Error</p>
+                        <p className="text-rose-300 font-bold font-sans leading-tight">{verificationError}</p>
                       </div>
                     </div>
                   )}
@@ -2052,7 +2052,7 @@ export default function Dashboard({
 
                 {/* Account Name */}
                 <div>
-                  <label htmlFor="cashout-account-name" className="block text-xs font-semibold text-slate-500 mb-1">
+                  <label htmlFor="cashout-account-name" className="block text-xs font-semibold text-slate-400 mb-1">
                     Account Recipient Name
                   </label>
                   <input
@@ -2060,7 +2060,7 @@ export default function Dashboard({
                     type="text"
                     required
                     placeholder="e.g. JOHN DOE"
-                    className="w-full px-4 py-3 bg-slate-55 border border-slate-100 rounded-2xl text-sm focus:outline-none focus:border-brand-primary focus:bg-white text-slate-800"
+                    className="w-full px-4 py-3 bg-[#181F2E] border border-slate-700/80 rounded-2xl text-sm focus:outline-none focus:border-blue-500 text-white placeholder-slate-500"
                     value={cashoutAccountName}
                     onChange={(e) => setCashoutAccountName(e.target.value)}
                   />
@@ -2068,7 +2068,7 @@ export default function Dashboard({
 
                 {/* Amount (USD) */}
                 <div>
-                  <label htmlFor="cashout-amount" className="block text-xs font-semibold text-slate-500 mb-1">
+                  <label htmlFor="cashout-amount" className="block text-xs font-semibold text-slate-400 mb-1">
                     Withdrawal Amount (USD)
                   </label>
                   <div className="relative">
@@ -2080,13 +2080,13 @@ export default function Dashboard({
                       min="200.00"
                       required
                       placeholder={`Min: $200.00 | Max: $${user.balance.toFixed(2)}`}
-                      className="w-full pl-8 pr-4 py-3 bg-slate-55 border border-slate-100 rounded-2xl text-sm font-semibold focus:outline-none focus:border-brand-primary focus:bg-white text-slate-800"
+                      className="w-full pl-8 pr-4 py-3 bg-[#181F2E] border border-slate-700/80 rounded-2xl text-sm font-semibold focus:outline-none focus:border-blue-500 text-white placeholder-slate-500"
                       value={cashoutAmount}
                       onChange={(e) => setCashoutAmount(e.target.value)}
                     />
                   </div>
                   {cashoutAmount && parseFloat(cashoutAmount) > 0 && (
-                    <p className="text-[10px] text-emerald-600 font-semibold px-1 mt-1">
+                    <p className="text-[10px] text-emerald-400 font-semibold px-1 mt-1">
                       ✓ Recipient receives: ₦{(parseFloat(cashoutAmount) * 1600).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} NGN (at ₦1,600 / $1).
                     </p>
                   )}
@@ -2095,7 +2095,7 @@ export default function Dashboard({
 
               <button
                 type="submit"
-                className="w-full py-3.5 bg-brand-dark text-white font-bold text-xs rounded-2xl hover:bg-brand-medium transition-all shadow-md mt-2 cursor-pointer"
+                className="w-full py-3.5 bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-extrabold text-xs rounded-2xl transition-all shadow-lg shadow-blue-600/30 mt-2 cursor-pointer"
                 id="btn-execute-naira-cashout"
               >
                 Initiate Naira Cash Out
@@ -2162,27 +2162,27 @@ export default function Dashboard({
               className="space-y-4"
               id="usdt-cashout-form"
             >
-              <div className="flex items-center justify-between border-b border-slate-100 pb-2.5 mb-1">
+              <div className="flex items-center justify-between border-b border-slate-800 pb-2.5 mb-1">
                 <button
                   type="button"
                   onClick={() => setTransferStep('select')}
-                  className="text-xs text-slate-500 hover:text-brand-dark flex items-center gap-1 font-semibold transition-colors cursor-pointer"
+                  className="text-xs text-slate-400 hover:text-white flex items-center gap-1 font-semibold transition-colors cursor-pointer"
                   id="btn-back-to-select-usdt-transfer"
                 >
                   <ArrowLeft className="w-3.5 h-3.5" /> Back
                 </button>
-                <span className="text-[10px] text-emerald-600 bg-emerald-50 px-2.5 py-0.5 rounded font-mono font-bold">Stablecoin Rail</span>
+                <span className="text-[10px] text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 rounded font-mono font-bold">Stablecoin Rail</span>
               </div>
 
               <div>
-                <h3 className="font-display font-bold text-brand-dark text-base">Direct USDT Crypto Withdraw</h3>
-                <p className="text-xs text-slate-500">Cashout your stable assets straight to your dynamic wallet destination.</p>
+                <h3 className="font-display font-bold text-white text-base">Direct USDT Crypto Withdraw</h3>
+                <p className="text-xs text-slate-400">Cashout your stable assets straight to your dynamic wallet destination.</p>
               </div>
 
               <div className="space-y-3">
                 {/* Amount (USDT) */}
                 <div>
-                  <label htmlFor="cashout-usdt-amount" className="block text-xs font-semibold text-slate-500 mb-1">
+                  <label htmlFor="cashout-usdt-amount" className="block text-xs font-semibold text-slate-400 mb-1">
                     Amount to Cash Out (USDT)
                   </label>
                   <div className="relative">
@@ -2194,7 +2194,7 @@ export default function Dashboard({
                       min="200.00"
                       required
                       placeholder={`Min: $200.00 | Max: $${user.balance.toFixed(2)}`}
-                      className="w-full pl-8 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-semibold focus:outline-none focus:border-brand-primary focus:bg-white text-slate-800"
+                      className="w-full pl-8 pr-4 py-3 bg-[#181F2E] border border-slate-700/80 rounded-2xl text-sm font-semibold focus:outline-none focus:border-blue-500 text-white placeholder-slate-500"
                       value={cashoutUSDTAmount}
                       onChange={(e) => setCashoutUSDTAmount(e.target.value)}
                     />
@@ -2203,24 +2203,24 @@ export default function Dashboard({
 
                 {/* USDT Network */}
                 <div>
-                  <label htmlFor="cashout-usdt-network" className="block text-xs font-semibold text-slate-500 mb-1">
+                  <label htmlFor="cashout-usdt-network" className="block text-xs font-semibold text-slate-400 mb-1">
                     Selected Crypto Blockchain
                   </label>
                   <select
                     id="cashout-usdt-network"
-                    className="w-full px-4 py-3 bg-slate-55 border border-slate-100 rounded-2xl text-sm font-semibold focus:outline-none focus:border-brand-primary focus:bg-white text-slate-800"
+                    className="w-full px-4 py-3 bg-[#181F2E] border border-slate-700/80 rounded-2xl text-sm font-semibold focus:outline-none focus:border-blue-500 text-white"
                     value={cashoutUSDTNetwork}
                     onChange={(e) => setCashoutUSDTNetwork(e.target.value)}
                   >
-                    <option value="TRON (TRC20)">TRON (TRC20)</option>
-                    <option value="BNB Smart Chain (BEP20)">BSC (BEP20)</option>
-                    <option value="Ethereum (ERC20)">Ethereum (ERC20)</option>
+                    <option value="TRON (TRC20)" className="bg-[#131926] text-white">TRON (TRC20)</option>
+                    <option value="BNB Smart Chain (BEP20)" className="bg-[#131926] text-white">BSC (BEP20)</option>
+                    <option value="Ethereum (ERC20)" className="bg-[#131926] text-white">Ethereum (ERC20)</option>
                   </select>
                 </div>
 
                 {/* Destination Wallet Address */}
                 <div>
-                  <label htmlFor="cashout-usdt-address" className="block text-xs font-semibold text-slate-550 mb-1">
+                  <label htmlFor="cashout-usdt-address" className="block text-xs font-semibold text-slate-400 mb-1">
                     Destination Wallet Address
                   </label>
                   <input
@@ -2228,7 +2228,7 @@ export default function Dashboard({
                     type="text"
                     required
                     placeholder="e.g. TYr9TszA86v..."
-                    className="w-full px-4 py-3 bg-slate-55 border border-slate-100 rounded-2xl text-sm font-mono focus:outline-none focus:border-brand-primary focus:bg-white text-slate-800 tracking-wider"
+                    className="w-full px-4 py-3 bg-[#181F2E] border border-slate-700/80 rounded-2xl text-sm font-mono focus:outline-none focus:border-blue-500 text-white placeholder-slate-500 tracking-wider"
                     value={cashoutUSDTAddress}
                     onChange={(e) => setCashoutUSDTAddress(e.target.value)}
                   />
@@ -2237,7 +2237,7 @@ export default function Dashboard({
 
               <button
                 type="submit"
-                className="w-full py-3.5 bg-brand-dark text-white font-bold text-xs rounded-2xl hover:bg-brand-medium transition-all shadow-md mt-2 cursor-pointer"
+                className="w-full py-3.5 bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-extrabold text-xs rounded-2xl transition-all shadow-lg shadow-blue-600/30 mt-2 cursor-pointer"
                 id="btn-execute-usdt-cashout"
               >
                 Withdraw USDT
@@ -2350,38 +2350,38 @@ export default function Dashboard({
     return (
       <div className="space-y-6 pb-24 animate-fade-in font-sans" id="add-money-page-view">
         {/* Title / Back Row */}
-        <div className="flex items-center gap-3 border-b border-slate-100 pb-4" id="add-money-page-header">
+        <div className="flex items-center gap-3 border-b border-slate-800 pb-4" id="add-money-page-header">
           <button
             type="button"
             onClick={() => {
               setActiveModal('none');
               setAddMoneyStep('select');
             }}
-            className="p-2 bg-slate-50 hover:bg-slate-100 border border-slate-100 rounded-xl transition-all cursor-pointer text-slate-600 flex items-center justify-center"
+            className="p-2 bg-[#141A28] hover:bg-[#1C2538] border border-slate-800 rounded-xl transition-all cursor-pointer text-slate-200 flex items-center justify-center shrink-0 w-10 h-10 shadow-xs"
             id="add-money-back-to-dashboard-btn"
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
           <div>
-            <h2 className="text-xl font-bold text-brand-dark tracking-tight">Fund Your Wallet</h2>
-            <p className="text-xs text-slate-500">Secure payment gateway & instant posting</p>
+            <h2 className="text-xl font-bold text-white tracking-tight">Fund Your Wallet</h2>
+            <p className="text-xs text-slate-400">Secure payment gateway & instant posting</p>
           </div>
         </div>
 
         {notification && (
-          <div className="p-3 bg-indigo-50/60 border border-indigo-100 rounded-xl text-brand-dark text-xs font-medium flex items-center justify-between" id="add-money-page-toast">
+          <div className="p-3 bg-blue-500/10 border border-blue-500/30 rounded-xl text-xs font-semibold flex items-center justify-between text-blue-300" id="add-money-page-toast">
             <span>{notification}</span>
-            <button type="button" onClick={() => setNotification(null)} className="text-brand-primary font-bold hover:text-brand-dark">OK</button>
+            <button type="button" onClick={() => setNotification(null)} className="text-blue-400 font-bold hover:text-white">OK</button>
           </div>
         )}
 
-        <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-xs max-w-lg mx-auto" id="add-money-page-content-wrapper">
+        <div className="bg-[#131926] rounded-3xl p-6 border border-slate-800/90 shadow-xl max-w-lg mx-auto text-white" id="add-money-page-content-wrapper">
           {/* SELECT */}
           {addMoneyStep === 'select' && (
             <div className="space-y-4" id="page-deposit-select">
               <div className="pb-2">
-                <h3 className="font-display font-bold text-brand-dark text-base">Select Deposit Channel</h3>
-                <p className="text-xs text-slate-500">All channels are processed securely with instant routing.</p>
+                <h3 className="font-display font-bold text-white text-base">Select Deposit Channel</h3>
+                <p className="text-xs text-slate-400">All channels are processed securely with instant routing.</p>
               </div>
 
               <div className="space-y-3">
@@ -2389,38 +2389,38 @@ export default function Dashboard({
                 <button
                   type="button"
                   onClick={() => setAddMoneyStep('usdt_input')}
-                  className="w-full p-4 bg-slate-50/75 hover:bg-slate-100 border border-slate-100 rounded-2xl flex items-center justify-between transition-all text-left cursor-pointer group"
+                  className="w-full p-4 bg-[#181F2E] hover:bg-[#1C2538] border border-slate-800 rounded-2xl flex items-center justify-between transition-all text-left cursor-pointer group"
                   id="page-deposit-method-usdt"
                 >
                   <div className="flex items-center gap-4">
-                    <div className="w-11 h-11 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center font-bold font-mono text-lg group-hover:bg-emerald-100 transition-colors">
+                    <div className="w-11 h-11 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-xl flex items-center justify-center font-bold font-mono text-lg group-hover:scale-105 transition-transform">
                       ₮
                     </div>
                     <div>
-                      <p className="text-xs font-bold text-slate-800">USDT Cryptographic Deposit</p>
+                      <p className="text-xs font-bold text-white">USDT Cryptographic Deposit</p>
                       <p className="text-[10px] text-slate-400 font-medium">Safe smart-contract based allocation (TRC20, BEP20)</p>
                     </div>
                   </div>
-                  <ChevronRight className="w-5 h-5 text-slate-400 group-hover:text-slate-600 transition-colors shrink-0" />
+                  <ChevronRight className="w-5 h-5 text-slate-500 group-hover:text-slate-300 transition-colors shrink-0" />
                 </button>
 
                 {/* Naira Transfer Method */}
                 <button
                   type="button"
                   onClick={() => setAddMoneyStep('naira_transfer')}
-                  className="w-full p-4 bg-slate-50/75 hover:bg-slate-100 border border-slate-100 rounded-2xl flex items-center justify-between transition-all text-left cursor-pointer group"
+                  className="w-full p-4 bg-[#181F2E] hover:bg-[#1C2538] border border-slate-800 rounded-2xl flex items-center justify-between transition-all text-left cursor-pointer group"
                   id="page-deposit-method-naira"
                 >
                   <div className="flex items-center gap-4">
-                    <div className="w-11 h-11 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center font-bold text-lg group-hover:bg-amber-100 transition-colors">
+                    <div className="w-11 h-11 bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded-xl flex items-center justify-center font-bold text-lg group-hover:scale-105 transition-transform">
                       ₦
                     </div>
                     <div>
-                      <p className="text-xs font-bold text-slate-800">Naira Instant Bank Transfer</p>
+                      <p className="text-xs font-bold text-white">Naira Instant Bank Transfer</p>
                       <p className="text-[10px] text-slate-400 font-medium font-sans">Auto-credited local virtual bank account (₦1,600 / $1)</p>
                     </div>
                   </div>
-                  <ChevronRight className="w-5 h-5 text-slate-400 group-hover:text-slate-600 transition-colors shrink-0" />
+                  <ChevronRight className="w-5 h-5 text-slate-500 group-hover:text-slate-300 transition-colors shrink-0" />
                 </button>
               </div>
             </div>
@@ -2436,11 +2436,11 @@ export default function Dashboard({
               className="space-y-4"
               id="page-deposit-usdt-input"
             >
-              <div className="flex items-center justify-between border-b border-slate-100 pb-2.5 mb-1">
+              <div className="flex items-center justify-between border-b border-slate-800 pb-2.5 mb-1">
                 <button
                   type="button"
                   onClick={() => setAddMoneyStep('select')}
-                  className="text-xs text-slate-500 hover:text-brand-dark flex items-center gap-1 font-semibold transition-colors cursor-pointer"
+                  className="text-xs text-slate-400 hover:text-white flex items-center gap-1 font-semibold transition-colors cursor-pointer"
                   id="page-btn-back-to-select-usdt"
                 >
                   <ArrowLeft className="w-3.5 h-3.5" /> Back
@@ -2449,13 +2449,13 @@ export default function Dashboard({
               </div>
 
               <div>
-                <h3 className="font-display font-bold text-brand-dark text-base">USDT Payment details</h3>
-                <p className="text-xs text-slate-500">Provide funding sum to generate unique address.</p>
+                <h3 className="font-display font-bold text-white text-base">USDT Payment details</h3>
+                <p className="text-xs text-slate-400">Provide funding sum to generate unique address.</p>
               </div>
 
               <div className="space-y-3">
                 <div>
-                  <label htmlFor="page-usdt-amount" className="block text-xs font-semibold text-slate-500 mb-1">
+                  <label htmlFor="page-usdt-amount" className="block text-xs font-semibold text-slate-400 mb-1">
                     Amount to Fund (USDT)
                   </label>
                   <div className="relative">
@@ -2467,7 +2467,7 @@ export default function Dashboard({
                       min="5.00"
                       required
                       placeholder="50.00"
-                      className="w-full pl-8 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-semibold focus:outline-none focus:border-brand-primary focus:bg-white text-slate-800"
+                      className="w-full pl-8 pr-4 py-3 bg-[#181F2E] border border-slate-700/80 rounded-2xl text-sm font-semibold focus:outline-none focus:border-blue-500 text-white placeholder-slate-500"
                       value={usdtAmount}
                       onChange={(e) => setUsdtAmount(e.target.value)}
                     />
@@ -2476,25 +2476,25 @@ export default function Dashboard({
                 </div>
 
                 <div>
-                  <label htmlFor="page-usdt-network" className="block text-xs font-semibold text-slate-505 mb-1">
+                  <label htmlFor="page-usdt-network" className="block text-xs font-semibold text-slate-400 mb-1">
                     Crypto Network Selector
                   </label>
                   <select
                     id="page-usdt-network"
-                    className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-semibold focus:outline-none focus:border-brand-primary focus:bg-white text-slate-800"
+                    className="w-full px-4 py-3 bg-[#181F2E] border border-slate-700/80 rounded-2xl text-sm font-semibold focus:outline-none focus:border-blue-500 text-white"
                     value={usdtNetwork}
                     onChange={(e) => setUsdtNetwork(e.target.value)}
                   >
-                    <option value="TRON (TRC20) - Fast & Low Fee">TRON (TRC20)</option>
-                    <option value="BNB Smart Chain (BEP20) - Ultra-Fast">BSC (BEP20)</option>
-                    <option value="Ethereum (ERC20) - High Gas">Ethereum (ERC20)</option>
+                    <option value="TRON (TRC20) - Fast & Low Fee" className="bg-[#131926] text-white">TRON (TRC20)</option>
+                    <option value="BNB Smart Chain (BEP20) - Ultra-Fast" className="bg-[#131926] text-white">BSC (BEP20)</option>
+                    <option value="Ethereum (ERC20) - High Gas" className="bg-[#131926] text-white">Ethereum (ERC20)</option>
                   </select>
                 </div>
               </div>
 
               <button 
                 type="submit" 
-                className="w-full py-3.5 bg-brand-dark text-white font-bold text-xs rounded-2xl hover:bg-brand-medium transition-all shadow-md mt-2 cursor-pointer"
+                className="w-full py-3.5 bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-extrabold text-xs rounded-2xl transition-all shadow-lg shadow-blue-600/30 mt-2 cursor-pointer"
                 id="page-btn-generate-usdt"
               >
                 Generate Wallet Address
@@ -2505,33 +2505,33 @@ export default function Dashboard({
           {/* USDT ADDRESS STATE */}
           {addMoneyStep === 'usdt_address' && (
             <div className="space-y-4" id="page-deposit-usdt-address">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-2.5 mb-1">
+              <div className="flex items-center justify-between border-b border-slate-800 pb-2.5 mb-1">
                 <button
                   type="button"
                   onClick={() => setAddMoneyStep('usdt_input')}
-                  className="text-xs text-slate-505 hover:text-brand-dark flex items-center gap-1 font-semibold transition-colors cursor-pointer"
+                  className="text-xs text-slate-400 hover:text-white flex items-center gap-1 font-semibold transition-colors cursor-pointer"
                   id="page-btn-back-to-usdt-input"
                 >
                   <ArrowLeft className="w-3.5 h-3.5" /> Back
                 </button>
-                <span className="text-[10px] text-emerald-600 bg-emerald-50 px-2.5 py-0.5 rounded font-mono font-bold">Secure Port</span>
+                <span className="text-[10px] text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 rounded font-mono font-bold">Secure Port</span>
               </div>
 
               <div className="text-center">
-                <h3 className="font-display font-bold text-brand-dark text-base">Send USDT Payment</h3>
-                <p className="text-xs text-slate-500">Send USDT tokens to the address generated below.</p>
+                <h3 className="font-display font-bold text-white text-base">Send USDT Payment</h3>
+                <p className="text-xs text-slate-400">Send USDT tokens to the address generated below.</p>
               </div>
 
-              <div className="p-4 bg-slate-900 text-white rounded-2xl space-y-2 text-center" id="page-usdt-payment-details">
-                <p className="text-[10px] text-sky-205 uppercase tracking-widest font-bold">Required Deposit Amount</p>
+              <div className="p-4 bg-[#181F2E] border border-slate-800 text-white rounded-2xl space-y-2 text-center" id="page-usdt-payment-details">
+                <p className="text-[10px] text-slate-400 uppercase tracking-widest font-bold">Required Deposit Amount</p>
                 <h4 className="font-mono text-2xl font-bold tracking-tight">{parseFloat(usdtAmount || '0').toFixed(2)} USDT</h4>
                 <p className="text-xs text-slate-300">Selected network: <strong className="text-emerald-400">{usdtNetwork.split(' ')[0]}</strong></p>
               </div>
 
               <div className="space-y-1.5">
-                <label className="block text-[10px] font-bold text-slate-450 uppercase tracking-wider">Deposit Wallet Address</label>
-                <div className="flex items-center gap-2.5 p-3 bg-slate-55 rounded-2xl border border-slate-100" id="page-usdt-address-box">
-                  <span className="flex-1 font-mono text-[11px] text-brand-dark break-all font-bold select-all leading-relaxed animate-fade-in">
+                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Deposit Wallet Address</label>
+                <div className="flex items-center gap-2.5 p-3 bg-[#181F2E] rounded-2xl border border-slate-800" id="page-usdt-address-box">
+                  <span className="flex-1 font-mono text-[11px] text-emerald-400 break-all font-bold select-all leading-relaxed animate-fade-in">
                     {gatewayUsdt}
                   </span>
                   <button
@@ -2541,26 +2541,26 @@ export default function Dashboard({
                       setCopied(true);
                       setTimeout(() => setCopied(false), 2000);
                     }}
-                    className="p-2 bg-white border border-slate-200 rounded-xl text-slate-505 hover:text-brand-dark hover:shadow-xs transition-all cursor-pointer flex items-center justify-center shrink-0 w-9 h-9"
+                    className="p-2 bg-[#141A28] border border-slate-700 rounded-xl text-slate-200 hover:text-white hover:bg-[#1C2538] transition-all cursor-pointer flex items-center justify-center shrink-0 w-9 h-9"
                     title="Copy Address"
                     id="page-btn-copy-address"
                   >
-                    {copied ? <Check className="w-4 h-4 text-emerald-600 font-bold" /> : <Copy className="w-4 h-4" />}
+                    {copied ? <Check className="w-4 h-4 text-emerald-400 font-bold" /> : <Copy className="w-4 h-4" />}
                   </button>
                 </div>
               </div>
 
               {renderProofUploadArea()}
 
-              <div className="p-3.5 bg-amber-50 border border-amber-100 rounded-2xl text-[10.5px] text-amber-850 leading-relaxed">
-                <p className="font-bold text-amber-900 mb-0.5 flex items-center gap-1">⚠️ Crucial Warning</p>
-                <p>Ensure you send exactly <strong className="font-semibold">USDT</strong> on the <strong className="font-semibold">{usdtNetwork.split(' ')[0]}</strong> network to this wallet address. Transfer of non-supported coins will result in zero credit.</p>
+              <div className="p-3.5 bg-amber-500/10 border border-amber-500/20 rounded-2xl text-[10.5px] text-amber-300 leading-relaxed">
+                <p className="font-bold text-amber-400 mb-0.5 flex items-center gap-1">⚠️ Crucial Warning</p>
+                <p>Ensure you send exactly <strong className="font-semibold text-white">USDT</strong> on the <strong className="font-semibold text-white">{usdtNetwork.split(' ')[0]}</strong> network to this wallet address. Transfer of non-supported coins will result in zero credit.</p>
               </div>
 
               <button 
                 type="button" 
                 onClick={handleConfirmUSDTDeposit}
-                className="w-full py-3.5 bg-brand-dark hover:bg-brand-medium text-white font-bold text-xs rounded-2xl transition-all shadow-md cursor-pointer flex items-center justify-center gap-2"
+                className="w-full py-3.5 bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-extrabold text-xs rounded-2xl transition-all shadow-lg shadow-blue-600/30 cursor-pointer flex items-center justify-center gap-2"
                 id="page-btn-confirm-usdt-payment"
               >
                 <CheckCircle2 className="w-4 h-4 text-emerald-400" />
@@ -2576,63 +2576,63 @@ export default function Dashboard({
               className="space-y-4"
               id="page-deposit-naira-transfer"
             >
-              <div className="flex items-center justify-between border-b border-slate-100 pb-2.5 mb-1">
+              <div className="flex items-center justify-between border-b border-slate-800 pb-2.5 mb-1">
                 <button
                   type="button"
                   onClick={() => setAddMoneyStep('select')}
-                  className="text-xs text-slate-505 hover:text-brand-dark flex items-center gap-1 font-semibold transition-colors cursor-pointer"
+                  className="text-xs text-slate-400 hover:text-white flex items-center gap-1 font-semibold transition-colors cursor-pointer"
                   id="page-btn-back-to-select-naira"
                 >
                   <ArrowLeft className="w-3.5 h-3.5" /> Back
                 </button>
-                <span className="text-[10px] text-slate-400 font-mono">Naira Virtual Terminal</span>
+                <span className="text-[10px] text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2.5 py-0.5 rounded font-mono font-bold">Naira Virtual Terminal</span>
               </div>
 
               <div>
-                <h3 className="font-display font-bold text-brand-dark text-base">Naira Local Bank Routing</h3>
-                <p className="text-xs text-slate-500 font-sans">Submit payments via your local banking apps instantly.</p>
+                <h3 className="font-display font-bold text-white text-base">Naira Local Bank Routing</h3>
+                <p className="text-xs text-slate-400 font-sans">Submit payments via your local banking apps instantly.</p>
               </div>
 
-              <div className="p-4 bg-slate-50 border border-slate-100 rounded-2xl space-y-2.5" id="page-naira-virtual-account">
+              <div className="p-4 bg-[#181F2E] border border-slate-800 rounded-2xl space-y-2.5" id="page-naira-virtual-account">
                 <div className="flex justify-between items-center text-xs">
                   <span className="text-slate-400 uppercase tracking-wider font-bold text-[10px]">Bank Name</span>
-                  <span className="font-bold text-slate-800">{gatewayNairaBank}</span>
+                  <span className="font-bold text-white">{gatewayNairaBank}</span>
                 </div>
-                <div className="flex justify-between items-center border-t border-slate-100 pt-2">
+                <div className="flex justify-between items-center border-t border-slate-800 pt-2">
                   <span className="text-slate-400 uppercase tracking-wider font-bold text-[10px]">Account Number</span>
                   <div className="flex items-center gap-1.5 font-sans">
-                    <span className="font-mono font-bold text-brand-dark text-sm">{gatewayNairaAcc}</span>
+                    <span className="font-mono font-bold text-emerald-400 text-sm">{gatewayNairaAcc}</span>
                     <button
                       type="button"
                       onClick={() => {
                         navigator.clipboard.writeText(gatewayNairaAcc);
                         setNotification("Virtual account number copied to clipboard.");
                       }}
-                      className="p-1.5 hover:bg-slate-200/50 rounded transition-colors text-slate-505 hover:text-slate-850 cursor-pointer"
+                      className="p-1.5 hover:bg-[#1C2538] rounded transition-colors text-slate-400 hover:text-white cursor-pointer"
                       id="page-btn-copy-account-num"
                     >
                       <Copy className="w-3.5 h-3.5" />
                     </button>
                   </div>
                 </div>
-                <div className="flex justify-between items-center border-t border-slate-100 pt-2 text-xs">
+                <div className="flex justify-between items-center border-t border-slate-800 pt-2 text-xs">
                   <span className="text-slate-400 uppercase tracking-wider font-bold text-[10px]">Account Name</span>
-                  <span className="font-bold text-slate-800">
+                  <span className="font-bold text-white">
                     {gatewayNairaName}
                   </span>
                 </div>
-                <div className="flex justify-between items-center border-t border-slate-100 pt-2 text-xs">
+                <div className="flex justify-between items-center border-t border-slate-800 pt-2 text-xs">
                   <span className="text-slate-400 uppercase tracking-wider font-bold text-[10px]">Settlement Rate</span>
-                  <span className="font-mono font-bold text-brand-primary">₦1,600 = $1.00 USD</span>
+                  <span className="font-mono font-bold text-blue-400">₦1,600 = $1.00 USD</span>
                 </div>
               </div>
 
               <div className="space-y-2">
-                <label htmlFor="page-naira-amount" className="block text-xs font-semibold text-slate-505">
+                <label htmlFor="page-naira-amount" className="block text-xs font-semibold text-slate-400">
                   Transferred Amount (₦ NGN)
                 </label>
                 <div className="relative">
-                  <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-xs font-bold text-slate-505 mt-0.5">₦</span>
+                  <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-xs font-bold text-slate-400 mt-0.5">₦</span>
                   <input 
                     id="page-naira-amount"
                     type="number"
@@ -2640,13 +2640,13 @@ export default function Dashboard({
                     step="100"
                     min="1000"
                     placeholder="e.g. 16,000"
-                    className="w-full pl-8 pr-4 py-3 bg-slate-55 border border-slate-100 rounded-2xl text-sm font-semibold focus:outline-none focus:border-brand-primary focus:bg-white text-slate-800"
+                    className="w-full pl-8 pr-4 py-3 bg-[#181F2E] border border-slate-700/80 rounded-2xl text-sm font-semibold focus:outline-none focus:border-blue-500 text-white placeholder-slate-500"
                     value={nairaAmount}
                     onChange={(e) => setNairaAmount(e.target.value)}
                   />
                 </div>
                 {nairaAmount && parseFloat(nairaAmount) > 0 && (
-                  <p className="text-[10px] text-emerald-600 font-semibold px-1">
+                  <p className="text-[10px] text-emerald-400 font-semibold px-1">
                     ✓ You will receive approx. ${(parseFloat(nairaAmount) / 1600).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD in your wallet balance.
                   </p>
                 )}
@@ -2656,7 +2656,7 @@ export default function Dashboard({
 
               <button 
                 type="submit" 
-                className="w-full py-3.5 bg-brand-dark hover:bg-brand-medium text-white font-bold text-xs rounded-2xl shadow-md transition-all cursor-pointer mt-2"
+                className="w-full py-3.5 bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-extrabold text-xs rounded-2xl shadow-lg shadow-blue-600/30 transition-all cursor-pointer mt-2"
                 id="page-btn-confirm-naira-transfer"
               >
                 Confirm Deposit Credit
