@@ -2,7 +2,8 @@ import { useState, useEffect, FormEvent } from 'react';
 import { User, Transaction, ReferralHistory } from '../types';
 import { 
   Users, Gift, Award, ArrowUpRight, Copy, Share2, Sparkles, Check, 
-  Plus, Calendar, ArrowDownLeft, BadgeAlert, Sparkle, ShieldAlert
+  Plus, Calendar, ArrowDownLeft, BadgeAlert, Sparkle, ShieldAlert,
+  Pickaxe, Timer, Clock, Flame, Zap, Cpu
 } from 'lucide-react';
 import { db } from '../firebase';
 import { doc, setDoc, updateDoc, collection, onSnapshot } from 'firebase/firestore';
@@ -25,8 +26,22 @@ export default function RewardsPage({ user, onUpdateUser, onAddTransaction }: Re
   const [hasCheckedInToday, setHasCheckedInToday] = useState<boolean>(false);
   const [claimingStatus, setClaimingStatus] = useState<string>('');
 
+  // Mining state (5-minute cycle for $3.00)
+  const [miningTimeLeft, setMiningTimeLeft] = useState<number>(0);
+
   useEffect(() => {
     if (!user?.id) return;
+
+    // Load mining timer state from localStorage
+    const lastMined = localStorage.getItem(`fintex_last_mined_time_${user.id}`);
+    if (lastMined) {
+      const elapsed = Math.floor((Date.now() - Number(lastMined)) / 1000);
+      if (elapsed < 300) {
+        setMiningTimeLeft(300 - elapsed);
+      } else {
+        setMiningTimeLeft(0);
+      }
+    }
 
     // Load actual referrals from Firestore subcollection
     const referralsColRef = collection(db, 'users', user.id, 'referrals');
@@ -95,6 +110,23 @@ export default function RewardsPage({ user, onUpdateUser, onAddTransaction }: Re
     };
   }, [user.id, user.name]);
 
+  // Mining countdown timer effect
+  useEffect(() => {
+    if (miningTimeLeft <= 0) return;
+
+    const timer = setInterval(() => {
+      setMiningTimeLeft(prev => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [miningTimeLeft]);
+
   const handleCopyCode = () => {
     navigator.clipboard.writeText(user.referralCode);
     setCopyCodeSuccess(true);
@@ -111,7 +143,7 @@ export default function RewardsPage({ user, onUpdateUser, onAddTransaction }: Re
     if (hasCheckedInToday) return;
 
     setClaimingStatus('Processing checkin...');
-    const rewardAmt = 0.20; // daily 20 cents
+    const rewardAmt = 12.00; // daily 12 dollars
 
     setTimeout(() => {
       const updatedUser: User = {
@@ -125,7 +157,7 @@ export default function RewardsPage({ user, onUpdateUser, onAddTransaction }: Re
         userId: user.id,
         type: 'reward',
         amount: rewardAmt,
-        description: 'Daily Check-in Loyalty Reward',
+        description: 'Daily Check-in Loyalty Reward ($12.00)',
         date: new Date().toISOString(),
         status: 'completed',
         reference: 'FTX-DLY-' + Math.floor(100000 + Math.random() * 900000)
@@ -136,8 +168,43 @@ export default function RewardsPage({ user, onUpdateUser, onAddTransaction }: Re
       setHasCheckedInToday(true);
       localStorage.setItem(`fintex_checked_in_${user.id}_${new Date().toDateString()}`, 'true');
       setClaimingStatus('');
-      alert(`Success! Daily check-in complete. You earned +$0.20 cash reward!`);
+      alert(`Success! Daily check-in complete. You earned +$12.00 cash reward!`);
     }, 800);
+  };
+
+  const handleStartMining = () => {
+    if (miningTimeLeft > 0) return;
+
+    const miningReward = 3.00; // $3.00 per 5 minutes
+    const updatedUser: User = {
+      ...user,
+      balance: parseFloat((user.balance + miningReward).toFixed(2))
+    };
+
+    const tx: Transaction = {
+      id: 'tx_mining_' + Math.random().toString(36).substr(2, 9),
+      userId: user.id,
+      type: 'reward',
+      amount: miningReward,
+      description: '5-Minute Crypto Mining Reward ($3.00)',
+      date: new Date().toISOString(),
+      status: 'completed',
+      reference: 'FTX-MINE-' + Math.floor(100000 + Math.random() * 900000)
+    };
+
+    onUpdateUser(updatedUser);
+    onAddTransaction(tx);
+
+    const now = Date.now();
+    localStorage.setItem(`fintex_last_mined_time_${user.id}`, now.toString());
+    setMiningTimeLeft(300); // 5 minutes = 300 seconds
+    alert('Success! You mined $3.00 cash reward added directly to your wallet balance!');
+  };
+
+  const formatTime = (seconds: number) => {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
   };
 
   // Safebox deposit action
@@ -284,7 +351,7 @@ export default function RewardsPage({ user, onUpdateUser, onAddTransaction }: Re
             <Sparkle className="w-4.5 h-4.5 text-brand-primary" />
             Daily Loyalty Cash Check-In
           </h3>
-          <p className="text-xs text-slate-500">Claim $0.20 cash directly into balance every 24 hours.</p>
+          <p className="text-xs text-slate-500">Claim $12.00 cash directly into balance every 24 hours.</p>
         </div>
         <button
           type="button"
@@ -293,11 +360,71 @@ export default function RewardsPage({ user, onUpdateUser, onAddTransaction }: Re
           className={`px-4.5 py-3 rounded-2xl font-bold text-xs transition-all ${
             hasCheckedInToday 
               ? 'bg-slate-150 text-slate-400 cursor-not-allowed border border-slate-200' 
-              : 'bg-brand-dark text-white hover:bg-brand-medium shadow-sm'
+              : 'bg-brand-dark text-white hover:bg-brand-medium shadow-sm cursor-pointer'
           }`}
           id="btn-daily-claim"
         >
-          {claimingStatus ? claimingStatus : hasCheckedInToday ? 'Claimed ✓' : 'Claim $0.20'}
+          {claimingStatus ? claimingStatus : hasCheckedInToday ? 'Claimed ✓' : 'Claim $12.00'}
+        </button>
+      </div>
+
+      {/* 5-Minute Cash Mining Module */}
+      <div className="bg-slate-900 border border-slate-800 p-5 rounded-3xl shadow-xl text-white space-y-4 relative overflow-hidden" id="cash-mining-module">
+        <div className="absolute -right-10 -bottom-10 w-32 h-32 bg-amber-500/10 rounded-full blur-2xl pointer-events-none" />
+        
+        <div className="flex items-start justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 shrink-0">
+              <Pickaxe className="w-5 h-5 animate-pulse" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm font-bold text-white font-display">5-Minute Cash Mining Rig</h3>
+                <span className="text-[9px] bg-amber-500/20 text-amber-400 border border-amber-500/30 font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider">
+                  $3.00 / 5 MIN
+                </span>
+              </div>
+              <p className="text-xs text-slate-400 mt-0.5">Mine $3.00 USD cash every 5 minutes straight to your wallet balance.</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="p-3.5 bg-[#131926] rounded-2xl border border-slate-800 flex items-center justify-between text-xs">
+          <div>
+            <span className="text-[10px] text-slate-400 block font-bold uppercase tracking-wider">Mining Reward</span>
+            <strong className="text-amber-400 font-mono text-sm font-black">+$3.00 USD</strong>
+          </div>
+          <div className="text-right">
+            <span className="text-[10px] text-slate-400 block font-bold uppercase tracking-wider">Cycle Timer</span>
+            <span className="text-white font-mono font-bold flex items-center justify-end gap-1.5 mt-0.5">
+              <Timer className="w-3.5 h-3.5 text-amber-400 animate-spin" />
+              {miningTimeLeft > 0 ? formatTime(miningTimeLeft) : 'READY TO MINE'}
+            </span>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          disabled={miningTimeLeft > 0}
+          onClick={handleStartMining}
+          className={`w-full py-3.5 rounded-2xl font-black text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg ${
+            miningTimeLeft > 0
+              ? 'bg-slate-800/80 text-slate-400 border border-slate-700/80 cursor-not-allowed'
+              : 'bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-black hover:scale-[1.01] active:scale-[0.99]'
+          }`}
+          id="btn-mine-cash"
+        >
+          {miningTimeLeft > 0 ? (
+            <>
+              <Clock className="w-4 h-4 animate-pulse text-amber-400" />
+              <span>Mining In Progress ({formatTime(miningTimeLeft)})</span>
+            </>
+          ) : (
+            <>
+              <Pickaxe className="w-4 h-4 text-slate-950" />
+              <span>Mine & Claim $3.00 Cash Now</span>
+            </>
+          )}
         </button>
       </div>
 
