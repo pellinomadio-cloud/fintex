@@ -9,6 +9,7 @@ import ProfilePage from './components/ProfilePage';
 import TradingPage from './components/TradingPage';
 import HistoryPage from './components/HistoryPage';
 import BotsPage from './components/BotsPage';
+import PWAInstallPrompt from './components/PWAInstallPrompt';
 import { db, auth, handleFirestoreError, OperationType } from './firebase';
 import { doc, collection, setDoc, updateDoc, onSnapshot, getDoc, getDocs } from 'firebase/firestore';
 
@@ -16,7 +17,7 @@ import { doc, collection, setDoc, updateDoc, onSnapshot, getDoc, getDocs } from 
 import { 
   Home as HomeIcon, Gift as RewardsIcon, TrendingUp as FinanceIcon, 
   CreditCard as CardsIcon, User as ProfileIcon, ShieldAlert, Sparkles,
-  Activity as TradeIcon, Bot
+  Activity as TradeIcon, Bot, Moon, Sun, Smartphone, Download
 } from 'lucide-react';
 
 export default function App() {
@@ -25,6 +26,7 @@ export default function App() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [triggerUpgrade, setTriggerUpgrade] = useState<boolean>(false);
   const [reconciledUserId, setReconciledUserId] = useState<string | null>(null);
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
 
   useEffect(() => {
     // Check local session
@@ -41,14 +43,26 @@ export default function App() {
       }
     }
 
-    // Read theme preference or default to light mode if not specified (e.g. on registration)
+    // Read theme preference
     const isDark = localStorage.getItem('uxtrade_dark_mode') === 'true';
+    setIsDarkMode(isDark);
     if (isDark) {
       document.body.classList.add('dark');
     } else {
       document.body.classList.remove('dark');
     }
   }, []);
+
+  const toggleDarkMode = () => {
+    const nextDark = !isDarkMode;
+    setIsDarkMode(nextDark);
+    localStorage.setItem('uxtrade_dark_mode', String(nextDark));
+    if (nextDark) {
+      document.body.classList.add('dark');
+    } else {
+      document.body.classList.remove('dark');
+    }
+  };
 
   // Sync state between global users list, Firestore, and current session using real-time listeners
   useEffect(() => {
@@ -321,18 +335,20 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] dark:bg-[#080C14] text-slate-900 dark:text-slate-100 flex flex-col antialiased select-none" id="uxtrade-master-app">
+      {/* Top PWA Installation Banner */}
+      <PWAInstallPrompt variant="banner" />
+
       {/* Top Banner Applet Brand Bar */}
-      <header className="fixed top-0 inset-x-0 bg-white dark:bg-[#0F1524]/90 text-slate-800 dark:text-white z-40 h-14 flex items-center justify-between px-4 sm:px-6 shadow-md border-b border-slate-100 dark:border-white/5 backdrop-blur-md" id="uxtrade-global-header">
-        <div className="flex items-center gap-2.5" id="header-brand-logo-section">
+      <header className="sticky top-0 inset-x-0 bg-white/95 dark:bg-[#0F1524]/90 text-slate-800 dark:text-white z-40 h-14 flex items-center justify-between px-3 sm:px-6 shadow-md border-b border-slate-100 dark:border-white/5 backdrop-blur-md" id="uxtrade-global-header">
+        <div className="flex items-center gap-2 sm:gap-3" id="header-brand-logo-section">
           <div 
-            className="flex items-center gap-2 cursor-pointer" 
+            className="flex items-center gap-2 cursor-pointer group" 
             onClick={() => setActiveTab('home')}
           >
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-primary to-brand-medium text-white flex items-center justify-center font-display font-black text-lg shadow-sm border border-white/10">
-              U
-            </div>
-            <span className="font-display font-bold tracking-tight text-base" id="header-app-brand-name">
-              UX-trade<span className="text-emerald-400 font-sans font-extrabold text-[9px] ml-1.5 uppercase tracking-wider px-1.5 py-0.5 rounded-md bg-emerald-500/10 border border-emerald-500/20">Secure</span>
+            <img src="/icon.svg" alt="UXtrade Trading Icon" className="w-8 h-8 rounded-lg shadow-md border border-sky-500/20 group-hover:scale-105 transition-transform" />
+            <span className="font-display font-extrabold tracking-tight text-base sm:text-lg flex items-center gap-1" id="header-app-brand-name">
+              <span>UXtrade</span>
+              <span className="text-emerald-400 font-sans font-black text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-md bg-emerald-500/10 border border-emerald-500/20">v2.5</span>
             </span>
           </div>
 
@@ -340,14 +356,14 @@ export default function App() {
             id="header-btn-bots"
             type="button"
             onClick={() => setActiveTab('bots')}
-            className={`px-3 py-1.5 rounded-xl text-[10px] font-extrabold uppercase tracking-widest flex items-center gap-1.5 transition-all cursor-pointer border ${
+            className={`px-2.5 py-1.5 rounded-xl text-[10px] font-extrabold uppercase tracking-widest flex items-center gap-1 transition-all cursor-pointer border ${
               activeTab === 'bots'
                 ? 'bg-gradient-to-r from-violet-600 to-indigo-600 border-indigo-500 text-white shadow-lg shadow-indigo-500/30'
-                : 'bg-slate-100 dark:bg-slate-900/80 border-violet-500/20 hover:border-violet-400/50 text-violet-600 dark:text-violet-300 hover:bg-violet-50 dark:hover:bg-violet-950/20 hover:text-violet-800 dark:hover:text-violet-200'
+                : 'bg-slate-100 dark:bg-slate-900/80 border-violet-500/20 hover:border-violet-400/50 text-violet-600 dark:text-violet-300 hover:bg-violet-50 dark:hover:bg-violet-950/20'
             }`}
           >
-            <Bot className="w-3.5 h-3.5 animate-bounce" />
-            <span>AI Bots</span>
+            <Bot className="w-3.5 h-3.5 text-violet-500 dark:text-violet-400 animate-bounce" />
+            <span className="hidden xs:inline">AI Bots</span>
           </button>
 
           <button
@@ -357,21 +373,34 @@ export default function App() {
               setTriggerUpgrade(true);
               setActiveTab('home');
             }}
-            className="px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5 transition-all cursor-pointer border bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 border-amber-400/40 text-slate-950 shadow-md shadow-amber-500/10 hover:shadow-amber-500/25 hover:scale-[1.03]"
+            className="px-2.5 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-1 transition-all cursor-pointer border bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 border-amber-400/40 text-slate-950 shadow-md shadow-amber-500/10 hover:shadow-amber-500/25 hover:scale-[1.03]"
           >
             <Sparkles className="w-3.5 h-3.5 text-slate-950 animate-pulse" />
-            <span>VIP Upgrade</span>
+            <span className="hidden xs:inline">VIP Upgrade</span>
           </button>
         </div>
 
-        <div className="flex items-center gap-2 text-xs font-semibold text-slate-500 dark:text-sky-100" id="header-connection-status">
-          <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-          <span>Secured Sandbox</span>
+        <div className="flex items-center gap-2" id="header-actions-section">
+          {/* Header PWA Install Button */}
+          <PWAInstallPrompt variant="button" />
+
+          {/* Theme Switcher Toggle */}
+          <button
+            type="button"
+            onClick={toggleDarkMode}
+            className="p-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-amber-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer border border-slate-200 dark:border-slate-700"
+            title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
+          >
+            {isDarkMode ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-slate-600" />}
+          </button>
         </div>
       </header>
 
+      {/* Floating PWA Install Pill for Mobile */}
+      <PWAInstallPrompt variant="pill" />
+
       {/* Main Page scroll viewport */}
-      <main className="flex-1 mt-14 px-4 py-6 max-w-lg mx-auto w-full" id="uxtrade-main-tab-content">
+      <main className="flex-1 px-4 py-6 max-w-lg mx-auto w-full mb-16" id="uxtrade-main-tab-content">
         {activeTab === 'home' && (
           <Dashboard 
             user={currentUser} 

@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0B1120"/>
+      <stop offset="50%" stop-color="#0F172A"/>
+      <stop offset="100%" stop-color="#0284C7"/>
+    </linearGradient>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FCD34D"/>
+      <stop offset="100%" stop-color="#F59E0B"/>
+    </linearGradient>
+    <linearGradient id="cyanGrad" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" stop-color="#0284C7"/>
+      <stop offset="100%" stop-color="#38BDF8"/>
+    </linearGradient>
+    <linearGradient id="greenGrad" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" stop-color="#059669"/>
+      <stop offset="100%" stop-color="#10B981"/>
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="12" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Background Card -->
+  <rect width="512" height="512" rx="112" fill="url(#bgGrad)"/>
+  
+  <!-- Subtle Outer Border Accent -->
+  <rect x="12" y="12" width="488" height="488" rx="100" fill="none" stroke="#38BDF8" stroke-width="4" stroke-opacity="0.25"/>
+
+  <!-- Candlestick Wicks & Bars -->
+  <!-- Candle 1: Bullish -->
+  <line x1="120" y1="280" x2="120" y2="400" stroke="#38BDF8" stroke-width="6" stroke-linecap="round"/>
+  <rect x="104" y="310" width="32" height="60" rx="6" fill="url(#cyanGrad)"/>
+
+  <!-- Candle 2: Bullish Gold -->
+  <line x1="200" y1="200" x2="200" y2="360" stroke="#F59E0B" stroke-width="6" stroke-linecap="round"/>
+  <rect x="184" y="230" width="32" height="90" rx="6" fill="url(#goldGrad)"/>
+
+  <!-- Candle 3: Bullish Green -->
+  <line x1="280" y1="140" x2="280" y2="320" stroke="#10B981" stroke-width="6" stroke-linecap="round"/>
+  <rect x="264" y="170" width="32" height="110" rx="6" fill="url(#greenGrad)"/>
+
+  <!-- Candle 4: Hero Peak Gold -->
+  <line x1="360" y1="80" x2="360" y2="280" stroke="#FCD34D" stroke-width="8" stroke-linecap="round"/>
+  <rect x="340" y="110" width="40" height="130" rx="8" fill="url(#goldGrad)" filter="url(#glow)"/>
+
+  <!-- Trend Curve Arrow -->
+  <path d="M 80 380 Q 220 280 430 90" fill="none" stroke="url(#cyanGrad)" stroke-width="12" stroke-linecap="round" filter="url(#glow)"/>
+  <polygon points="440,80 410,110 440,125" fill="#38BDF8"/>
+
+  <!-- UX Trade Branding Emblem -->
+  <text x="256" y="455" font-family="system-ui, -apple-system, sans-serif" font-weight="900" font-size="42" fill="#FFFFFF" text-anchor="middle" letter-spacing="4">UXTRADE</text>
+</svg>

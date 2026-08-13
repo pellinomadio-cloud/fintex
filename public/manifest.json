@@ -1,0 +1,55 @@
+{
+  "name": "UXtrade - Modern Wealth & Trading App",
+  "short_name": "UXtrade",
+  "description": "Secure Multi-Tier Crypto & Fiat Trading Platform, Instant Banking, Virtual Cards and AI Trading Bots",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#080C14",
+  "theme_color": "#0F172A",
+  "categories": ["finance", "business", "utilities"],
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Trading Terminal",
+      "short_name": "Trade",
+      "description": "Open active trading pairs and charts",
+      "url": "/?tab=trade",
+      "icons": [{ "src": "/icon.svg", "sizes": "192x192" }]
+    },
+    {
+      "name": "AI Bots",
+      "short_name": "Bots",
+      "description": "View automated AI trading bots",
+      "url": "/?tab=bots",
+      "icons": [{ "src": "/icon.svg", "sizes": "192x192" }]
+    },
+    {
+      "name": "Cashout / Withdrawal",
+      "short_name": "Cashout",
+      "description": "Withdraw to bank account or USDT",
+      "url": "/?tab=home&action=cashout",
+      "icons": [{ "src": "/icon.svg", "sizes": "192x192" }]
+    }
+  ]
+}

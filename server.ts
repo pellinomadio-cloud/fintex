@@ -1,5 +1,6 @@
 import express from "express";
 import path from "path";
+import fs from "fs";
 import { createServer as createViteServer } from "vite";
 import { GoogleGenAI } from "@google/genai";
 import dotenv from "dotenv";
@@ -34,9 +35,48 @@ function getGeminiClient(): GoogleGenAI {
 
 app.use(express.json());
 
+// Explicit Static Asset Routes for PWA files
+app.get("/manifest.json", (req, res) => {
+  const manifestPath = path.join(process.cwd(), "public", "manifest.json");
+  if (fs.existsSync(manifestPath)) {
+    res.setHeader("Content-Type", "application/manifest+json");
+    return res.sendFile(manifestPath);
+  }
+  return res.status(404).json({ error: "Manifest not found" });
+});
+
+app.get("/sw.js", (req, res) => {
+  const swPath = path.join(process.cwd(), "public", "sw.js");
+  if (fs.existsSync(swPath)) {
+    res.setHeader("Content-Type", "application/javascript");
+    res.setHeader("Service-Worker-Allowed", "/");
+    return res.sendFile(swPath);
+  }
+  return res.status(404).send("// Service worker missing");
+});
+
+app.get("/icon.svg", (req, res) => {
+  const iconPath = path.join(process.cwd(), "public", "icon.svg");
+  if (fs.existsSync(iconPath)) {
+    res.setHeader("Content-Type", "image/svg+xml");
+    return res.sendFile(iconPath);
+  }
+  return res.status(404).send("Icon missing");
+});
+
 // API: Health Check
 app.get("/api/health", (req, res) => {
-  res.json({ status: "ok" });
+  res.json({ status: "ok", app: "UXtrade Trading Platform", pwa: "ready" });
+});
+
+// API: PWA Manifest API endpoint alias
+app.get("/api/pwa-manifest", (req, res) => {
+  const manifestPath = path.join(process.cwd(), "public", "manifest.json");
+  if (fs.existsSync(manifestPath)) {
+    res.setHeader("Content-Type", "application/json");
+    return res.sendFile(manifestPath);
+  }
+  return res.status(404).json({ error: "PWA manifest unavailable" });
 });
 
 // API: Bank Account Verification Proxy (Supports both POST and GET, and aliases /api/verify and /api/verify-bank)
@@ -158,8 +198,6 @@ Key aspects of UXtrade:
 
 Keep your answers formatting-friendly (with lists or bold words if appropriate) and friendly. Never mention internal technical stack details (like react, node, express). Always align with UXtrade branding (safe, premium, secure, peer-to-peer). Make your answers crisp, concise and highly accurate.`;
 
-    // Format chat history for the chats.create api
-    // The history parameter is expected to be an array of objects: { role: 'user' | 'model', parts: [{ text: string }] }
     const formattedHistory = Array.isArray(history) 
       ? history.map((h: any) => ({
           role: h.role === "assistant" ? "model" : h.role,
@@ -186,6 +224,9 @@ Keep your answers formatting-friendly (with lists or bold words if appropriate) 
   }
 });
 
+// Serve static public folder explicitly
+app.use(express.static(path.join(process.cwd(), "public")));
+
 // Mount Vite middleware or serve built assets
 async function setupVite() {
   if (process.env.NODE_ENV !== "production") {
@@ -210,3 +251,4 @@ async function setupVite() {
 setupVite().catch((err) => {
   console.error("Vite startup error:", err);
 });
+
