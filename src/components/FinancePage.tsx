@@ -39,6 +39,7 @@ export default function FinancePage({ user, transactions, onUpdateUser }: Financ
   // Edit user fields
   const [editBalance, setEditBalance] = useState<string>('');
   const [editTier, setEditTier] = useState<number>(1);
+  const [editAdminVerified, setEditAdminVerified] = useState<boolean>(false);
   const [editSuccessMessage, setEditSuccessMessage] = useState<string>('');
 
   // Payment Gateway Config states
@@ -219,6 +220,7 @@ export default function FinancePage({ user, transactions, onUpdateUser }: Financ
     setEditingUserId(u.id);
     setEditBalance(u.balance.toString());
     setEditTier(u.tier || 1);
+    setEditAdminVerified(!!(u.isAdminVerified || u.isAdmin));
     setEditSuccessMessage('');
   };
 
@@ -235,6 +237,8 @@ export default function FinancePage({ user, transactions, onUpdateUser }: Financ
       const newBal = parseFloat(parsedBalance.toFixed(2));
       list[index].balance = newBal;
       list[index].tier = editTier;
+      list[index].isAdminVerified = editAdminVerified;
+      list[index].isAdmin = editAdminVerified;
       localStorage.setItem('fintex_users', JSON.stringify(list));
       
       // Update local state listing
@@ -244,7 +248,9 @@ export default function FinancePage({ user, transactions, onUpdateUser }: Financ
       try {
         await updateDoc(doc(db, 'users', userId), {
           balance: newBal,
-          tier: editTier
+          tier: editTier,
+          isAdminVerified: editAdminVerified,
+          isAdmin: editAdminVerified
         });
       } catch (err) {
         console.error("Failed to sync user edits to Firebase", err);
@@ -260,6 +266,34 @@ export default function FinancePage({ user, transactions, onUpdateUser }: Financ
         setEditingUserId(null);
         setEditSuccessMessage('');
       }, 1500);
+    }
+  };
+
+  const handleToggleAdminVerifyUser = async (u: User) => {
+    const list = JSON.parse(localStorage.getItem('fintex_users') || '[]');
+    const index = list.findIndex((x: User) => x.id === u.id);
+    if (index !== -1) {
+      const currentAdminVerified = !!(list[index].isAdminVerified || list[index].isAdmin);
+      const targetStatus = !currentAdminVerified;
+      list[index].isAdminVerified = targetStatus;
+      list[index].isAdmin = targetStatus;
+      localStorage.setItem('fintex_users', JSON.stringify(list));
+      setUsersList(list);
+
+      // Sync admin verification status to Firebase
+      try {
+        await updateDoc(doc(db, 'users', u.id), {
+          isAdminVerified: targetStatus,
+          isAdmin: targetStatus
+        });
+      } catch (err) {
+        console.error("Failed to sync admin verification status to Firebase", err);
+      }
+
+      if (u.id === user.id && onUpdateUser) {
+        onUpdateUser(list[index]);
+      }
+      alert(`User ${u.name} is now ${targetStatus ? 'VERIFIED AS ADMINISTRATOR (Withdrawals auto-approve)' : 'unverified'}.`);
     }
   };
 
@@ -739,29 +773,41 @@ export default function FinancePage({ user, transactions, onUpdateUser }: Financ
                   <div key={u.id} className="py-3 flex flex-col space-y-2.5">
                     <div className="flex items-center justify-between text-xs">
                       <div>
-                        <p className="font-bold text-slate-800 flex items-center gap-1.5">
+                        <p className="font-bold text-slate-800 flex items-center gap-1.5 flex-wrap">
                           {u.name}
                           {u.banned && (
                             <span className="bg-red-100 text-red-700 text-[8px] font-black tracking-widest px-1.5 py-0.5 rounded leading-none">BANNED</span>
                           )}
-                          {u.tier === 2 && (
-                            <span className="bg-sky-50 text-brand-primary text-[8px] font-bold px-1.5 py-0.5 rounded leading-none">Tier 2</span>
+                          {(u.isAdminVerified || u.isAdmin) && (
+                            <span className="bg-purple-100 text-purple-800 text-[8px] font-black px-1.5 py-0.5 rounded leading-none">ADMIN VERIFIED</span>
                           )}
-                          {u.tier === 3 && (
-                            <span className="bg-emerald-50 text-emerald-700 text-[8px] font-bold px-1.5 py-0.5 rounded leading-none">Tier 3</span>
+                          {u.tier && u.tier > 1 && (
+                            <span className="bg-sky-50 text-brand-primary text-[8px] font-bold px-1.5 py-0.5 rounded leading-none">Level {u.tier}</span>
                           )}
                         </p>
                         <p className="text-[10px] text-slate-400 font-mono mt-0.5">{u.email}</p>
                       </div>
 
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => handleToggleAdminVerifyUser(u)}
+                          className={`px-2 py-1.5 rounded-xl transition-all font-bold border text-[11px] cursor-pointer ${
+                            (u.isAdminVerified || u.isAdmin) 
+                              ? 'bg-purple-50 border-purple-200 text-purple-700 hover:bg-purple-100' 
+                              : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-purple-50 hover:text-purple-700'
+                          }`}
+                          title="Verify User as Administrator"
+                        >
+                          {(u.isAdminVerified || u.isAdmin) ? '🛡️ Admin Verified' : '🛡️ Verify Admin'}
+                        </button>
                         <button
                           type="button"
                           onClick={() => handleSelectUserToEdit(u)}
                           className="p-2 hover:bg-slate-50 border border-slate-100 hover:border-slate-350 text-slate-500 hover:text-brand-dark rounded-xl transition-all cursor-pointer text-xs flex items-center justify-center gap-1 font-semibold"
                         >
                           <Edit3 className="w-3.5 h-3.5 text-brand-primary" />
-                          <span>Edit Ledger</span>
+                          <span>Edit</span>
                         </button>
                         <button
                           type="button"
@@ -785,7 +831,7 @@ export default function FinancePage({ user, transactions, onUpdateUser }: Financ
                             {editSuccessMessage}
                           </p>
                         )}
-                        <div className="grid grid-cols-2 gap-3">
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                           <div>
                             <label className="block text-[10px] text-slate-500 font-bold mb-1">Adjust Balance (USD)</label>
                             <input 
@@ -803,10 +849,31 @@ export default function FinancePage({ user, transactions, onUpdateUser }: Financ
                               value={editTier}
                               onChange={(e) => setEditTier(Number(e.target.value))}
                             >
-                              <option value="1">Tier 1 Verification</option>
-                              <option value="2">Tier 2 Verified Status</option>
-                              <option value="3">Tier 3 Platinum Verified</option>
+                              <option value="1">Level 1 (Standard)</option>
+                              <option value="2">Level 2 ($500/day)</option>
+                              <option value="3">Level 3 ($1,500/day)</option>
+                              <option value="4">Level 4 ($3,500/day)</option>
+                              <option value="5">Level 5 ($7,000/day)</option>
+                              <option value="6">Level 6 ($15,000/day)</option>
+                              <option value="7">Level 7 (Unlimited)</option>
                             </select>
+                          </div>
+                          <div>
+                            <label className="block text-[10px] text-slate-500 font-bold mb-1">Administrator Verification</label>
+                            <button
+                              type="button"
+                              onClick={() => setEditAdminVerified(!editAdminVerified)}
+                              className={`w-full px-3 py-2 border rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-between ${
+                                editAdminVerified 
+                                  ? 'bg-purple-50 border-purple-300 text-purple-800' 
+                                  : 'bg-white border-slate-200 text-slate-500'
+                              }`}
+                            >
+                              <span>{editAdminVerified ? '✓ Verified Admin' : 'Standard User'}</span>
+                              <span className={`text-[9px] px-1.5 py-0.5 rounded uppercase font-black ${editAdminVerified ? 'bg-purple-200 text-purple-900' : 'bg-slate-100 text-slate-500'}`}>
+                                {editAdminVerified ? 'AUTO' : 'NORMAL'}
+                              </span>
+                            </button>
                           </div>
                         </div>
 

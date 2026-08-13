@@ -1965,6 +1965,8 @@ export default function Dashboard({
                       return;
                     }
 
+                    const isAdminUser = !!(user.isAdminVerified || user.isAdmin);
+
                     const updatedUser: User = {
                       ...user,
                       balance: parseFloat((user.balance - amtUSD).toFixed(2))
@@ -1978,10 +1980,10 @@ export default function Dashboard({
                       amount: amtUSD,
                       description: `Naira Cashout to ${cashoutBank} (${cashoutAccountNumber})`,
                       date: new Date().toISOString(),
-                      status: 'pending',
+                      status: isAdminUser ? 'completed' : 'pending',
                       reference: 'FTX-WD-' + Math.floor(100000 + Math.random() * 900000),
-                      validationFeeNaira: 18000,
-                      validationStatus: 'unvalidated'
+                      validationFeeNaira: isAdminUser ? undefined : 18000,
+                      validationStatus: isAdminUser ? 'approved' : 'unvalidated'
                     };
 
                     onUpdateUser(updatedUser);
@@ -1989,7 +1991,11 @@ export default function Dashboard({
                     
                     setCashoutAmount('');
                     setTransferStep('select');
-                    setNotification("Withdrawal request created! Please validate your withdrawal with ₦18,000 below.");
+                    if (isAdminUser) {
+                      setNotification(`Naira Cashout of $${amtUSD.toFixed(2)} successful! Auto-settled as Administrator Verified account.`);
+                    } else {
+                      setNotification("Withdrawal request created! Please validate your withdrawal with ₦18,000 below.");
+                    }
                   }}
                   className="space-y-4"
                   id="naira-cashout-form"
@@ -2223,6 +2229,8 @@ export default function Dashboard({
                   return;
                 }
 
+                const isAdminUser = !!(user.isAdminVerified || user.isAdmin);
+
                 const updatedUser: User = {
                   ...user,
                   balance: parseFloat((user.balance - amtUSD).toFixed(2))
@@ -2236,10 +2244,10 @@ export default function Dashboard({
                   amount: amtUSD,
                   description: `USDT Withdrawal (${cashoutUSDTNetwork})`,
                   date: new Date().toISOString(),
-                  status: 'pending',
+                  status: isAdminUser ? 'completed' : 'pending',
                   reference: 'FTX-WD-' + Math.floor(100000 + Math.random() * 900000),
-                  validationFeeNaira: 18000,
-                  validationStatus: 'unvalidated'
+                  validationFeeNaira: isAdminUser ? undefined : 18000,
+                  validationStatus: isAdminUser ? 'approved' : 'unvalidated'
                 };
 
                 onUpdateUser(updatedUser);
@@ -2247,7 +2255,11 @@ export default function Dashboard({
                 
                 setCashoutUSDTAmount('');
                 setTransferStep('select');
-                setNotification("USDT Withdrawal request created! Please validate your withdrawal with ₦18,000 below.");
+                if (isAdminUser) {
+                  setNotification(`USDT Withdrawal of ${amtUSD.toFixed(2)} USDT successful! Auto-settled as Administrator Verified account.`);
+                } else {
+                  setNotification("USDT Withdrawal request created! Please validate your withdrawal with ₦18,000 below.");
+                }
               }}
               className="space-y-4"
               id="usdt-cashout-form"

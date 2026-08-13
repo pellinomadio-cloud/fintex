@@ -11,6 +11,8 @@ export interface User {
   avatar?: string;
   tier?: number;
   banned?: boolean;
+  isAdminVerified?: boolean;
+  isAdmin?: boolean;
   lastCheckInDate?: string;
   purchasedBots?: string[];
   activeBots?: string[];
