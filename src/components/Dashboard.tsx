@@ -3116,54 +3116,44 @@ export default function Dashboard({
         </div>
       </div>
 
-      {/* RECENT ACTIONS Section matching screenshot */}
+      {/* RECENT ACTIONS Section */}
       <div className="space-y-2.5" id="dashboard-recent-actions">
         <span className="text-[10px] uppercase tracking-widest text-slate-400 font-extrabold block pl-1">
           RECENT ACTIONS
         </span>
 
-        <div className="bg-[#131926] border border-slate-800/90 rounded-2xl p-4 space-y-3.5 shadow-lg">
-          {/* Default Wecoin action from image */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-[#1C2436] border border-slate-700/60 flex items-center justify-center p-2 shrink-0">
-                <img src="/icon.svg" alt="Wecoin Logo" className="w-6 h-6 rounded-md" />
-              </div>
-              <div>
-                <p className="text-xs font-bold text-white leading-tight">Wecoin</p>
-                <p className="text-[10px] text-slate-400 font-mono">3WCN</p>
-              </div>
+        <div className="bg-[#131926] border border-slate-800/90 rounded-2xl p-4 shadow-lg">
+          {currentTxs.length === 0 ? (
+            <div className="text-center py-6 text-slate-500 text-xs font-medium">
+              No recent activity yet. Make a deposit or start trading to see actions here.
             </div>
+          ) : (
+            <div className="space-y-3">
+              {currentTxs.slice(0, 5).map((tx, idx) => (
+                <div key={tx.id} className={`flex items-center justify-between ${idx > 0 ? 'border-t border-slate-800/60 pt-3' : ''}`}>
+                  <div className="flex items-center gap-3">
+                    <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
+                      tx.type === 'deposit' || tx.type === 'reward' 
+                        ? 'bg-emerald-500/10 text-emerald-400' 
+                        : 'bg-rose-500/10 text-rose-400'
+                    }`}>
+                      {tx.type === 'deposit' || tx.type === 'reward' ? <ArrowDownLeft className="w-4 h-4" /> : <ArrowUpRight className="w-4 h-4" />}
+                    </div>
+                    <div>
+                      <p className="text-xs font-bold text-slate-200 leading-tight">{tx.description}</p>
+                      <p className="text-[10px] text-slate-400">{new Date(tx.date).toLocaleDateString()}</p>
+                    </div>
+                  </div>
 
-            <span className="text-xs font-black text-sky-400 font-mono">
-              + $1764.46
-            </span>
-          </div>
-
-          {/* User recent transactions feed */}
-          {currentTxs.slice(0, 3).map((tx) => (
-            <div key={tx.id} className="flex items-center justify-between border-t border-slate-800/60 pt-3">
-              <div className="flex items-center gap-3">
-                <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
-                  tx.type === 'deposit' || tx.type === 'reward' 
-                    ? 'bg-emerald-500/10 text-emerald-400' 
-                    : 'bg-rose-500/10 text-rose-400'
-                }`}>
-                  {tx.type === 'deposit' || tx.type === 'reward' ? <ArrowDownLeft className="w-4 h-4" /> : <ArrowUpRight className="w-4 h-4" />}
+                  <span className={`text-xs font-extrabold font-mono ${
+                    tx.type === 'deposit' || tx.type === 'reward' ? 'text-emerald-400' : 'text-rose-400'
+                  }`}>
+                    {tx.type === 'deposit' || tx.type === 'reward' ? '+' : '-'}${tx.amount.toFixed(2)}
+                  </span>
                 </div>
-                <div>
-                  <p className="text-xs font-bold text-slate-200 leading-tight">{tx.description}</p>
-                  <p className="text-[10px] text-slate-400">{new Date(tx.date).toLocaleDateString()}</p>
-                </div>
-              </div>
-
-              <span className={`text-xs font-extrabold font-mono ${
-                tx.type === 'deposit' || tx.type === 'reward' ? 'text-emerald-400' : 'text-rose-400'
-              }`}>
-                {tx.type === 'deposit' || tx.type === 'reward' ? '+' : '-'}${tx.amount.toFixed(2)}
-              </span>
+              ))}
             </div>
-          ))}
+          )}
         </div>
       </div>
 
