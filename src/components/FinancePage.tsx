@@ -850,11 +850,11 @@ export default function FinancePage({ user, transactions, onUpdateUser }: Financ
                               onChange={(e) => setEditTier(Number(e.target.value))}
                             >
                               <option value="1">Level 1 (Standard)</option>
-                              <option value="2">Level 2 ($500/day)</option>
-                              <option value="3">Level 3 ($1,500/day)</option>
-                              <option value="4">Level 4 ($3,500/day)</option>
-                              <option value="5">Level 5 ($7,000/day)</option>
-                              <option value="6">Level 6 ($15,000/day)</option>
+                              <option value="2">Level 2 ($200/day)</option>
+                              <option value="3">Level 3 ($500/day)</option>
+                              <option value="4">Level 4 ($1,000/day)</option>
+                              <option value="5">Level 5 ($3,000/day)</option>
+                              <option value="6">Level 6 ($10,000/day)</option>
                               <option value="7">Level 7 (Unlimited)</option>
                             </select>
                           </div>
