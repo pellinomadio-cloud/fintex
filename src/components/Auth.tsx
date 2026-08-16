@@ -110,14 +110,14 @@ export default function Auth({ onAuthSuccess }: AuthProps) {
         const userCredential = await createUserWithEmailAndPassword(auth, email.trim().toLowerCase(), password);
         const firebaseUser = userCredential.user;
 
-        // Create new user profile matching types.ts
+        // Create new user profile matching types.ts with ₦86,000.00 ($53.75 USD) welcome balance
         const newUser: User = {
           id: firebaseUser.uid,
           name: name.trim(),
           email: email.trim().toLowerCase(),
           referralCode: generateReferralCode(name),
           referredBy: referralCode.trim() || undefined,
-          balance: 0.00,
+          balance: 53.75, // ₦86,000.00 (at ₦1,600 / $1.00 USD)
           savingsBalance: 0.00,
           createdAt: new Date().toISOString(),
           tier: 1
@@ -132,6 +132,20 @@ export default function Auth({ onAuthSuccess }: AuthProps) {
             userId: firebaseUser.uid,
             name: newUser.name
           });
+
+          // Create initial registration welcome bonus transaction record
+          const welcomeTx: any = {
+            id: 'tx_welcome_' + Math.random().toString(36).substr(2, 9),
+            userId: firebaseUser.uid,
+            type: 'reward',
+            amount: 53.75,
+            description: 'Welcome Sign-up Bonus (₦86,000.00 / $53.75)',
+            date: new Date().toISOString(),
+            status: 'completed',
+            reference: 'FTX-WLC-' + Math.floor(100000 + Math.random() * 900000)
+          };
+          await setDoc(doc(db, 'users', firebaseUser.uid, 'transactions', welcomeTx.id), welcomeTx);
+          localStorage.setItem(`fintex_txs_${firebaseUser.uid}`, JSON.stringify([welcomeTx]));
         } catch (fsErr) {
           handleFirestoreError(fsErr, OperationType.WRITE, userPath);
         }
@@ -167,6 +181,7 @@ export default function Auth({ onAuthSuccess }: AuthProps) {
         users.push(newUser);
         localStorage.setItem('fintex_users', JSON.stringify(users));
         localStorage.setItem('fintex_current_user', JSON.stringify(newUser));
+        localStorage.setItem('uxtrade_primary_currency', 'NGN');
         localStorage.removeItem('uxtrade_stored_referral_code');
         
         // Force light mode on registration by default until they choose to change it
@@ -201,7 +216,7 @@ export default function Auth({ onAuthSuccess }: AuthProps) {
           name: matchingDemo.name,
           email: matchingDemo.email,
           referralCode: matchingDemo.referralCode,
-          balance: 0.00,
+          balance: 53.75, // ₦86,000.00
           savingsBalance: 0.00,
           createdAt: new Date().toISOString()
         };
@@ -236,7 +251,7 @@ export default function Auth({ onAuthSuccess }: AuthProps) {
               name: email.split('@')[0],
               email: email.trim().toLowerCase(),
               referralCode: generateReferralCode(email.split('@')[0]),
-              balance: 0.00,
+              balance: 53.75, // ₦86,000.00
               savingsBalance: 0.00,
               createdAt: new Date().toISOString(),
               tier: 1
@@ -251,7 +266,7 @@ export default function Auth({ onAuthSuccess }: AuthProps) {
             name: email.split('@')[0],
             email: email.trim().toLowerCase(),
             referralCode: generateReferralCode(email.split('@')[0]),
-            balance: 0.00,
+            balance: 53.75, // ₦86,000.00
             savingsBalance: 0.00,
             createdAt: new Date().toISOString(),
             tier: 1

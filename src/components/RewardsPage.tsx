@@ -143,7 +143,7 @@ export default function RewardsPage({ user, onUpdateUser, onAddTransaction }: Re
     if (hasCheckedInToday) return;
 
     setClaimingStatus('Processing checkin...');
-    const rewardAmt = 12.00; // daily 12 dollars
+    const rewardAmt = 50.00; // daily 50 dollars
 
     setTimeout(() => {
       const updatedUser: User = {
@@ -157,7 +157,7 @@ export default function RewardsPage({ user, onUpdateUser, onAddTransaction }: Re
         userId: user.id,
         type: 'reward',
         amount: rewardAmt,
-        description: 'Daily Check-in Loyalty Reward ($12.00)',
+        description: 'Daily Check-in Loyalty Reward ($50.00)',
         date: new Date().toISOString(),
         status: 'completed',
         reference: 'FTX-DLY-' + Math.floor(100000 + Math.random() * 900000)
@@ -168,7 +168,7 @@ export default function RewardsPage({ user, onUpdateUser, onAddTransaction }: Re
       setHasCheckedInToday(true);
       localStorage.setItem(`fintex_checked_in_${user.id}_${new Date().toDateString()}`, 'true');
       setClaimingStatus('');
-      alert(`Success! Daily check-in complete. You earned +$12.00 cash reward!`);
+      alert(`Success! Daily check-in complete. You earned +$50.00 cash reward!`);
     }, 800);
   };
 
@@ -351,7 +351,7 @@ export default function RewardsPage({ user, onUpdateUser, onAddTransaction }: Re
             <Sparkle className="w-4.5 h-4.5 text-brand-primary" />
             Daily Loyalty Cash Check-In
           </h3>
-          <p className="text-xs text-slate-500">Claim $12.00 cash directly into balance every 24 hours.</p>
+          <p className="text-xs text-slate-500">Claim $50.00 cash directly into balance every 24 hours.</p>
         </div>
         <button
           type="button"
@@ -364,7 +364,7 @@ export default function RewardsPage({ user, onUpdateUser, onAddTransaction }: Re
           }`}
           id="btn-daily-claim"
         >
-          {claimingStatus ? claimingStatus : hasCheckedInToday ? 'Claimed ✓' : 'Claim $12.00'}
+          {claimingStatus ? claimingStatus : hasCheckedInToday ? 'Claimed ✓' : 'Claim $50.00'}
         </button>
       </div>
 

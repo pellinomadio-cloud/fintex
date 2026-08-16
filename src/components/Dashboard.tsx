@@ -445,7 +445,16 @@ export default function Dashboard({
   const [inputPhone, setInputPhone] = useState<string>('');
   const [inputCarrier, setInputCarrier] = useState<string>('Airtel Network');
   const [notification, setNotification] = useState<string | null>(null);
-  const [primaryCurrency, setPrimaryCurrency] = useState<'USD' | 'NGN'>('USD');
+  const [primaryCurrency, setPrimaryCurrency] = useState<'USD' | 'NGN'>(() => {
+    const saved = localStorage.getItem('uxtrade_primary_currency');
+    if (saved === 'USD' || saved === 'NGN') return saved;
+    return 'NGN'; // Default to Naira on registration and by default
+  });
+
+  const handleCurrencyChange = (newCurr: 'USD' | 'NGN') => {
+    setPrimaryCurrency(newCurr);
+    localStorage.setItem('uxtrade_primary_currency', newCurr);
+  };
   
   // Cashout testimony pop-up timer (changes every 5 seconds)
   const [testimonyIndex, setTestimonyIndex] = useState<number>(0);
@@ -3114,23 +3123,23 @@ export default function Dashboard({
               <div className="inline-flex items-center bg-[#182030] border border-slate-800 p-0.5 rounded-lg text-[9px] font-bold">
                 <button
                   type="button"
-                  onClick={() => setPrimaryCurrency('USD')}
-                  className={`px-1.5 py-0.5 rounded transition-all cursor-pointer ${
-                    primaryCurrency === 'USD' ? 'bg-blue-600 text-white font-black' : 'text-slate-400 hover:text-white'
-                  }`}
-                  id="btn-currency-usd"
-                >
-                  $ USD
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setPrimaryCurrency('NGN')}
+                  onClick={() => handleCurrencyChange('NGN')}
                   className={`px-1.5 py-0.5 rounded transition-all cursor-pointer ${
                     primaryCurrency === 'NGN' ? 'bg-emerald-600 text-white font-black' : 'text-slate-400 hover:text-white'
                   }`}
                   id="btn-currency-ngn"
                 >
                   ₦ NGN
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleCurrencyChange('USD')}
+                  className={`px-1.5 py-0.5 rounded transition-all cursor-pointer ${
+                    primaryCurrency === 'USD' ? 'bg-blue-600 text-white font-black' : 'text-slate-400 hover:text-white'
+                  }`}
+                  id="btn-currency-usd"
+                >
+                  $ USD
                 </button>
               </div>
             </div>
@@ -3169,10 +3178,13 @@ export default function Dashboard({
             </div>
           </div>
 
-          {/* Growth indicator stats matching image (+ $1,921.21 / +88.32%) */}
+          {/* Growth indicator stats */}
           <div className="text-right space-y-0.5">
             <span className="text-xs sm:text-sm font-bold text-sky-400 block font-mono">
-              +${(user.balance * 0.375).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              {primaryCurrency === 'USD'
+                ? `+$${(user.balance * 0.375).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                : `+₦${(user.balance * 1600 * 0.375).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+              }
             </span>
             <span className="text-xs font-bold text-sky-400/90 block font-mono">
               +88.32%
@@ -3180,17 +3192,26 @@ export default function Dashboard({
           </div>
         </div>
 
-        {/* Live Naira Valuation & Conversion Strip */}
+        {/* Live Currency Valuation & Conversion Strip */}
         <div className="flex items-center justify-between p-2.5 bg-[#182030] border border-slate-800/80 rounded-xl text-xs">
           <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 flex items-center justify-center font-bold text-xs shrink-0">
-              ₦
+            <div className={`w-6 h-6 rounded-lg flex items-center justify-center font-bold text-xs shrink-0 ${
+              primaryCurrency === 'NGN' 
+                ? 'bg-blue-500/15 border border-blue-500/30 text-blue-400' 
+                : 'bg-emerald-500/15 border border-emerald-500/30 text-emerald-400'
+            }`}>
+              {primaryCurrency === 'NGN' ? '$' : '₦'}
             </div>
             <div>
-              <span className="text-[9px] text-slate-400 font-extrabold uppercase tracking-wider block leading-none">Naira Value (Rate: ₦1,600 / $1)</span>
-              <span className="text-xs font-bold text-emerald-400 font-mono">
+              <span className="text-[9px] text-slate-400 font-extrabold uppercase tracking-wider block leading-none">
+                {primaryCurrency === 'NGN' ? 'Dollar Value (Rate: $1 = ₦1,600)' : 'Naira Value (Rate: ₦1,600 / $1)'}
+              </span>
+              <span className={`text-xs font-bold font-mono ${primaryCurrency === 'NGN' ? 'text-blue-400' : 'text-emerald-400'}`}>
                 {showBalance 
-                  ? `₦${(user.balance * 1600).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} NGN`
+                  ? (primaryCurrency === 'NGN' 
+                      ? `$${user.balance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD`
+                      : `₦${(user.balance * 1600).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} NGN`
+                    )
                   : '••••••'
                 }
               </span>
@@ -3199,12 +3220,12 @@ export default function Dashboard({
 
           <button
             type="button"
-            onClick={() => setPrimaryCurrency(primaryCurrency === 'USD' ? 'NGN' : 'USD')}
+            onClick={() => handleCurrencyChange(primaryCurrency === 'USD' ? 'NGN' : 'USD')}
             className="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700/80 rounded-lg text-[10px] font-bold transition-all cursor-pointer flex items-center gap-1 shadow-xs"
             id="btn-convert-naira-toggle"
           >
             <Coins className="w-3 h-3 text-amber-400" />
-            <span>{primaryCurrency === 'USD' ? 'Convert to ₦ NGN' : 'Switch to $ USD'}</span>
+            <span>{primaryCurrency === 'USD' ? 'Switch to ₦ NGN' : 'Switch to $ USD'}</span>
           </button>
         </div>
 
