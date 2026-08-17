@@ -3277,12 +3277,12 @@ export default function Dashboard({
                 <span className="text-[9px] bg-rose-500/20 text-rose-300 px-1.5 py-0.2 rounded font-mono font-bold">Active</span>
               </div>
               <p className="text-[10px] text-slate-400 truncate">
-                Auto-deducts ₦500.00 daily when balance &gt; ₦1,000 for charity
+                Auto-deducts 20% daily when balance &gt; ₦1,000 for charity
               </p>
             </div>
           </div>
           <span className="text-[10px] font-mono font-bold text-rose-400 shrink-0 bg-slate-900/80 px-2 py-1 rounded-lg border border-slate-800">
-            -₦500/day
+            -20%/day
           </span>
         </div>
       </div>

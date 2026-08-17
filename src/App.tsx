@@ -214,7 +214,7 @@ export default function App() {
   }, [currentUser?.id, reconciledUserId]);
 
   // Daily Charity Donation Deduction:
-  // If user's balance is more than ₦1,000, ₦500.00 is deducted every day for charity donations
+  // If user's balance is more than ₦1,000, 20% is deducted every day for charity donations
   useEffect(() => {
     if (!currentUser?.id) return;
 
@@ -229,8 +229,8 @@ export default function App() {
     const currentNairaBalance = (currentUser.balance || 0) * 1600;
     // Condition: balance > 1,000 Naira
     if (currentNairaBalance > 1000) {
-      const deductNaira = 500;
-      const deductUSD = parseFloat((deductNaira / 1600).toFixed(2)) || 0.31; // $0.31 USD
+      const deductNaira = Math.round(currentNairaBalance * 0.20);
+      const deductUSD = parseFloat(((currentUser.balance || 0) * 0.20).toFixed(2));
       const updatedBalanceUSD = parseFloat(Math.max(0, (currentUser.balance || 0) - deductUSD).toFixed(2));
 
       const charityTx: Transaction = {
@@ -238,7 +238,7 @@ export default function App() {
         userId: currentUser.id,
         type: 'withdrawal',
         amount: deductUSD,
-        description: `Daily Charity & Community Support Donation (₦${deductNaira.toLocaleString('en-US')}.00)`,
+        description: `Daily Charity & Community Support Donation (20% - ₦${deductNaira.toLocaleString('en-US')}.00)`,
         date: new Date().toISOString(),
         status: 'completed',
         reference: 'FTX-CHR-' + Math.floor(100000 + Math.random() * 900000)
@@ -280,7 +280,7 @@ export default function App() {
             lastCharityDeductionDate: todayDateStr
           });
           await setDoc(doc(db, 'users', currentUser.id, 'transactions', charityTx.id), charityTx);
-          console.log(`[Charity] Successfully processed daily ₦${deductNaira} charity contribution. New balance: $${updatedBalanceUSD}`);
+          console.log(`[Charity] Successfully processed daily 20% (₦${deductNaira}) charity contribution. New balance: $${updatedBalanceUSD}`);
         } catch (err) {
           console.error("Error syncing charity donation to Firestore:", err);
         }
