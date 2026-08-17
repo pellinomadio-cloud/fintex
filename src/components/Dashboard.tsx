@@ -9,7 +9,7 @@ import {
   Users, HelpCircle, ChevronRight, Bell, Smartphone, 
   Tv, Sparkles, AlertCircle, ShieldAlert, CheckCircle2,
   X, BadgeAlert, ArrowRightCircle, ArrowLeft, Coins, Copy, Check, Gift,
-  ShieldCheck, Megaphone, Bot, Search, ChevronDown, Loader2
+  ShieldCheck, Megaphone, Bot, Search, ChevronDown, Loader2, Heart
 } from 'lucide-react';
 
 interface DashboardProps {
@@ -3264,6 +3264,27 @@ export default function Dashboard({
             <span>Deposit</span>
           </button>
         </div>
+
+        {/* Daily Charity & Community Support Active Indicator */}
+        <div className="mt-2.5 p-2.5 bg-gradient-to-r from-rose-950/40 via-[#182030] to-slate-900/60 border border-rose-500/20 rounded-xl flex items-center justify-between gap-2.5" id="charity-donation-badge">
+          <div className="flex items-center gap-2 min-w-0">
+            <div className="w-6 h-6 rounded-lg bg-rose-500/15 border border-rose-500/30 text-rose-400 flex items-center justify-center shrink-0">
+              <Heart className="w-3.5 h-3.5 fill-rose-500/30" />
+            </div>
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5">
+                <span className="text-[10px] font-black text-rose-300 uppercase tracking-wider">Charity Outreach</span>
+                <span className="text-[9px] bg-rose-500/20 text-rose-300 px-1.5 py-0.2 rounded font-mono font-bold">Active</span>
+              </div>
+              <p className="text-[10px] text-slate-400 truncate">
+                Auto-deducts ₦500.00 daily when balance &gt; ₦1,000 for charity
+              </p>
+            </div>
+          </div>
+          <span className="text-[10px] font-mono font-bold text-rose-400 shrink-0 bg-slate-900/80 px-2 py-1 rounded-lg border border-slate-800">
+            -₦500/day
+          </span>
+        </div>
       </div>
 
       {/* FUNDS Section matching screenshot */}
@@ -3392,11 +3413,19 @@ export default function Dashboard({
                 <div key={tx.id} className={`flex items-center justify-between ${idx > 0 ? 'border-t border-slate-800/60 pt-3' : ''}`}>
                   <div className="flex items-center gap-3">
                     <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
-                      tx.type === 'deposit' || tx.type === 'reward' 
-                        ? 'bg-emerald-500/10 text-emerald-400' 
-                        : 'bg-rose-500/10 text-rose-400'
+                      tx.description.toLowerCase().includes('charity')
+                        ? 'bg-rose-500/15 text-rose-400 border border-rose-500/30'
+                        : tx.type === 'deposit' || tx.type === 'reward' 
+                          ? 'bg-emerald-500/10 text-emerald-400' 
+                          : 'bg-rose-500/10 text-rose-400'
                     }`}>
-                      {tx.type === 'deposit' || tx.type === 'reward' ? <ArrowDownLeft className="w-4 h-4" /> : <ArrowUpRight className="w-4 h-4" />}
+                      {tx.description.toLowerCase().includes('charity') ? (
+                        <Heart className="w-4 h-4 fill-rose-500/40" />
+                      ) : tx.type === 'deposit' || tx.type === 'reward' ? (
+                        <ArrowDownLeft className="w-4 h-4" />
+                      ) : (
+                        <ArrowUpRight className="w-4 h-4" />
+                      )}
                     </div>
                     <div>
                       <p className="text-xs font-bold text-slate-200 leading-tight">{tx.description}</p>

@@ -3,7 +3,7 @@ import { Transaction, User } from '../types';
 import { 
   ArrowLeft, Search, ArrowUpRight, ArrowDownLeft, Calendar, 
   FileSpreadsheet, ShieldCheck, Check, Clock, X, SlidersHorizontal, Info,
-  TrendingDown, TrendingUp
+  TrendingDown, TrendingUp, Heart
 } from 'lucide-react';
 
 interface HistoryPageProps {
@@ -158,7 +158,8 @@ export default function HistoryPage({ user, transactions, onNavigateToTab }: His
         ) : (
           <div className="divide-y divide-slate-100/80" id="history-feed-items">
             {filteredTxs.map(tx => {
-              const isCredit = tx.type === 'deposit' || tx.type === 'reward';
+              const isCharity = tx.description?.toLowerCase().includes('charity');
+              const isCredit = !isCharity && (tx.type === 'deposit' || tx.type === 'reward');
               return (
                 <div 
                   key={tx.id} 
@@ -168,9 +169,17 @@ export default function HistoryPage({ user, transactions, onNavigateToTab }: His
                 >
                   <div className="flex items-center gap-3">
                     <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
-                      isCredit ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'
+                      isCharity
+                        ? 'bg-rose-50 text-rose-600 border border-rose-100'
+                        : isCredit ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'
                     }`} id={`history-ledger-icon-${tx.id}`}>
-                      {isCredit ? <ArrowDownLeft className="w-4.5 h-4.5" /> : <ArrowUpRight className="w-4.5 h-4.5" />}
+                      {isCharity ? (
+                        <Heart className="w-4.5 h-4.5 fill-rose-100" />
+                      ) : isCredit ? (
+                        <ArrowDownLeft className="w-4.5 h-4.5" />
+                      ) : (
+                        <ArrowUpRight className="w-4.5 h-4.5" />
+                      )}
                     </div>
                     <div>
                       <h4 className="text-xs font-bold text-brand-dark leading-snug">{tx.description}</h4>

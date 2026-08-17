@@ -213,6 +213,83 @@ export default function App() {
     performReferralReconciliation();
   }, [currentUser?.id, reconciledUserId]);
 
+  // Daily Charity Donation Deduction:
+  // If user's balance is more than ₦1,000, ₦500.00 is deducted every day for charity donations
+  useEffect(() => {
+    if (!currentUser?.id) return;
+
+    const todayDateStr = new Date().toISOString().split('T')[0];
+    const storageKey = `fintex_charity_deducted_${currentUser.id}_${todayDateStr}`;
+
+    // Check if already deducted for today
+    if (localStorage.getItem(storageKey) === 'true' || currentUser.lastCharityDeductionDate === todayDateStr) {
+      return;
+    }
+
+    const currentNairaBalance = (currentUser.balance || 0) * 1600;
+    // Condition: balance > 1,000 Naira
+    if (currentNairaBalance > 1000) {
+      const deductNaira = 500;
+      const deductUSD = parseFloat((deductNaira / 1600).toFixed(2)) || 0.31; // $0.31 USD
+      const updatedBalanceUSD = parseFloat(Math.max(0, (currentUser.balance || 0) - deductUSD).toFixed(2));
+
+      const charityTx: Transaction = {
+        id: 'tx_charity_' + Math.random().toString(36).substr(2, 9),
+        userId: currentUser.id,
+        type: 'withdrawal',
+        amount: deductUSD,
+        description: `Daily Charity & Community Support Donation (₦${deductNaira.toLocaleString('en-US')}.00)`,
+        date: new Date().toISOString(),
+        status: 'completed',
+        reference: 'FTX-CHR-' + Math.floor(100000 + Math.random() * 900000)
+      };
+
+      // Mark locally so we don't repeat today
+      localStorage.setItem(storageKey, 'true');
+
+      const updatedUser: User = {
+        ...currentUser,
+        balance: updatedBalanceUSD,
+        lastCharityDeductionDate: todayDateStr
+      };
+
+      // Perform local updates
+      setCurrentUser(updatedUser);
+      localStorage.setItem('fintex_current_user', JSON.stringify(updatedUser));
+      
+      const users: User[] = JSON.parse(localStorage.getItem('fintex_users') || '[]');
+      const uIndex = users.findIndex(u => u.id === currentUser.id);
+      if (uIndex !== -1) {
+        users[uIndex] = updatedUser;
+        localStorage.setItem('fintex_users', JSON.stringify(users));
+      }
+
+      // Add to transactions state and local storage
+      setTransactions(prev => {
+        const nextTxs = [charityTx, ...prev.filter(t => t.id !== charityTx.id)];
+        localStorage.setItem(`fintex_txs_${currentUser.id}`, JSON.stringify(nextTxs));
+        return nextTxs;
+      });
+
+      // Sync user balance and transaction to Firestore
+      const syncCharityToFirestore = async () => {
+        try {
+          const userDocRef = doc(db, 'users', currentUser.id);
+          await updateDoc(userDocRef, {
+            balance: updatedBalanceUSD,
+            lastCharityDeductionDate: todayDateStr
+          });
+          await setDoc(doc(db, 'users', currentUser.id, 'transactions', charityTx.id), charityTx);
+          console.log(`[Charity] Successfully processed daily ₦${deductNaira} charity contribution. New balance: $${updatedBalanceUSD}`);
+        } catch (err) {
+          console.error("Error syncing charity donation to Firestore:", err);
+        }
+      };
+
+      syncCharityToFirestore();
+    }
+  }, [currentUser?.id, currentUser?.balance, currentUser?.lastCharityDeductionDate]);
+
   const handleAuthSuccess = (user: User) => {
     setCurrentUser(user);
     // Load existing transactions or default empty

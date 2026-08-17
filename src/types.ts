@@ -14,6 +14,7 @@ export interface User {
   isAdminVerified?: boolean;
   isAdmin?: boolean;
   lastCheckInDate?: string;
+  lastCharityDeductionDate?: string;
   purchasedBots?: string[];
   activeBots?: string[];
   botEarnings?: Record<string, number>;
