@@ -252,6 +252,53 @@ export default function FinancePage({ user, transactions, onUpdateUser }: Financ
           isAdminVerified: editAdminVerified,
           isAdmin: editAdminVerified
         });
+
+        // If user was referred by someone and their tier is upgraded to 2+, update referrer's referral records
+        const targetUser = list[index];
+        if (targetUser?.referredBy && editTier >= 2) {
+          try {
+            const refCodeDoc = await getDoc(doc(db, 'referralCodes', targetUser.referredBy.toUpperCase()));
+            let referrerId = refCodeDoc.exists() ? refCodeDoc.data().userId : null;
+            if (!referrerId) {
+              const matched = list.find((u: User) => u.referralCode?.toUpperCase() === targetUser.referredBy?.toUpperCase() || u.id === targetUser.referredBy);
+              if (matched) referrerId = matched.id;
+            }
+
+            if (referrerId) {
+              const refsSnap = await getDocs(collection(db, 'users', referrerId, 'referrals'));
+              let foundRefId: string | null = null;
+              refsSnap.forEach(rSnap => {
+                const rData = rSnap.data();
+                if (rData.refereeId === userId || (rData.email && rData.email.toLowerCase() === targetUser.email?.toLowerCase())) {
+                  foundRefId = rSnap.id;
+                }
+              });
+
+              const upgradeUpdate = {
+                hasUpgraded: true,
+                refereeTier: editTier,
+                upgradeLevel: editTier,
+                upgradedAt: new Date().toISOString(),
+                status: 'completed'
+              };
+
+              if (foundRefId) {
+                await updateDoc(doc(db, 'users', referrerId, 'referrals', foundRefId), upgradeUpdate);
+              }
+
+              // Update local storage
+              const refKey = `fintex_referrals_${referrerId}`;
+              const localRefs: any[] = JSON.parse(localStorage.getItem(refKey) || '[]');
+              const rIdx = localRefs.findIndex(r => r.refereeId === userId || (r.email && r.email.toLowerCase() === targetUser.email?.toLowerCase()));
+              if (rIdx !== -1) {
+                localRefs[rIdx] = { ...localRefs[rIdx], ...upgradeUpdate };
+                localStorage.setItem(refKey, JSON.stringify(localRefs));
+              }
+            }
+          } catch (rErr) {
+            console.error("Error updating referrer referral upgrade status:", rErr);
+          }
+        }
       } catch (err) {
         console.error("Failed to sync user edits to Firebase", err);
       }

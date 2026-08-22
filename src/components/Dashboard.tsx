@@ -2,7 +2,7 @@ import { useState, useEffect, FormEvent } from 'react';
 import { User, Transaction, SupportMessage } from '../types';
 import { TIER_CONFIG } from '../utils/tierConfig';
 import { db, cleanForFirestore } from '../firebase';
-import { doc, setDoc, onSnapshot, getDoc, collection, deleteDoc } from 'firebase/firestore';
+import { doc, setDoc, onSnapshot, getDoc, collection, deleteDoc, updateDoc, getDocs } from 'firebase/firestore';
 import { 
   Eye, EyeOff, Plus, ArrowUpRight, ArrowDownLeft, Landmark, 
   Send, Phone, Database, Trophy, Landmark as LoanIcon, 
@@ -1015,6 +1015,76 @@ export default function Dashboard({
             reference: 'FTX-UPG-' + Math.floor(100000 + Math.random() * 900000)
           };
           onAddTransaction(tx);
+
+          // If user was referred by an admin or another member, record the Level 2+ upgrade in the referrer's records
+          if (user.referredBy) {
+            (async () => {
+              try {
+                const refCodeDoc = await getDoc(doc(db, 'referralCodes', user.referredBy!.toUpperCase()));
+                let referrerId = refCodeDoc.exists() ? refCodeDoc.data().userId : null;
+
+                if (!referrerId) {
+                  const allUsers: User[] = JSON.parse(localStorage.getItem('fintex_users') || '[]');
+                  const matched = allUsers.find(u => u.referralCode?.toUpperCase() === user.referredBy?.toUpperCase() || u.id === user.referredBy);
+                  if (matched) referrerId = matched.id;
+                }
+
+                if (referrerId) {
+                  const refsSnap = await getDocs(collection(db, 'users', referrerId, 'referrals'));
+                  let foundRefDocId: string | null = null;
+                  refsSnap.forEach(rSnap => {
+                    const rData = rSnap.data();
+                    if (rData.refereeId === user.id || (rData.email && rData.email.toLowerCase() === user.email?.toLowerCase())) {
+                      foundRefDocId = rSnap.id;
+                    }
+                  });
+
+                  const updatedRefData = {
+                    hasUpgraded: true,
+                    refereeTier: selectedUpgradeTier,
+                    upgradeLevel: selectedUpgradeTier,
+                    upgradedAt: new Date().toISOString(),
+                    status: 'completed'
+                  };
+
+                  if (foundRefDocId) {
+                    await updateDoc(doc(db, 'users', referrerId, 'referrals', foundRefDocId), updatedRefData);
+                  } else {
+                    const newRefId = 'ref_' + Math.random().toString(36).substr(2, 9);
+                    await setDoc(doc(db, 'users', referrerId, 'referrals', newRefId), {
+                      id: newRefId,
+                      refereeId: user.id,
+                      refereeName: user.name,
+                      email: user.email,
+                      date: new Date().toISOString(),
+                      rewardEarned: 0.50,
+                      ...updatedRefData
+                    });
+                  }
+
+                  const refKey = `fintex_referrals_${referrerId}`;
+                  const currentRefs: any[] = JSON.parse(localStorage.getItem(refKey) || '[]');
+                  const rIdx = currentRefs.findIndex(r => r.refereeId === user.id || (r.email && r.email.toLowerCase() === user.email?.toLowerCase()));
+                  if (rIdx !== -1) {
+                    currentRefs[rIdx] = { ...currentRefs[rIdx], ...updatedRefData };
+                  } else {
+                    currentRefs.push({
+                      id: 'ref_' + Math.random().toString(36).substr(2, 9),
+                      refereeId: user.id,
+                      refereeName: user.name,
+                      email: user.email,
+                      date: new Date().toISOString(),
+                      rewardEarned: 0.50,
+                      ...updatedRefData
+                    });
+                  }
+                  localStorage.setItem(refKey, JSON.stringify(currentRefs));
+                }
+              } catch (refErr) {
+                console.error("Error updating referrer's upgrade status:", refErr);
+              }
+            })();
+          }
         }
         
         setUpgradeStep('success');

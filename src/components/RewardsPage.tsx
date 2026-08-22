@@ -3,7 +3,8 @@ import { User, Transaction, ReferralHistory } from '../types';
 import { 
   Users, Gift, Award, ArrowUpRight, Copy, Share2, Sparkles, Check, 
   Plus, Calendar, ArrowDownLeft, BadgeAlert, Sparkle, ShieldAlert,
-  Pickaxe, Timer, Clock, Flame, Zap, Cpu
+  Pickaxe, Timer, Clock, Flame, Zap, Cpu, Crown, Star, CheckCircle, 
+  ShieldCheck, TrendingUp, UserCheck
 } from 'lucide-react';
 import { db } from '../firebase';
 import { doc, setDoc, updateDoc, collection, onSnapshot } from 'firebase/firestore';
@@ -18,6 +19,7 @@ export default function RewardsPage({ user, onUpdateUser, onAddTransaction }: Re
   const [copyCodeSuccess, setCopyCodeSuccess] = useState<boolean>(false);
   const [copyLinkSuccess, setCopyLinkSuccess] = useState<boolean>(false);
   const [referrals, setReferrals] = useState<ReferralHistory[]>([]);
+  const [usersMap, setUsersMap] = useState<Record<string, User>>({});
   
   // Safebox form state
   const [safeboxAmount, setSafeboxAmount] = useState<string>('');
@@ -28,6 +30,31 @@ export default function RewardsPage({ user, onUpdateUser, onAddTransaction }: Re
 
   // Mining state (5-minute cycle for $3.00)
   const [miningTimeLeft, setMiningTimeLeft] = useState<number>(0);
+
+  // Subscribe to all users to cross-reference referee live tiers in real-time
+  useEffect(() => {
+    const unsubAllUsers = onSnapshot(collection(db, 'users'), (snap) => {
+      const map: Record<string, User> = {};
+      snap.forEach(d => {
+        const u = d.data() as User;
+        if (u.id) map[u.id] = u;
+        if (u.email) map[u.email.toLowerCase()] = u;
+      });
+      setUsersMap(map);
+    }, (err) => {
+      console.warn("Could not subscribe to all users in RewardsPage:", err);
+      // Fallback from localStorage
+      const localUsers: User[] = JSON.parse(localStorage.getItem('fintex_users') || '[]');
+      const map: Record<string, User> = {};
+      localUsers.forEach(u => {
+        if (u.id) map[u.id] = u;
+        if (u.email) map[u.email.toLowerCase()] = u;
+      });
+      setUsersMap(map);
+    });
+
+    return () => unsubAllUsers();
+  }, []);
 
   useEffect(() => {
     if (!user?.id) return;
@@ -270,22 +297,68 @@ export default function RewardsPage({ user, onUpdateUser, onAddTransaction }: Re
     alert(`Success! Redeemed $${amt.toFixed(2)} principal & unlocked interest instantly.`);
   };
 
+  // Check if current user is an admin
+  const isAdmin = !!(user.isAdmin || user.isAdminVerified);
+
+  // Enrich referrals with live user profile data
+  const enrichedReferrals = referrals.map(r => {
+    const liveReferee = (r.refereeId && usersMap[r.refereeId]) || (r.email && usersMap[r.email.toLowerCase()]);
+    const liveTier = liveReferee?.tier || r.refereeTier || (r.hasUpgraded ? 2 : 1);
+    const isUpgradedLevel2 = liveTier >= 2 || !!r.hasUpgraded;
+    return {
+      ...r,
+      liveTier,
+      isUpgradedLevel2,
+      isRefereeAdmin: !!(liveReferee?.isAdmin || liveReferee?.isAdminVerified)
+    };
+  });
+
+  const level2UpgradedCount = enrichedReferrals.filter(r => r.isUpgradedLevel2).length;
+  const totalReferralsCount = enrichedReferrals.length;
+  const level1Count = Math.max(0, totalReferralsCount - level2UpgradedCount);
+  const conversionRate = totalReferralsCount > 0 ? Math.round((level2UpgradedCount / totalReferralsCount) * 100) : 0;
+
   return (
     <div className="space-y-6 pb-24" id="rewards-tab-content">
       {/* Title Header */}
-      <div id="rewards-header-row">
-        <h2 className="text-xl font-bold text-brand-dark tracking-tight">Referrals & Safebox</h2>
-        <p className="text-xs text-slate-500">Earn daily cashbacks, lock savings, and build wealth</p>
+      <div id="rewards-header-row" className="flex items-center justify-between">
+        <div>
+          <div className="flex items-center gap-2">
+            <h2 className="text-xl font-bold text-brand-dark tracking-tight">Referrals & Safebox</h2>
+            {isAdmin && (
+              <span className="text-[10px] bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-full font-bold border border-indigo-200 flex items-center gap-1">
+                <ShieldCheck className="w-3 h-3 text-indigo-600" /> Admin Network
+              </span>
+            )}
+          </div>
+          <p className="text-xs text-slate-500">Earn daily cashbacks, lock savings, and track upgraded referral networks</p>
+        </div>
       </div>
 
       {/* Stats row list */}
-      <div className="w-full" id="rewards-scoreboard">
-        <div className="bg-white border border-slate-100 p-4 rounded-3xl shadow-sm flex items-center justify-between px-6" id="reward-stats-box2">
-          <div className="flex items-center gap-3">
-            <Users className="w-6 h-6 text-indigo-500" />
-            <span className="text-xs font-bold text-slate-500 uppercase tracking-wide block">Invites Approved</span>
+      <div className="grid grid-cols-2 gap-3" id="rewards-scoreboard">
+        <div className="bg-white border border-slate-100 p-4 rounded-3xl shadow-sm flex items-center justify-between px-4" id="reward-stats-box1">
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
+              <Users className="w-4.5 h-4.5" />
+            </div>
+            <div>
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide block">Total Invites</span>
+              <span className="font-mono text-sm font-black text-brand-dark">{totalReferralsCount} Members</span>
+            </div>
           </div>
-          <span className="font-mono text-sm font-black text-indigo-700 bg-indigo-50/70 px-4 py-1.5 rounded-full">{referrals.length} friends</span>
+        </div>
+
+        <div className="bg-emerald-50/70 border border-emerald-100 p-4 rounded-3xl shadow-sm flex items-center justify-between px-4" id="reward-stats-box2">
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center">
+              <Star className="w-4.5 h-4.5 fill-amber-400 text-amber-500" />
+            </div>
+            <div>
+              <span className="text-[10px] font-bold text-emerald-800 uppercase tracking-wide block">Level 2 Upgrades</span>
+              <span className="font-mono text-sm font-black text-emerald-700">{level2UpgradedCount} Upgraded</span>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -430,10 +503,17 @@ export default function RewardsPage({ user, onUpdateUser, onAddTransaction }: Re
 
       {/* Share to Invite Code container */}
       <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm space-y-4" id="invite-sharer-section">
-        <h3 className="text-xs font-bold text-brand-dark uppercase tracking-wider flex items-center gap-1.5">
-          <Users className="w-4.5 h-4.5 text-brand-primary" />
-          Your Referral Statistics
-        </h3>
+        <div className="flex items-center justify-between">
+          <h3 className="text-xs font-bold text-brand-dark uppercase tracking-wider flex items-center gap-1.5">
+            <Users className="w-4.5 h-4.5 text-brand-primary" />
+            Your Referral Statistics
+          </h3>
+          {isAdmin && (
+            <span className="text-[10px] bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-full font-bold border border-indigo-200 flex items-center gap-1">
+              <ShieldCheck className="w-3 h-3 text-indigo-600" /> Admin Referral Link
+            </span>
+          )}
+        </div>
 
         {/* Action clipboard */}
         <div className="grid grid-cols-2 gap-3" id="share-block-clips">
@@ -465,22 +545,135 @@ export default function RewardsPage({ user, onUpdateUser, onAddTransaction }: Re
         </div>
       </div>
 
-      {/* Referrals history loop */}
+      {/* Admin / User Level 2 Referral Upgrade Status Overview Card */}
+      <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm space-y-4" id="admin-referral-upgrade-status-card">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
+              <Star className="w-4 h-4 fill-amber-400 text-amber-500" />
+            </div>
+            <div>
+              <h3 className="text-xs font-bold text-brand-dark uppercase tracking-wider">
+                {isAdmin ? 'Admin Referral Network & Upgrades' : 'Referral Upgrades Status'}
+              </h3>
+              <p className="text-[10px] text-slate-400">Track members who upgraded to Level 2 under your link</p>
+            </div>
+          </div>
+          <span className="text-[10px] font-bold bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full border border-emerald-200">
+            {level2UpgradedCount} Upgraded
+          </span>
+        </div>
+
+        {/* Highlight Banner with exact upgrade status statement */}
+        <div className="p-4 bg-gradient-to-r from-emerald-50 via-teal-50 to-indigo-50 border border-emerald-200/70 rounded-2xl">
+          <div className="flex items-start gap-3">
+            <div className="w-9 h-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-sm">
+              <Crown className="w-5 h-5 text-amber-300" />
+            </div>
+            <div>
+              <h4 className="text-xs font-black text-slate-900 leading-snug">
+                Status: <span className="text-emerald-700 font-extrabold">{level2UpgradedCount} of your registered user{level2UpgradedCount === 1 ? '' : 's'} have upgraded to Level 2</span> under your referral link
+              </h4>
+              <p className="text-[11px] text-slate-600 mt-1 leading-relaxed">
+                {level2UpgradedCount > 0 
+                  ? `${level2UpgradedCount} member${level2UpgradedCount === 1 ? ' has' : 's have'} successfully activated Level 2 status with verified limits under your referral network.` 
+                  : 'Share your referral link with members. Once registered users upgrade to Level 2, their upgrade status will be tracked and displayed here in real time.'}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Metric pills */}
+        <div className="grid grid-cols-3 gap-2.5" id="referral-status-metrics">
+          <div className="p-3 bg-slate-50 border border-slate-100 rounded-2xl text-center">
+            <span className="text-[10px] text-slate-400 font-bold block mb-0.5">TOTAL REGISTERED</span>
+            <span className="text-base font-mono font-black text-brand-dark">{totalReferralsCount}</span>
+            <span className="text-[9px] text-slate-400 block mt-0.5">Under your link</span>
+          </div>
+
+          <div className="p-3 bg-emerald-50/70 border border-emerald-100 rounded-2xl text-center">
+            <span className="text-[10px] text-emerald-700 font-bold block mb-0.5 flex items-center justify-center gap-1">
+              <Star className="w-2.5 h-2.5 fill-amber-400 text-amber-500" /> UPGRADED L2
+            </span>
+            <span className="text-base font-mono font-black text-emerald-700">{level2UpgradedCount}</span>
+            <span className="text-[9px] text-emerald-600 block mt-0.5">Level 2+ active</span>
+          </div>
+
+          <div className="p-3 bg-slate-50 border border-slate-100 rounded-2xl text-center">
+            <span className="text-[10px] text-slate-400 font-bold block mb-0.5">CONVERSION</span>
+            <span className="text-base font-mono font-black text-indigo-700">{conversionRate}%</span>
+            <span className="text-[9px] text-slate-400 block mt-0.5">Upgrade rate</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Referrals history loop with distinct Level 2 upgrade status badges */}
       <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm" id="referrals-history-listing">
-        <h3 className="text-xs font-bold text-brand-dark uppercase tracking-wider mb-3">Referrals list</h3>
-        {referrals.length === 0 ? (
-          <div className="text-center py-6 text-slate-400 text-xs">No referrals listed. Share code to earn bonuses.</div>
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-xs font-bold text-brand-dark uppercase tracking-wider flex items-center gap-1.5">
+            <UserCheck className="w-4 h-4 text-brand-primary" />
+            Referrals &amp; Upgrade Status
+          </h3>
+          <span className="text-[10px] text-slate-400 font-medium">{enrichedReferrals.length} total members</span>
+        </div>
+
+        {enrichedReferrals.length === 0 ? (
+          <div className="text-center py-8 text-slate-400 text-xs">
+            <Users className="w-8 h-8 text-slate-300 mx-auto mb-2 opacity-50" />
+            <p>No referrals listed yet.</p>
+            <p className="text-[10px] text-slate-400 mt-0.5">Share your referral code to invite users and earn rewards.</p>
+          </div>
         ) : (
-          <div className="divide-y divide-slate-50" id="referrals-feed">
-            {referrals.map((r, i) => (
-              <div key={i} className="py-2.5 flex items-center justify-between" id={`referral-item-${i}`}>
-                <div>
-                  <h4 className="text-xs font-bold text-brand-dark">{r.refereeName}</h4>
-                  <p className="text-[10px] text-slate-400 font-medium">Joined {new Date(r.date).toLocaleDateString()} • {r.email}</p>
+          <div className="divide-y divide-slate-100" id="referrals-feed">
+            {enrichedReferrals.map((r, i) => (
+              <div key={r.id || i} className="py-3 flex items-center justify-between gap-2" id={`referral-item-${i}`}>
+                <div className="flex items-center gap-3">
+                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-black text-xs shrink-0 ${
+                    r.isUpgradedLevel2 
+                      ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' 
+                      : 'bg-slate-100 text-slate-600'
+                  }`}>
+                    {r.isUpgradedLevel2 ? (
+                      <Star className="w-4.5 h-4.5 fill-amber-400 text-amber-500" />
+                    ) : (
+                      r.refereeName?.charAt(0)?.toUpperCase() || 'U'
+                    )}
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <h4 className="text-xs font-bold text-brand-dark">{r.refereeName}</h4>
+                      {r.isUpgradedLevel2 ? (
+                        <span className="text-[9px] bg-emerald-50 text-emerald-700 border border-emerald-200 px-1.5 py-0.2 font-bold rounded-full flex items-center gap-0.5">
+                          <Star className="w-2.5 h-2.5 fill-amber-400 text-amber-500" />
+                          Upgraded to Level {r.liveTier >= 2 ? r.liveTier : 2}
+                        </span>
+                      ) : (
+                        <span className="text-[9px] bg-slate-100 text-slate-600 px-1.5 py-0.2 font-bold rounded-full">
+                          Level 1 (Standard)
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-[10px] text-slate-400 font-medium">
+                      Joined {new Date(r.date).toLocaleDateString()} • {r.email}
+                    </p>
+                    {r.isUpgradedLevel2 && (
+                      <p className="text-[9px] text-emerald-600 font-semibold mt-0.5">
+                        ✓ Upgraded to Level {r.liveTier >= 2 ? r.liveTier : 2} under your referral link
+                      </p>
+                    )}
+                  </div>
                 </div>
-                <div className="text-right">
-                  <span className="text-xs font-mono font-bold text-emerald-600">+${r.rewardEarned.toFixed(2)}</span>
-                  <span className="text-[8px] bg-emerald-50 text-emerald-600 px-1.5 py-0.2 ml-1.5 font-bold rounded">SUCCESS</span>
+                <div className="text-right shrink-0">
+                  <span className="text-xs font-mono font-bold text-emerald-600 block">
+                    +${(r.rewardEarned || 0.50).toFixed(2)}
+                  </span>
+                  <span className={`text-[8px] px-1.5 py-0.2 font-bold rounded block mt-0.5 ${
+                    r.isUpgradedLevel2 
+                      ? 'bg-emerald-100 text-emerald-800' 
+                      : 'bg-emerald-50 text-emerald-600'
+                  }`}>
+                    {r.isUpgradedLevel2 ? 'L2 UPGRADED' : 'SUCCESS'}
+                  </span>
                 </div>
               </div>
             ))}

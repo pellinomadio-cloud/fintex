@@ -1,6 +1,6 @@
 import { useState, FormEvent, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { User } from '../types';
+import { User, ReferralHistory } from '../types';
 import { Eye, EyeOff, ShieldCheck, Mail, Lock, User as UserIcon, Gift, Check } from 'lucide-react';
 import { auth, db, handleFirestoreError, OperationType, cleanForFirestore } from '../firebase';
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
@@ -160,16 +160,25 @@ export default function Auth({ onAuthSuccess }: AuthProps) {
               
               // Add to the referrer's referrals subcollection
               const refId = 'ref_' + Math.random().toString(36).substr(2, 9);
-              const referralRecord = {
+              const referralRecord: ReferralHistory = {
                 id: refId,
+                refereeId: newUser.id,
                 refereeName: name.trim(),
                 email: email.trim().toLowerCase(),
                 date: new Date().toISOString(),
                 rewardEarned: 0.50,
-                status: 'completed'
+                status: 'completed',
+                hasUpgraded: false,
+                refereeTier: 1,
+                upgradeLevel: 1
               };
               
               await setDoc(doc(db, 'users', referrerId, 'referrals', refId), referralRecord);
+
+              // Update referrer's local storage record if present
+              const localRefs = JSON.parse(localStorage.getItem(`fintex_referrals_${referrerId}`) || '[]');
+              localRefs.push(referralRecord);
+              localStorage.setItem(`fintex_referrals_${referrerId}`, JSON.stringify(localRefs));
             } else {
               console.warn("Invalid referral code provided:", referralCode);
             }

@@ -53,11 +53,16 @@ export interface VirtualCard {
 
 export interface ReferralHistory {
   id?: string;
+  refereeId?: string;
   refereeName: string;
   email: string;
   date: string;
   rewardEarned: number;
-  status: 'completed' | 'pending' | 'credited';
+  status: 'completed' | 'pending' | 'credited' | string;
+  hasUpgraded?: boolean;
+  refereeTier?: number;
+  upgradeLevel?: number;
+  upgradedAt?: string;
 }
 
 export interface SupportMessage {
