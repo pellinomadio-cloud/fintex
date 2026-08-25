@@ -9,7 +9,8 @@ import {
   Users, HelpCircle, ChevronRight, Bell, Smartphone, 
   Tv, Sparkles, AlertCircle, ShieldAlert, CheckCircle2,
   X, BadgeAlert, ArrowRightCircle, ArrowLeft, Coins, Copy, Check, Gift,
-  ShieldCheck, Megaphone, Bot, Search, ChevronDown, Loader2, Heart
+  ShieldCheck, Megaphone, Bot, Search, ChevronDown, Loader2, Heart,
+  Zap, Flame, BookOpen, Compass, Award, Pickaxe, ArrowRight
 } from 'lucide-react';
 
 interface DashboardProps {
@@ -519,6 +520,132 @@ export default function Dashboard({
       }
     }
   }, [triggerUpgrade]);
+
+  // Daily Rewards state directly on Dashboard
+  const [hasCheckedInToday, setHasCheckedInToday] = useState<boolean>(() => {
+    const todayStr = new Date().toDateString();
+    if (user.lastCheckInDate === todayStr) return true;
+    const localCheck = localStorage.getItem(`fintex_checked_in_${user.id}_${todayStr}`);
+    return !!localCheck;
+  });
+  const [claimingReward, setClaimingReward] = useState<boolean>(false);
+  const [claimSuccessMessage, setClaimSuccessMessage] = useState<string | null>(null);
+  const [countdownToMidnight, setCountdownToMidnight] = useState<string>('');
+
+  // Interactive New User Starter Guide state
+  const [showGuideModal, setShowGuideModal] = useState<boolean>(() => {
+    if (!user.id) return false;
+    const seen = localStorage.getItem(`fintex_has_seen_guide_${user.id}`);
+    return !seen; // Automatically show for new users who haven't seen it
+  });
+  const [guideStep, setGuideStep] = useState<number>(1);
+
+  // Live countdown to next daily check-in (midnight)
+  useEffect(() => {
+    const updateCountdown = () => {
+      const now = new Date();
+      const tomorrow = new Date(now);
+      tomorrow.setHours(24, 0, 0, 0);
+      const diff = tomorrow.getTime() - now.getTime();
+      if (diff <= 0) {
+        setCountdownToMidnight('00:00:00');
+        setHasCheckedInToday(false);
+        return;
+      }
+      const hours = Math.floor(diff / (1000 * 60 * 60));
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+      setCountdownToMidnight(
+        `${hours.toString().padStart(2, '0')}h ${minutes.toString().padStart(2, '0')}m ${seconds.toString().padStart(2, '0')}s`
+      );
+    };
+
+    updateCountdown();
+    const timer = setInterval(updateCountdown, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  // Update check-in state if user's lastCheckInDate updates
+  useEffect(() => {
+    const todayStr = new Date().toDateString();
+    if (user.lastCheckInDate === todayStr) {
+      setHasCheckedInToday(true);
+    }
+  }, [user.lastCheckInDate]);
+
+  // Handle Big Daily Reward Claiming
+  const handleClaimDailyReward = async () => {
+    if (hasCheckedInToday || claimingReward) return;
+    setClaimingReward(true);
+
+    const rewardUsd = 50.00; // $50.00 cash reward
+    const todayStr = new Date().toDateString();
+
+    setTimeout(async () => {
+      try {
+        const newBalance = parseFloat((user.balance + rewardUsd).toFixed(2));
+        const updatedUser: User = {
+          ...user,
+          balance: newBalance,
+          lastCheckInDate: todayStr
+        };
+
+        const tx: Transaction = {
+          id: 'tx_checkin_' + Math.random().toString(36).substr(2, 9),
+          userId: user.id,
+          type: 'reward',
+          amount: rewardUsd,
+          description: 'Daily Loyalty Free Cash Reward ($50.00 / ₦80,000)',
+          date: new Date().toISOString(),
+          status: 'completed',
+          reference: 'FTX-DLY-' + Math.floor(100000 + Math.random() * 900000)
+        };
+
+        onUpdateUser(updatedUser);
+        onAddTransaction(tx);
+        setHasCheckedInToday(true);
+        localStorage.setItem(`fintex_checked_in_${user.id}_${todayStr}`, 'true');
+
+        // Sync to Firestore
+        try {
+          await updateDoc(doc(db, 'users', user.id), {
+            balance: newBalance,
+            lastCheckInDate: todayStr
+          });
+        } catch (fbErr) {
+          console.warn('Could not sync daily check-in to Firestore:', fbErr);
+        }
+
+        setClaimSuccessMessage('🎉 +$50.00 (₦80,000) credited directly to your wallet balance!');
+        setTimeout(() => setClaimSuccessMessage(null), 6000);
+      } finally {
+        setClaimingReward(false);
+      }
+    }, 700);
+  };
+
+  // Helper to open Upgrade Account Level screen directly
+  const handleOpenUpgrade = (tierLevel?: number) => {
+    setActiveModal('transfer');
+    setUpgradeStep('benefits');
+    if (tierLevel && tierLevel >= 2) {
+      setSelectedUpgradeTier(tierLevel as 2 | 3 | 4 | 5 | 6 | 7);
+      setUpgradeStep('payment_select');
+    } else {
+      setSelectedUpgradeTier(null);
+    }
+    setForceShowUpgrade(true);
+  };
+
+  const handleCloseGuide = () => {
+    localStorage.setItem(`fintex_has_seen_guide_${user.id}`, 'true');
+    setShowGuideModal(false);
+  };
+
+  const handleRestartGuide = () => {
+    setGuideStep(1);
+    setShowGuideModal(true);
+  };
 
   // Loaded Gateway addresses dynamically customized by Admin
   const [gatewayUsdt, setGatewayUsdt] = useState<string>(() => localStorage.getItem('fintex_gateway_usdt') || 'TRibF41CvFeNptGPbuC5gRCfGcrqcc9XPm');
@@ -3068,16 +3195,39 @@ export default function Dashboard({
         </div>
       </div>
 
-      {/* Top Bar matching screenshot: Logo Left | Avatar & Bell Right */}
+      {/* Top Bar: Brand Left | Guide, Avatar & Bell Right */}
       <div className="flex items-center justify-between" id="user-header-profile-bar">
         {/* Left Cardano/App Icon Logo */}
-        <div className="w-11 h-11 rounded-2xl bg-[#141A28] border border-slate-800 flex items-center justify-center p-2 shadow-lg shadow-black/20">
-          <img src="/icon.svg" alt="UXtrade Logo" className="w-7 h-7 rounded-lg" />
+        <div className="flex items-center gap-2.5">
+          <div className="w-11 h-11 rounded-2xl bg-[#141A28] border border-slate-800 flex items-center justify-center p-2 shadow-lg shadow-black/20">
+            <img src="/icon.svg" alt="UXtrade Logo" className="w-7 h-7 rounded-lg" />
+          </div>
+          <div className="hidden xs:block">
+            <span className="text-sm font-black text-white tracking-tight block">UXtrade</span>
+            <span className="text-[10px] text-emerald-400 font-bold flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+              Live Node
+            </span>
+          </div>
         </div>
 
-        {/* Right Avatar & Bell Notification pill */}
-        <div className="flex items-center gap-2.5" id="profile-meta-shortcuts">
-          <div className="w-11 h-11 rounded-2xl overflow-hidden border border-slate-800 bg-[#141A28] flex items-center justify-center shadow-lg">
+        {/* Right Starter Guide, Avatar & Bell Notification pill */}
+        <div className="flex items-center gap-2" id="profile-meta-shortcuts">
+          {/* Quick Starter Guide Button */}
+          <button
+            type="button"
+            onClick={handleRestartGuide}
+            className="flex items-center gap-1.5 px-3 py-2 bg-gradient-to-r from-amber-500/20 to-orange-500/20 hover:from-amber-500/30 hover:to-orange-500/30 border border-amber-500/40 text-amber-300 rounded-xl text-xs font-black shadow-sm transition-all cursor-pointer"
+            id="btn-open-starter-guide"
+            title="How to Earn Money & Upgrade Account"
+          >
+            <BookOpen className="w-3.5 h-3.5 text-amber-400" />
+            <span className="hidden sm:inline">User Guide</span>
+            <span className="sm:hidden">Guide</span>
+            <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span>
+          </button>
+
+          <div className="w-10 h-10 rounded-2xl overflow-hidden border border-slate-800 bg-[#141A28] flex items-center justify-center shadow-lg">
             {user.avatar ? (
               <img src={user.avatar} alt="User Avatar" className="w-full h-full object-cover" />
             ) : (
@@ -3089,46 +3239,63 @@ export default function Dashboard({
 
           <button 
             type="button"
-            className="w-11 h-11 rounded-2xl bg-[#141A28] hover:bg-[#1C2538] flex items-center justify-center text-slate-200 border border-slate-800 relative transition-all shadow-lg cursor-pointer"
+            className="w-10 h-10 rounded-2xl bg-[#141A28] hover:bg-[#1C2538] flex items-center justify-center text-slate-200 border border-slate-800 relative transition-all shadow-lg cursor-pointer"
             id="notif-bell-btn"
             onClick={() => setNotification("Welcome back! UXtrade live system active.")}
           >
             <Bell className="w-4 h-4 text-slate-200" />
-            <span className="absolute top-3 right-3 w-2 h-2 rounded-full bg-sky-400 animate-ping-subtle" />
+            <span className="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-sky-400 animate-ping-subtle" />
           </button>
         </div>
       </div>
 
-      {/* Dynamic Greeting Header */}
-      <div className="space-y-0.5 pt-1" id="greeting-header">
-        <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight flex items-center gap-2" id="dashboard-user-name">
-          <span>Hi {user.name.split(' ')[0] || 'User'},</span>
-        </h1>
-        <p className="text-xl sm:text-2xl font-bold text-slate-400 tracking-tight">
-          {getGreetingTime()}
-        </p>
-      </div>
-
-      {/* Date & Filter Badges Row */}
-      <div className="flex items-center gap-2.5" id="date-filter-row">
-        <div className="flex items-center gap-2 px-3.5 py-2 bg-[#141A28] border border-slate-800/80 rounded-xl text-xs font-semibold text-slate-300">
-          <span className="text-slate-400">📅</span>
-          <span>{todayFormatted}</span>
+      {/* Dynamic Greeting & User Tier Status Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-1" id="greeting-header">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight flex items-center gap-2" id="dashboard-user-name">
+            <span>Hi {user.name.split(' ')[0] || 'User'},</span>
+          </h1>
+          <p className="text-xs sm:text-sm font-semibold text-slate-400 tracking-tight">
+            {getGreetingTime()} • {todayFormatted}
+          </p>
         </div>
 
-        <div className="w-8 h-8 rounded-xl bg-blue-600 text-white font-extrabold text-xs flex items-center justify-center shadow-lg shadow-blue-500/25">
-          5
+        {/* Level Status Pill & Fast Upgrade Link */}
+        <div className="inline-flex items-center gap-2 bg-[#141A28] border border-slate-800 px-3 py-1.5 rounded-xl self-start sm:self-auto">
+          <div className="flex items-center gap-1.5">
+            <span className={`w-2 h-2 rounded-full ${user.tier && user.tier >= 2 ? 'bg-emerald-400' : 'bg-amber-400'}`} />
+            <span className="text-xs font-bold text-slate-200">
+              Level {user.tier || 1} ({TIER_CONFIG[user.tier || 1]?.badge || 'Basic'})
+            </span>
+          </div>
+          {(user.tier || 1) < 2 && (
+            <button
+              type="button"
+              onClick={() => handleOpenUpgrade(2)}
+              className="px-2 py-0.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-black text-[10px] rounded-lg transition-all cursor-pointer flex items-center gap-1 shadow-xs"
+              id="header-fast-upgrade-btn"
+            >
+              <Zap className="w-3 h-3 fill-slate-950" />
+              <span>Upgrade</span>
+            </button>
+          )}
         </div>
-
-        <button 
-          type="button" 
-          onClick={() => onNavigateToTab('trade')}
-          className="ml-auto w-10 h-10 rounded-xl bg-[#141A28] border border-slate-800/80 text-slate-300 flex items-center justify-center hover:text-white transition-colors cursor-pointer"
-          title="Search assets"
-        >
-          <Search className="w-4 h-4" />
-        </button>
       </div>
+
+      {/* Claim Success Celebration Toast */}
+      {claimSuccessMessage && (
+        <div className="p-4 bg-gradient-to-r from-emerald-950 via-teal-950 to-emerald-900 border-2 border-emerald-500 rounded-2xl text-emerald-200 text-xs font-bold flex items-center justify-between shadow-xl animate-bounce-short" id="claim-success-toast">
+          <div className="flex items-center gap-2.5">
+            <div className="w-7 h-7 rounded-xl bg-emerald-500 text-slate-950 flex items-center justify-center font-black">
+              <Gift className="w-4 h-4" />
+            </div>
+            <span>{claimSuccessMessage}</span>
+          </div>
+          <button type="button" onClick={() => setClaimSuccessMessage(null)} className="text-emerald-400 hover:text-white p-1">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
 
       {notification && (
         <div className="p-3 bg-indigo-950/80 border border-indigo-800/50 rounded-2xl text-indigo-200 flex items-center justify-between text-xs font-medium backdrop-blur-md" id="system-notif-bar">
@@ -3178,7 +3345,7 @@ export default function Dashboard({
           );
         })}
 
-      {/* MY WALLET Main Balance Display Card */}
+      {/* MY WALLET Main Balance Display Card (Clean & High Contrast) */}
       <div 
         className="relative bg-[#131926] border border-slate-800/90 rounded-[28px] p-5.5 shadow-2xl space-y-4" 
         id="dashboard-available-balance-module"
@@ -3187,14 +3354,14 @@ export default function Dashboard({
           <div className="space-y-1">
             <div className="flex items-center gap-2">
               <span className="text-[10px] uppercase tracking-widest text-slate-400 font-extrabold block">
-                MY WALLET
+                MAIN WALLET BALANCE
               </span>
               {/* Currency Selector Pill */}
               <div className="inline-flex items-center bg-[#182030] border border-slate-800 p-0.5 rounded-lg text-[9px] font-bold">
                 <button
                   type="button"
                   onClick={() => handleCurrencyChange('NGN')}
-                  className={`px-1.5 py-0.5 rounded transition-all cursor-pointer ${
+                  className={`px-2 py-0.5 rounded transition-all cursor-pointer ${
                     primaryCurrency === 'NGN' ? 'bg-emerald-600 text-white font-black' : 'text-slate-400 hover:text-white'
                   }`}
                   id="btn-currency-ngn"
@@ -3204,7 +3371,7 @@ export default function Dashboard({
                 <button
                   type="button"
                   onClick={() => handleCurrencyChange('USD')}
-                  className={`px-1.5 py-0.5 rounded transition-all cursor-pointer ${
+                  className={`px-2 py-0.5 rounded transition-all cursor-pointer ${
                     primaryCurrency === 'USD' ? 'bg-blue-600 text-white font-black' : 'text-slate-400 hover:text-white'
                   }`}
                   id="btn-currency-usd"
@@ -3218,27 +3385,27 @@ export default function Dashboard({
               {showBalance ? (
                 primaryCurrency === 'USD' ? (
                   <div className="flex items-baseline gap-1">
-                    <span className="text-base sm:text-xl font-bold text-slate-400 font-sans">$</span>
-                    <span className="text-3xl sm:text-4xl font-extrabold text-white font-mono tracking-tight" id="main-balance-text">
+                    <span className="text-xl sm:text-2xl font-bold text-slate-400 font-sans">$</span>
+                    <span className="text-3xl sm:text-4xl font-black text-white font-mono tracking-tight" id="main-balance-text">
                       {user.balance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </span>
                   </div>
                 ) : (
                   <div className="flex items-baseline gap-1">
-                    <span className="text-base sm:text-xl font-bold text-emerald-400 font-sans">₦</span>
-                    <span className="text-3xl sm:text-4xl font-extrabold text-white font-mono tracking-tight" id="main-balance-text">
+                    <span className="text-xl sm:text-2xl font-bold text-emerald-400 font-sans">₦</span>
+                    <span className="text-3xl sm:text-4xl font-black text-white font-mono tracking-tight" id="main-balance-text">
                       {(user.balance * 1600).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </span>
                   </div>
                 )
               ) : (
-                <span className="text-3xl sm:text-4xl font-extrabold text-white font-mono tracking-tight" id="main-balance-text">
+                <span className="text-3xl sm:text-4xl font-black text-white font-mono tracking-tight" id="main-balance-text">
                   ••••••
                 </span>
               )}
               <button 
                 type="button" 
-                className="text-slate-400 hover:text-white transition-colors cursor-pointer p-1 ml-1" 
+                className="text-slate-400 hover:text-white transition-colors cursor-pointer p-1 ml-1.5" 
                 onClick={() => setShowBalance(!showBalance)}
                 id="toggle-visibility-btn"
                 title={showBalance ? "Hide Balance" : "Show Balance"}
@@ -3246,76 +3413,63 @@ export default function Dashboard({
                 {showBalance ? <Eye className="w-4 h-4 text-slate-400" /> : <EyeOff className="w-4 h-4 text-slate-400" />}
               </button>
             </div>
-          </div>
 
-          {/* Growth indicator stats */}
-          <div className="text-right space-y-0.5">
-            <span className="text-xs sm:text-sm font-bold text-sky-400 block font-mono">
-              {primaryCurrency === 'USD'
-                ? `+$${(user.balance * 0.375).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                : `+₦${(user.balance * 1600 * 0.375).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+            {/* Subtext alternative currency display */}
+            <p className="text-xs text-slate-400 font-mono">
+              {primaryCurrency === 'NGN' 
+                ? `≈ $${user.balance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD ($1 = ₦1,600)`
+                : `≈ ₦${(user.balance * 1600).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} NGN`
               }
-            </span>
-            <span className="text-xs font-bold text-sky-400/90 block font-mono">
-              +88.32%
-            </span>
+            </p>
           </div>
-        </div>
 
-        {/* Live Currency Valuation & Conversion Strip */}
-        <div className="flex items-center justify-between p-2.5 bg-[#182030] border border-slate-800/80 rounded-xl text-xs">
-          <div className="flex items-center gap-2">
-            <div className={`w-6 h-6 rounded-lg flex items-center justify-center font-bold text-xs shrink-0 ${
-              primaryCurrency === 'NGN' 
-                ? 'bg-blue-500/15 border border-blue-500/30 text-blue-400' 
-                : 'bg-emerald-500/15 border border-emerald-500/30 text-emerald-400'
+          {/* Account Level Badge */}
+          <div className="text-right">
+            <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 block">Account Status</span>
+            <span className={`inline-block mt-0.5 px-2.5 py-1 rounded-xl text-xs font-black border ${
+              (user.tier || 1) >= 2 
+                ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-300' 
+                : 'bg-amber-500/15 border-amber-500/30 text-amber-300'
             }`}>
-              {primaryCurrency === 'NGN' ? '$' : '₦'}
-            </div>
-            <div>
-              <span className="text-[9px] text-slate-400 font-extrabold uppercase tracking-wider block leading-none">
-                {primaryCurrency === 'NGN' ? 'Dollar Value (Rate: $1 = ₦1,600)' : 'Naira Value (Rate: ₦1,600 / $1)'}
-              </span>
-              <span className={`text-xs font-bold font-mono ${primaryCurrency === 'NGN' ? 'text-blue-400' : 'text-emerald-400'}`}>
-                {showBalance 
-                  ? (primaryCurrency === 'NGN' 
-                      ? `$${user.balance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD`
-                      : `₦${(user.balance * 1600).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} NGN`
-                    )
-                  : '••••••'
-                }
-              </span>
-            </div>
+              Level {user.tier || 1} Active
+            </span>
           </div>
-
-          <button
-            type="button"
-            onClick={() => handleCurrencyChange(primaryCurrency === 'USD' ? 'NGN' : 'USD')}
-            className="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700/80 rounded-lg text-[10px] font-bold transition-all cursor-pointer flex items-center gap-1 shadow-xs"
-            id="btn-convert-naira-toggle"
-          >
-            <Coins className="w-3 h-3 text-amber-400" />
-            <span>{primaryCurrency === 'USD' ? 'Switch to ₦ NGN' : 'Switch to $ USD'}</span>
-          </button>
         </div>
 
-        {/* Action Buttons: Withdraw & Deposit matching image circles */}
-        <div className="grid grid-cols-2 gap-3 pt-2" id="balance-core-actions">
+        {/* 3 Main Action Buttons: Upgrade Level | Withdraw | Deposit */}
+        <div className="grid grid-cols-3 gap-2 sm:gap-3 pt-2" id="balance-core-actions">
+          {/* Upgrade Button */}
+          <button 
+            type="button"
+            onClick={() => handleOpenUpgrade(2)}
+            className="flex flex-col items-center justify-center p-3 bg-gradient-to-b from-amber-500/20 to-orange-600/20 hover:from-amber-500/30 hover:to-orange-600/30 border border-amber-500/40 text-amber-300 rounded-2xl text-xs font-black transition-all cursor-pointer active:scale-95 shadow-md group"
+            id="btn-upgrade-account-level"
+          >
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-amber-500 to-orange-500 text-slate-950 flex items-center justify-center shrink-0 mb-1 shadow-sm group-hover:scale-105 transition-transform">
+              <Zap className="w-4 h-4 fill-slate-950 text-slate-950" />
+            </div>
+            <span className="leading-tight">Upgrade</span>
+            <span className="text-[9px] text-amber-400 font-bold">Level 2</span>
+          </button>
+
+          {/* Withdraw Button */}
           <button 
             type="button"
             onClick={() => {
               setInputAmount('');
               setActiveModal('transfer');
             }}
-            className="flex items-center justify-center gap-2.5 py-3 bg-[#1C2436] hover:bg-[#222C42] border border-slate-700/50 text-white rounded-2xl text-xs font-bold transition-all cursor-pointer active:scale-95 shadow-md"
+            className="flex flex-col items-center justify-center p-3 bg-[#1C2436] hover:bg-[#222C42] border border-slate-700/60 text-white rounded-2xl text-xs font-bold transition-all cursor-pointer active:scale-95 shadow-md group"
             id="btn-send-money-modal"
           >
-            <div className="w-6 h-6 rounded-full bg-white text-slate-900 flex items-center justify-center shrink-0 shadow-xs">
-              <ArrowUpRight className="w-3.5 h-3.5 text-slate-900" />
+            <div className="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center shrink-0 mb-1 shadow-sm group-hover:scale-105 transition-transform">
+              <ArrowUpRight className="w-4 h-4 text-white" />
             </div>
-            <span>Withdraw</span>
+            <span className="leading-tight">Withdraw</span>
+            <span className="text-[9px] text-slate-400 font-medium">Cashout</span>
           </button>
 
+          {/* Deposit Button */}
           <button 
             type="button"
             onClick={() => {
@@ -3325,29 +3479,30 @@ export default function Dashboard({
               setAddMoneyStep('select');
               setActiveModal('add_money');
             }}
-            className="flex items-center justify-center gap-2.5 py-3 bg-[#1C2436] hover:bg-[#222C42] border border-slate-700/50 text-white rounded-2xl text-xs font-bold transition-all cursor-pointer active:scale-95 shadow-md"
+            className="flex flex-col items-center justify-center p-3 bg-[#1C2436] hover:bg-[#222C42] border border-slate-700/60 text-white rounded-2xl text-xs font-bold transition-all cursor-pointer active:scale-95 shadow-md group"
             id="btn-add-money-modal"
           >
-            <div className="w-6 h-6 rounded-full bg-white text-slate-900 flex items-center justify-center shrink-0 shadow-xs">
-              <ArrowDownLeft className="w-3.5 h-3.5 text-slate-900" />
+            <div className="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0 mb-1 shadow-sm group-hover:scale-105 transition-transform">
+              <ArrowDownLeft className="w-4 h-4 text-white" />
             </div>
-            <span>Deposit</span>
+            <span className="leading-tight">Deposit</span>
+            <span className="text-[9px] text-slate-400 font-medium">Add Funds</span>
           </button>
         </div>
 
-        {/* Daily Charity & Community Support Active Indicator */}
-        <div className="mt-2.5 p-2.5 bg-gradient-to-r from-rose-950/40 via-[#182030] to-slate-900/60 border border-rose-500/20 rounded-xl flex items-center justify-between gap-2.5" id="charity-donation-badge">
+        {/* Daily Charity 20% deduction Notice */}
+        <div className="p-2.5 bg-gradient-to-r from-rose-950/40 via-[#182030] to-slate-900/60 border border-rose-500/20 rounded-xl flex items-center justify-between gap-2.5" id="charity-donation-badge">
           <div className="flex items-center gap-2 min-w-0">
             <div className="w-6 h-6 rounded-lg bg-rose-500/15 border border-rose-500/30 text-rose-400 flex items-center justify-center shrink-0">
               <Heart className="w-3.5 h-3.5 fill-rose-500/30" />
             </div>
             <div className="min-w-0">
               <div className="flex items-center gap-1.5">
-                <span className="text-[10px] font-black text-rose-300 uppercase tracking-wider">Charity Outreach</span>
-                <span className="text-[9px] bg-rose-500/20 text-rose-300 px-1.5 py-0.2 rounded font-mono font-bold">Active</span>
+                <span className="text-[10px] font-black text-rose-300 uppercase tracking-wider">Charity Support</span>
+                <span className="text-[9px] bg-rose-500/20 text-rose-300 px-1.5 py-0.2 rounded font-mono font-bold">20% Daily</span>
               </div>
               <p className="text-[10px] text-slate-400 truncate">
-                Auto-deducts 20% daily when balance &gt; ₦1,000 for charity
+                20% auto-deducted daily from balances over ₦1,000 for charity
               </p>
             </div>
           </div>
@@ -3357,10 +3512,199 @@ export default function Dashboard({
         </div>
       </div>
 
-      {/* FUNDS Section matching screenshot */}
+      {/* ========================================================================= */}
+      {/* 🎁 BIG PROMINENT DAILY REWARDS CLAIM CARD (High-Visibility for Users)       */}
+      {/* ========================================================================= */}
+      <div 
+        className="relative bg-gradient-to-br from-[#15232d] via-[#131c2a] to-[#0f172a] border-2 border-emerald-500/50 rounded-3xl p-5 sm:p-6 shadow-2xl shadow-emerald-950/40 overflow-hidden" 
+        id="big-daily-reward-claim-card"
+      >
+        {/* Background glow & accents */}
+        <div className="absolute top-0 right-0 w-48 h-48 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-36 h-36 bg-teal-500/10 rounded-full blur-2xl pointer-events-none" />
+
+        <div className="relative space-y-4">
+          {/* Header row */}
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <div className="inline-flex items-center gap-2 bg-emerald-500/20 border border-emerald-500/40 px-3 py-1 rounded-full text-emerald-300 text-[11px] font-black uppercase tracking-wider">
+              <Gift className="w-3.5 h-3.5 text-emerald-400 animate-bounce" />
+              <span>100% FREE DAILY CASH REWARD</span>
+            </div>
+
+            <span className="text-xs font-mono font-bold text-emerald-400 bg-emerald-950/80 px-2.5 py-1 rounded-xl border border-emerald-800/60">
+              +$50.00 / ₦80,000
+            </span>
+          </div>
+
+          {/* Large Title & Description */}
+          <div>
+            <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight flex items-center gap-2">
+              <span>Claim Your Free $50.00 (₦80,000)</span>
+              <Sparkles className="w-5 h-5 text-amber-400 animate-spin-slow" />
+            </h2>
+            <p className="text-xs text-slate-300 font-medium mt-1 leading-relaxed">
+              No deposit required! Tap the big button below once every 24 hours to credit <strong className="text-emerald-400 font-bold">$50.00 (₦80,000.00)</strong> directly into your account balance.
+            </p>
+          </div>
+
+          {/* BIG INTERACTIVE CLAIM BUTTON */}
+          {!hasCheckedInToday ? (
+            <button
+              type="button"
+              onClick={handleClaimDailyReward}
+              disabled={claimingReward}
+              className="w-full py-4.5 px-6 bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 hover:from-emerald-400 hover:to-teal-400 text-slate-950 rounded-2xl font-black text-base sm:text-lg shadow-xl shadow-emerald-500/25 flex items-center justify-center gap-3 transition-all transform active:scale-98 cursor-pointer disabled:opacity-75"
+              id="big-claim-daily-reward-btn"
+            >
+              {claimingReward ? (
+                <>
+                  <Loader2 className="w-6 h-6 animate-spin text-slate-950" />
+                  <span>CREDITING +$50.00 (₦80,000)...</span>
+                </>
+              ) : (
+                <>
+                  <Gift className="w-6 h-6 animate-bounce text-slate-950" />
+                  <span>👉 TAP TO CLAIM +$50.00 (₦80,000) NOW 👈</span>
+                  <Sparkles className="w-5 h-5 text-amber-300" />
+                </>
+              )}
+            </button>
+          ) : (
+            <div className="p-4 bg-emerald-950/50 border border-emerald-500/40 rounded-2xl text-center space-y-2">
+              <div className="inline-flex items-center gap-2 text-emerald-300 font-extrabold text-sm sm:text-base">
+                <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+                <span>✓ You Have Claimed Your $50.00 for Today!</span>
+              </div>
+              <p className="text-xs text-slate-300">
+                Next claim available in: <strong className="text-amber-400 font-mono text-sm font-black">{countdownToMidnight}</strong>
+              </p>
+              <div className="pt-1 flex items-center justify-center gap-3 text-xs">
+                <button 
+                  type="button" 
+                  onClick={() => onNavigateToTab('rewards')}
+                  className="text-sky-400 font-bold hover:underline flex items-center gap-1 cursor-pointer"
+                >
+                  <Pickaxe className="w-3.5 h-3.5" />
+                  <span>Mine More ($3/5mins)</span>
+                </button>
+                <span className="text-slate-600">•</span>
+                <button 
+                  type="button" 
+                  onClick={() => onNavigateToTab('rewards')}
+                  className="text-amber-400 font-bold hover:underline flex items-center gap-1 cursor-pointer"
+                >
+                  <Users className="w-3.5 h-3.5" />
+                  <span>Refer Friends ($0.50)</span>
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Quick Earning Stats Footer */}
+          <div className="grid grid-cols-3 gap-2 pt-1 border-t border-slate-800/80 text-center">
+            <div className="p-2 bg-[#121824] rounded-xl border border-slate-800">
+              <span className="text-[10px] text-slate-400 font-bold block">Daily Reward</span>
+              <span className="text-xs font-black text-emerald-400 font-mono">+$50.00</span>
+            </div>
+            <div className="p-2 bg-[#121824] rounded-xl border border-slate-800">
+              <span className="text-[10px] text-slate-400 font-bold block">Mining Station</span>
+              <span className="text-xs font-black text-sky-400 font-mono">+$3.00/5m</span>
+            </div>
+            <div className="p-2 bg-[#121824] rounded-xl border border-slate-800">
+              <span className="text-[10px] text-slate-400 font-bold block">Referral Bonus</span>
+              <span className="text-xs font-black text-amber-400 font-mono">+$0.50</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ========================================================================= */}
+      {/* 4 CLEAR EARNING & UPGRADE SHORTCUT TILES (Easy to Understand for Users)   */}
+      {/* ========================================================================= */}
+      <div className="space-y-2.5" id="dashboard-shortcuts-section">
+        <span className="text-[10px] uppercase tracking-widest text-slate-400 font-extrabold block pl-1">
+          HOW TO EARN & UPGRADE
+        </span>
+
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+          {/* 1. Daily Claim */}
+          <button
+            type="button"
+            onClick={() => {
+              if (!hasCheckedInToday) {
+                handleClaimDailyReward();
+              } else {
+                setNotification(`Reward claimed! Next claim available in ${countdownToMidnight}`);
+              }
+            }}
+            className="p-3.5 bg-[#131926] hover:bg-[#182032] border border-emerald-500/30 rounded-2xl text-left space-y-2 transition-all cursor-pointer shadow-md group"
+            id="shortcut-daily-claim"
+          >
+            <div className="w-9 h-9 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+              <Gift className="w-5 h-5" />
+            </div>
+            <div>
+              <span className="text-xs font-black text-white block">1. Daily $50</span>
+              <span className="text-[10px] text-emerald-400 font-bold">
+                {hasCheckedInToday ? '✓ Claimed Today' : 'Tap to Claim $50'}
+              </span>
+            </div>
+          </button>
+
+          {/* 2. Upgrade Account Level */}
+          <button
+            type="button"
+            onClick={() => handleOpenUpgrade(2)}
+            className="p-3.5 bg-[#131926] hover:bg-[#182032] border border-amber-500/30 rounded-2xl text-left space-y-2 transition-all cursor-pointer shadow-md group"
+            id="shortcut-upgrade-level"
+          >
+            <div className="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+              <Zap className="w-5 h-5 fill-amber-400/30" />
+            </div>
+            <div>
+              <span className="text-xs font-black text-white block">2. Upgrade Level</span>
+              <span className="text-[10px] text-amber-400 font-bold">Unlock Cashouts</span>
+            </div>
+          </button>
+
+          {/* 3. 5-Min Crypto Mining */}
+          <button
+            type="button"
+            onClick={() => onNavigateToTab('rewards')}
+            className="p-3.5 bg-[#131926] hover:bg-[#182032] border border-sky-500/30 rounded-2xl text-left space-y-2 transition-all cursor-pointer shadow-md group"
+            id="shortcut-mining"
+          >
+            <div className="w-9 h-9 rounded-xl bg-sky-500/20 text-sky-400 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+              <Pickaxe className="w-5 h-5" />
+            </div>
+            <div>
+              <span className="text-xs font-black text-white block">3. Mining ($3)</span>
+              <span className="text-[10px] text-sky-400 font-bold">Every 5 Minutes</span>
+            </div>
+          </button>
+
+          {/* 4. Refer Friends */}
+          <button
+            type="button"
+            onClick={() => onNavigateToTab('rewards')}
+            className="p-3.5 bg-[#131926] hover:bg-[#182032] border border-indigo-500/30 rounded-2xl text-left space-y-2 transition-all cursor-pointer shadow-md group"
+            id="shortcut-refer-earn"
+          >
+            <div className="w-9 h-9 rounded-xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+              <Users className="w-5 h-5" />
+            </div>
+            <div>
+              <span className="text-xs font-black text-white block">4. Refer & Earn</span>
+              <span className="text-[10px] text-indigo-400 font-bold">+$0.50 + Upgrade %</span>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      {/* FUNDS & CRYPTO ASSETS Section */}
       <div className="space-y-2.5" id="dashboard-funds-section">
         <span className="text-[10px] uppercase tracking-widest text-slate-400 font-extrabold block pl-1">
-          FUNDS
+          CRYPTO HOLDINGS & WALLETS
         </span>
 
         <div className="flex items-center gap-3 overflow-x-auto pb-2 scrollbar-none">
@@ -3435,15 +3779,15 @@ export default function Dashboard({
             </div>
           </div>
 
-          {/* Wecoin Card */}
+          {/* USDT (Tether) Card */}
           <div className="w-44 p-4 bg-[#131926] border border-slate-800/90 rounded-2xl shrink-0 space-y-2 shadow-lg">
             <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-full bg-cyan-500/20 border border-cyan-500/40 text-cyan-400 flex items-center justify-center font-bold text-xs shrink-0">
-                W
+              <div className="w-7 h-7 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 flex items-center justify-center font-bold text-xs shrink-0">
+                ₮
               </div>
               <div>
-                <p className="text-xs font-bold text-white leading-none">Wecoin</p>
-                <p className="text-[10px] text-slate-400 font-mono mt-0.5">3WCN</p>
+                <p className="text-xs font-bold text-white leading-none">Tether USD</p>
+                <p className="text-[10px] text-slate-400 font-mono mt-0.5">USDT TRC20</p>
               </div>
             </div>
 
@@ -3458,8 +3802,8 @@ export default function Dashboard({
               <p className="text-xs font-extrabold text-white font-mono">
                 $1,764.46
               </p>
-              <p className="text-[10px] font-bold text-sky-400 font-mono mt-0.5">
-                +124.50  +7.80%
+              <p className="text-[10px] font-bold text-emerald-400 font-mono mt-0.5">
+                +124.50  +1.00%
               </p>
             </div>
           </div>
@@ -3469,13 +3813,13 @@ export default function Dashboard({
       {/* RECENT ACTIONS Section */}
       <div className="space-y-2.5" id="dashboard-recent-actions">
         <span className="text-[10px] uppercase tracking-widest text-slate-400 font-extrabold block pl-1">
-          RECENT ACTIONS
+          RECENT ACTIONS & TRANSACTIONS
         </span>
 
         <div className="bg-[#131926] border border-slate-800/90 rounded-2xl p-4 shadow-lg">
           {currentTxs.length === 0 ? (
             <div className="text-center py-6 text-slate-500 text-xs font-medium">
-              No recent activity yet. Make a deposit or start trading to see actions here.
+              No recent transactions yet. Claim your daily reward or deposit to see actions here.
             </div>
           ) : (
             <div className="space-y-3">
@@ -3514,6 +3858,240 @@ export default function Dashboard({
           )}
         </div>
       </div>
+
+      {/* ========================================================================= */}
+      {/* 📖 INTERACTIVE NEW USER STARTER GUIDE MODAL (Step-by-Step Walkthrough)    */}
+      {/* ========================================================================= */}
+      {showGuideModal && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in" id="new-user-guide-modal">
+          <div className="bg-[#141A28] border-2 border-amber-500/50 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-5 text-white animate-scale-up relative">
+            {/* Close Button */}
+            <button
+              type="button"
+              onClick={handleCloseGuide}
+              className="absolute top-4 right-4 p-2 text-slate-400 hover:text-white bg-slate-800/80 hover:bg-slate-700 rounded-xl transition-all cursor-pointer"
+              id="close-guide-btn"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
+            {/* Guide Step Progress Header */}
+            <div className="flex items-center justify-between pr-8">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-500/20 border border-amber-500/40 rounded-full text-amber-300 text-[10px] font-black uppercase tracking-wider">
+                <BookOpen className="w-3 h-3 text-amber-400" />
+                <span>New User Starter Guide • Step {guideStep} of 3</span>
+              </div>
+            </div>
+
+            {/* STEP 1: HOW TO EARN MONEY */}
+            {guideStep === 1 && (
+              <div className="space-y-4 animate-fade-in">
+                <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-500 text-slate-950 flex items-center justify-center mx-auto shadow-lg shadow-emerald-500/20">
+                  <Gift className="w-7 h-7" />
+                </div>
+
+                <div className="text-center space-y-1.5">
+                  <h3 className="text-xl font-black text-white">💰 1. How to Earn Free Money</h3>
+                  <p className="text-xs text-slate-300 leading-relaxed">
+                    You can earn real cash every single day in two simple ways:
+                  </p>
+                </div>
+
+                <div className="space-y-2.5 bg-[#182030] p-3.5 rounded-2xl border border-slate-800 text-xs">
+                  <div className="flex items-start gap-2.5">
+                    <div className="w-6 h-6 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 font-bold text-xs mt-0.5">
+                      ✓
+                    </div>
+                    <div>
+                      <strong className="text-white block">Big Daily Reward ($50.00 / ₦80,000)</strong>
+                      <span className="text-slate-400">Click the BIG Green <span className="text-emerald-400 font-bold">"TAP TO CLAIM $50.00"</span> button on your dashboard every 24 hours.</span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-2.5">
+                    <div className="w-6 h-6 rounded-lg bg-sky-500/20 text-sky-400 flex items-center justify-center shrink-0 font-bold text-xs mt-0.5">
+                      ✓
+                    </div>
+                    <div>
+                      <strong className="text-white block">5-Minute Crypto Mining ($3.00)</strong>
+                      <span className="text-slate-400">Go to Rewards &gt; Mining to mine $3.00 every 5 minutes automatically!</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Direct Action inside Step 1 */}
+                <div className="flex items-center gap-2 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handleCloseGuide();
+                      if (!hasCheckedInToday) {
+                        handleClaimDailyReward();
+                      }
+                    }}
+                    className="flex-1 py-3 px-4 bg-emerald-500 hover:bg-emerald-400 text-slate-950 rounded-xl font-black text-xs transition-all cursor-pointer flex items-center justify-center gap-2 shadow-md"
+                  >
+                    <Gift className="w-4 h-4" />
+                    <span>Try Claiming $50 Now</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setGuideStep(2)}
+                    className="py-3 px-4 bg-[#1F293D] hover:bg-[#2A3750] text-white rounded-xl font-bold text-xs transition-all cursor-pointer flex items-center gap-1"
+                  >
+                    <span>Next</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* STEP 2: HOW TO UPGRADE ACCOUNT LEVEL */}
+            {guideStep === 2 && (
+              <div className="space-y-4 animate-fade-in">
+                <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-amber-500 to-orange-500 text-slate-950 flex items-center justify-center mx-auto shadow-lg shadow-amber-500/20">
+                  <Zap className="w-7 h-7 fill-slate-950" />
+                </div>
+
+                <div className="text-center space-y-1.5">
+                  <h3 className="text-xl font-black text-white">⚡ 2. How to Upgrade Account Level</h3>
+                  <p className="text-xs text-slate-300 leading-relaxed">
+                    New accounts register on <strong className="text-amber-400">Level 1 (Basic)</strong>. Upgrade to Level 2 to unlock withdrawals!
+                  </p>
+                </div>
+
+                <div className="space-y-2.5 bg-[#182030] p-3.5 rounded-2xl border border-slate-800 text-xs">
+                  <div className="flex items-start gap-2.5">
+                    <div className="w-6 h-6 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0 font-bold text-xs mt-0.5">
+                      1
+                    </div>
+                    <div>
+                      <strong className="text-white block">Which button to click?</strong>
+                      <span className="text-slate-400">Click the <span className="text-amber-400 font-bold">"⚡ Upgrade Level 2"</span> button on your main wallet card or the top header.</span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-2.5">
+                    <div className="w-6 h-6 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 font-bold text-xs mt-0.5">
+                      2
+                    </div>
+                    <div>
+                      <strong className="text-white block">Why upgrade to Level 2?</strong>
+                      <span className="text-slate-400">Level 2 unlocks <strong className="text-emerald-400">Instant Daily Withdrawals ($200.00/day limit)</strong> into your Nigerian Bank or USDT wallet!</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Direct Action inside Step 2 */}
+                <div className="flex items-center gap-2 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setGuideStep(1)}
+                    className="py-3 px-3 bg-[#1F293D] hover:bg-[#2A3750] text-slate-300 rounded-xl font-bold text-xs transition-all cursor-pointer"
+                  >
+                    Back
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handleCloseGuide();
+                      handleOpenUpgrade(2);
+                    }}
+                    className="flex-1 py-3 px-4 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 rounded-xl font-black text-xs transition-all cursor-pointer flex items-center justify-center gap-2 shadow-md"
+                  >
+                    <Zap className="w-4 h-4 fill-slate-950" />
+                    <span>Open Upgrade Screen</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setGuideStep(3)}
+                    className="py-3 px-4 bg-[#1F293D] hover:bg-[#2A3750] text-white rounded-xl font-bold text-xs transition-all cursor-pointer flex items-center gap-1"
+                  >
+                    <span>Next</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* STEP 3: HOW TO DEPOSIT & WITHDRAW */}
+            {guideStep === 3 && (
+              <div className="space-y-4 animate-fade-in">
+                <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-blue-500 to-indigo-600 text-white flex items-center justify-center mx-auto shadow-lg shadow-blue-500/20">
+                  <ArrowUpRight className="w-7 h-7" />
+                </div>
+
+                <div className="text-center space-y-1.5">
+                  <h3 className="text-xl font-black text-white">💸 3. Deposit & Cash Out</h3>
+                  <p className="text-xs text-slate-300 leading-relaxed">
+                    Seamlessly fund your account or cash out your earned rewards.
+                  </p>
+                </div>
+
+                <div className="space-y-2.5 bg-[#182030] p-3.5 rounded-2xl border border-slate-800 text-xs">
+                  <div className="flex items-start gap-2.5">
+                    <div className="w-6 h-6 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 font-bold text-xs mt-0.5">
+                      📥
+                    </div>
+                    <div>
+                      <strong className="text-white block">Deposit Funds</strong>
+                      <span className="text-slate-400">Click <span className="text-white font-bold">"Deposit"</span> to top up with USDT TRC20 or direct Nigerian Bank Transfer.</span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-2.5">
+                    <div className="w-6 h-6 rounded-lg bg-blue-500/20 text-blue-400 flex items-center justify-center shrink-0 font-bold text-xs mt-0.5">
+                      📤
+                    </div>
+                    <div>
+                      <strong className="text-white block">Withdraw Earnings</strong>
+                      <span className="text-slate-400">Click <span className="text-white font-bold">"Withdraw"</span> to cash out to PalmPay, OPay, GTBank, Zenith, or USDT!</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Done Action */}
+                <div className="flex items-center gap-2 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setGuideStep(2)}
+                    className="py-3 px-3 bg-[#1F293D] hover:bg-[#2A3750] text-slate-300 rounded-xl font-bold text-xs transition-all cursor-pointer"
+                  >
+                    Back
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleCloseGuide}
+                    className="flex-1 py-3 px-4 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 rounded-xl font-black text-xs transition-all cursor-pointer flex items-center justify-center gap-2 shadow-md"
+                  >
+                    <CheckCircle2 className="w-4 h-4 text-slate-950" />
+                    <span>Got It! Take Me to Dashboard</span>
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Step indicator dots */}
+            <div className="flex items-center justify-center gap-2 pt-1">
+              {[1, 2, 3].map((s) => (
+                <button
+                  key={s}
+                  type="button"
+                  onClick={() => setGuideStep(s)}
+                  className={`w-2.5 h-2.5 rounded-full transition-all cursor-pointer ${
+                    guideStep === s ? 'bg-amber-400 w-6' : 'bg-slate-700 hover:bg-slate-500'
+                  }`}
+                  aria-label={`Go to step ${s}`}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Floating Bottom Navigation Capsule Bar matching screenshot */}
       <div className="fixed bottom-4 inset-x-0 z-40 max-w-xs mx-auto px-4" id="floating-bottom-nav">
