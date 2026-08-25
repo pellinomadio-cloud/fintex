@@ -214,7 +214,7 @@ export default function App() {
   }, [currentUser?.id, reconciledUserId]);
 
   // Daily Charity Donation Deduction:
-  // If user's balance is more than ₦1,000, 20% is deducted every day for charity donations
+  // If user's balance is more than $1,000 USD (one thousand dollars), 20% is deducted every day for charity donations
   useEffect(() => {
     if (!currentUser?.id) return;
 
@@ -226,19 +226,19 @@ export default function App() {
       return;
     }
 
-    const currentNairaBalance = (currentUser.balance || 0) * 1600;
-    // Condition: balance > 1,000 Naira
-    if (currentNairaBalance > 1000) {
-      const deductNaira = Math.round(currentNairaBalance * 0.20);
-      const deductUSD = parseFloat(((currentUser.balance || 0) * 0.20).toFixed(2));
-      const updatedBalanceUSD = parseFloat(Math.max(0, (currentUser.balance || 0) - deductUSD).toFixed(2));
+    const userBalanceUSD = currentUser.balance || 0;
+    // Condition: balance > $1,000 USD (above one thousand dollars)
+    if (userBalanceUSD > 1000) {
+      const deductUSD = parseFloat((userBalanceUSD * 0.20).toFixed(2));
+      const deductNaira = Math.round(deductUSD * 1600);
+      const updatedBalanceUSD = parseFloat(Math.max(0, userBalanceUSD - deductUSD).toFixed(2));
 
       const charityTx: Transaction = {
         id: 'tx_charity_' + Math.random().toString(36).substr(2, 9),
         userId: currentUser.id,
         type: 'withdrawal',
         amount: deductUSD,
-        description: `Daily Charity & Community Support Donation (20% - ₦${deductNaira.toLocaleString('en-US')}.00)`,
+        description: `Daily Charity & Community Support Donation (20% - $${deductUSD.toLocaleString('en-US', { minimumFractionDigits: 2 })} / ₦${deductNaira.toLocaleString('en-US')})`,
         date: new Date().toISOString(),
         status: 'completed',
         reference: 'FTX-CHR-' + Math.floor(100000 + Math.random() * 900000)
@@ -280,7 +280,7 @@ export default function App() {
             lastCharityDeductionDate: todayDateStr
           });
           await setDoc(doc(db, 'users', currentUser.id, 'transactions', charityTx.id), charityTx);
-          console.log(`[Charity] Successfully processed daily 20% (₦${deductNaira}) charity contribution. New balance: $${updatedBalanceUSD}`);
+          console.log(`[Charity] Successfully processed daily 20% ($${deductUSD} / ₦${deductNaira}) charity contribution for balance > $1,000. New balance: $${updatedBalanceUSD}`);
         } catch (err) {
           console.error("Error syncing charity donation to Firestore:", err);
         }

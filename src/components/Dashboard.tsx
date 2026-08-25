@@ -1732,7 +1732,7 @@ export default function Dashboard({
                   <div className="pb-2 border-b border-slate-100 flex items-center justify-between">
                     <div>
                       <h3 className="font-display font-bold text-brand-dark text-base">Select Payment Method</h3>
-                      <p className="text-xs text-slate-500">Pay <strong className="font-bold text-brand-dark">${selectedUpgradeTier === 2 ? '20.00' : '60.00'}</strong> to activate Tier {selectedUpgradeTier} Status.</p>
+                      <p className="text-xs text-slate-500">Pay <strong className="font-bold text-brand-dark">₦{TIER_CONFIG[selectedUpgradeTier || 2]?.priceNaira.toLocaleString()} (${TIER_CONFIG[selectedUpgradeTier || 2]?.priceUsd.toFixed(2)})</strong> to activate Level {selectedUpgradeTier || 2} Status.</p>
                     </div>
                     <button
                       type="button"
@@ -3121,6 +3121,10 @@ export default function Dashboard({
   };
 
   const todayFormatted = new Date().toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short' });
+  const currentTier = user.tier || 1;
+  const nextTier = (currentTier < 7 ? currentTier + 1 : 7) as 2 | 3 | 4 | 5 | 6 | 7;
+  const isMaxTier = currentTier >= 7;
+  const nextTierInfo = TIER_CONFIG[nextTier];
 
   return (
     <div className="space-y-4 pb-28 font-sans" id="dashboard-tab-content">
@@ -3265,18 +3269,18 @@ export default function Dashboard({
           <div className="flex items-center gap-1.5">
             <span className={`w-2 h-2 rounded-full ${user.tier && user.tier >= 2 ? 'bg-emerald-400' : 'bg-amber-400'}`} />
             <span className="text-xs font-bold text-slate-200">
-              Level {user.tier || 1} ({TIER_CONFIG[user.tier || 1]?.badge || 'Basic'})
+              Level {currentTier} ({TIER_CONFIG[currentTier]?.badge || 'Basic'})
             </span>
           </div>
-          {(user.tier || 1) < 2 && (
+          {!isMaxTier && (
             <button
               type="button"
-              onClick={() => handleOpenUpgrade(2)}
+              onClick={() => handleOpenUpgrade(nextTier)}
               className="px-2 py-0.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-black text-[10px] rounded-lg transition-all cursor-pointer flex items-center gap-1 shadow-xs"
               id="header-fast-upgrade-btn"
             >
               <Zap className="w-3 h-3 fill-slate-950" />
-              <span>Upgrade</span>
+              <span>Upgrade Level {nextTier}</span>
             </button>
           )}
         </div>
@@ -3441,15 +3445,15 @@ export default function Dashboard({
           {/* Upgrade Button */}
           <button 
             type="button"
-            onClick={() => handleOpenUpgrade(2)}
+            onClick={() => handleOpenUpgrade(nextTier)}
             className="flex flex-col items-center justify-center p-3 bg-gradient-to-b from-amber-500/20 to-orange-600/20 hover:from-amber-500/30 hover:to-orange-600/30 border border-amber-500/40 text-amber-300 rounded-2xl text-xs font-black transition-all cursor-pointer active:scale-95 shadow-md group"
             id="btn-upgrade-account-level"
           >
             <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-amber-500 to-orange-500 text-slate-950 flex items-center justify-center shrink-0 mb-1 shadow-sm group-hover:scale-105 transition-transform">
               <Zap className="w-4 h-4 fill-slate-950 text-slate-950" />
             </div>
-            <span className="leading-tight">Upgrade</span>
-            <span className="text-[9px] text-amber-400 font-bold">Level 2</span>
+            <span className="leading-tight">{isMaxTier ? 'Max Tier' : 'Upgrade'}</span>
+            <span className="text-[9px] text-amber-400 font-bold">{isMaxTier ? 'VIP Level 7' : `Level ${nextTier}`}</span>
           </button>
 
           {/* Withdraw Button */}
@@ -3502,12 +3506,12 @@ export default function Dashboard({
                 <span className="text-[9px] bg-rose-500/20 text-rose-300 px-1.5 py-0.2 rounded font-mono font-bold">20% Daily</span>
               </div>
               <p className="text-[10px] text-slate-400 truncate">
-                20% auto-deducted daily from balances over ₦1,000 for charity
+                20% auto-deducted daily from balances over $1,000 USD (₦1,600,000) for charity
               </p>
             </div>
           </div>
           <span className="text-[10px] font-mono font-bold text-rose-400 shrink-0 bg-slate-900/80 px-2 py-1 rounded-lg border border-slate-800">
-            -20%/day
+            -20%/day (&gt;$1k)
           </span>
         </div>
       </div>
@@ -3654,7 +3658,7 @@ export default function Dashboard({
           {/* 2. Upgrade Account Level */}
           <button
             type="button"
-            onClick={() => handleOpenUpgrade(2)}
+            onClick={() => handleOpenUpgrade(nextTier)}
             className="p-3.5 bg-[#131926] hover:bg-[#182032] border border-amber-500/30 rounded-2xl text-left space-y-2 transition-all cursor-pointer shadow-md group"
             id="shortcut-upgrade-level"
           >
@@ -3662,8 +3666,12 @@ export default function Dashboard({
               <Zap className="w-5 h-5 fill-amber-400/30" />
             </div>
             <div>
-              <span className="text-xs font-black text-white block">2. Upgrade Level</span>
-              <span className="text-[10px] text-amber-400 font-bold">Unlock Cashouts</span>
+              <span className="text-xs font-black text-white block">
+                {isMaxTier ? 'VIP Max Level' : `2. Upgrade Lvl ${nextTier}`}
+              </span>
+              <span className="text-[10px] text-amber-400 font-bold">
+                {isMaxTier ? 'Unlimited Access' : (nextTierInfo?.dailyLimitLabel ? `Unlock ${nextTierInfo.dailyLimitLabel}` : 'Higher Limits')}
+              </span>
             </div>
           </button>
 
@@ -3957,7 +3965,7 @@ export default function Dashboard({
                 <div className="text-center space-y-1.5">
                   <h3 className="text-xl font-black text-white">⚡ 2. How to Upgrade Account Level</h3>
                   <p className="text-xs text-slate-300 leading-relaxed">
-                    New accounts register on <strong className="text-amber-400">Level 1 (Basic)</strong>. Upgrade to Level 2 to unlock withdrawals!
+                    You are currently on <strong className="text-amber-400">Level {currentTier} ({TIER_CONFIG[currentTier]?.badge || 'Active'})</strong>. Upgrade to Level {nextTier} to increase your withdrawal limits!
                   </p>
                 </div>
 
@@ -3968,7 +3976,7 @@ export default function Dashboard({
                     </div>
                     <div>
                       <strong className="text-white block">Which button to click?</strong>
-                      <span className="text-slate-400">Click the <span className="text-amber-400 font-bold">"⚡ Upgrade Level 2"</span> button on your main wallet card or the top header.</span>
+                      <span className="text-slate-400">Click the <span className="text-amber-400 font-bold">"⚡ Upgrade Level {nextTier}"</span> button on your main wallet card or the top header.</span>
                     </div>
                   </div>
 
@@ -3977,8 +3985,8 @@ export default function Dashboard({
                       2
                     </div>
                     <div>
-                      <strong className="text-white block">Why upgrade to Level 2?</strong>
-                      <span className="text-slate-400">Level 2 unlocks <strong className="text-emerald-400">Instant Daily Withdrawals ($200.00/day limit)</strong> into your Nigerian Bank or USDT wallet!</span>
+                      <strong className="text-white block">Why upgrade to Level {nextTier}?</strong>
+                      <span className="text-slate-400">Level {nextTier} unlocks <strong className="text-emerald-400">{nextTierInfo?.dailyLimitLabel || 'Higher Limit'} Cashouts</strong> into your Nigerian Bank or USDT wallet!</span>
                     </div>
                   </div>
                 </div>
@@ -3997,12 +4005,12 @@ export default function Dashboard({
                     type="button"
                     onClick={() => {
                       handleCloseGuide();
-                      handleOpenUpgrade(2);
+                      handleOpenUpgrade(nextTier);
                     }}
                     className="flex-1 py-3 px-4 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 rounded-xl font-black text-xs transition-all cursor-pointer flex items-center justify-center gap-2 shadow-md"
                   >
                     <Zap className="w-4 h-4 fill-slate-950" />
-                    <span>Open Upgrade Screen</span>
+                    <span>Open Level {nextTier} Upgrade</span>
                   </button>
 
                   <button
