@@ -411,7 +411,7 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] dark:bg-[#080C14] text-slate-900 dark:text-slate-100 flex flex-col antialiased select-none" id="uxtrade-master-app">
+    <div className="min-h-screen bg-white dark:bg-[#080C14] text-slate-900 dark:text-slate-100 flex flex-col antialiased select-none" id="uxtrade-master-app">
       {/* Top PWA Installation Banner */}
       <PWAInstallPrompt variant="banner" />
 
@@ -549,89 +549,89 @@ export default function App() {
       </main>
 
       {/* Fixed bottom navigation drawer bar matching user supplied design */}
-      <nav className="fixed bottom-0 inset-x-0 bg-white border-t border-slate-100 py-2.5 px-4 flex justify-around items-center z-40 shadow-[0_-4px_12px_rgba(15,23,42,0.03)]" id="fixed-bottom-application-nav">
+      <nav className="fixed bottom-0 inset-x-0 bg-white/95 backdrop-blur-md border-t border-slate-100 py-2.5 px-4 flex justify-around items-center z-40 shadow-[0_-4px_16px_rgba(15,23,42,0.05)]" id="fixed-bottom-application-nav">
         <button
           id="nav-btn-home"
           type="button"
           onClick={() => setActiveTab('home')}
-          className={`flex flex-col items-center justify-center transition-all px-3 py-1 rounded-xl ${
+          className={`flex flex-col items-center justify-center transition-all px-3 py-1 rounded-xl cursor-pointer ${
             activeTab === 'home' 
-              ? 'text-brand-dark scale-105' 
+              ? 'text-[#1E60F6] scale-105' 
               : 'text-slate-400 hover:text-slate-600'
           }`}
         >
-          <HomeIcon className={`w-5.5 h-5.5 ${activeTab === 'home' ? 'text-brand-dark fill-current' : ''}`} />
-          <span className={`text-[10px] font-bold mt-1 ${activeTab === 'home' ? 'text-brand-dark' : 'text-slate-400'}`}>Home</span>
+          <HomeIcon className={`w-5.5 h-5.5 ${activeTab === 'home' ? 'text-[#1E60F6] fill-current' : ''}`} />
+          <span className={`text-[10px] font-bold mt-1 ${activeTab === 'home' ? 'text-[#1E60F6]' : 'text-slate-400'}`}>Home</span>
         </button>
 
         <button
           id="nav-btn-rewards"
           type="button"
           onClick={() => setActiveTab('rewards')}
-          className={`flex flex-col items-center justify-center transition-all px-3 py-1 rounded-xl ${
+          className={`flex flex-col items-center justify-center transition-all px-3 py-1 rounded-xl cursor-pointer ${
             activeTab === 'rewards' 
-              ? 'text-brand-dark scale-105' 
+              ? 'text-[#1E60F6] scale-105' 
               : 'text-slate-400 hover:text-slate-600'
           }`}
         >
-          <RewardsIcon className={`w-5.5 h-5.5 ${activeTab === 'rewards' ? 'text-brand-dark fill-current' : ''}`} />
-          <span className={`text-[10px] font-bold mt-1 ${activeTab === 'rewards' ? 'text-brand-dark' : 'text-slate-400'}`}>Rewards</span>
+          <RewardsIcon className={`w-5.5 h-5.5 ${activeTab === 'rewards' ? 'text-[#1E60F6] fill-current' : ''}`} />
+          <span className={`text-[10px] font-bold mt-1 ${activeTab === 'rewards' ? 'text-[#1E60F6]' : 'text-slate-400'}`}>Rewards</span>
         </button>
 
         <button
           id="nav-btn-finance"
           type="button"
           onClick={() => setActiveTab('finance')}
-          className={`flex flex-col items-center justify-center transition-all px-3 py-1 rounded-xl ${
+          className={`flex flex-col items-center justify-center transition-all px-3 py-1 rounded-xl cursor-pointer ${
             activeTab === 'finance' 
-              ? 'text-brand-dark scale-105' 
+              ? 'text-[#1E60F6] scale-105' 
               : 'text-slate-400 hover:text-slate-600'
           }`}
         >
           <FinanceIcon className="w-5.5 h-5.5" />
-          <span className={`text-[10px] font-bold mt-1 ${activeTab === 'finance' ? 'text-brand-dark' : 'text-slate-400'}`}>Finance</span>
+          <span className={`text-[10px] font-bold mt-1 ${activeTab === 'finance' ? 'text-[#1E60F6]' : 'text-slate-400'}`}>Finance</span>
         </button>
 
         <button
           id="nav-btn-trade"
           type="button"
           onClick={() => setActiveTab('trade')}
-          className={`flex flex-col items-center justify-center transition-all px-3 py-1 rounded-xl ${
+          className={`flex flex-col items-center justify-center transition-all px-3 py-1 rounded-xl cursor-pointer ${
             activeTab === 'trade' 
-              ? 'text-brand-dark scale-105' 
+              ? 'text-[#1E60F6] scale-105' 
               : 'text-slate-400 hover:text-slate-600'
           }`}
         >
-          <TradeIcon className={`w-5.5 h-5.5 ${activeTab === 'trade' ? 'text-brand-dark' : ''}`} />
-          <span className={`text-[10px] font-bold mt-1 ${activeTab === 'trade' ? 'text-brand-dark' : 'text-slate-400'}`}>Trade</span>
+          <TradeIcon className={`w-5.5 h-5.5 ${activeTab === 'trade' ? 'text-[#1E60F6]' : ''}`} />
+          <span className={`text-[10px] font-bold mt-1 ${activeTab === 'trade' ? 'text-[#1E60F6]' : 'text-slate-400'}`}>Trade</span>
         </button>
 
         <button
           id="nav-btn-cards"
           type="button"
           onClick={() => setActiveTab('cards')}
-          className={`flex flex-col items-center justify-center transition-all px-3 py-1 rounded-xl ${
+          className={`flex flex-col items-center justify-center transition-all px-3 py-1 rounded-xl cursor-pointer ${
             activeTab === 'cards' 
-              ? 'text-brand-dark scale-105' 
+              ? 'text-[#1E60F6] scale-105' 
               : 'text-slate-400 hover:text-slate-600'
           }`}
         >
           <CardsIcon className="w-5.5 h-5.5" />
-          <span className={`text-[10px] font-bold mt-1 ${activeTab === 'cards' ? 'text-brand-dark' : 'text-slate-400'}`}>Cards</span>
+          <span className={`text-[10px] font-bold mt-1 ${activeTab === 'cards' ? 'text-[#1E60F6]' : 'text-slate-400'}`}>Cards</span>
         </button>
 
         <button
           id="nav-btn-profile"
           type="button"
           onClick={() => setActiveTab('profile')}
-          className={`flex flex-col items-center justify-center transition-all px-3 py-1 rounded-xl ${
+          className={`flex flex-col items-center justify-center transition-all px-3 py-1 rounded-xl cursor-pointer ${
             activeTab === 'profile' 
-              ? 'text-brand-dark scale-105' 
+              ? 'text-[#1E60F6] scale-105' 
               : 'text-slate-400 hover:text-slate-600'
           }`}
         >
-          <ProfileIcon className={`w-5.5 h-5.5 ${activeTab === 'profile' ? 'text-brand-dark fill-current' : ''}`} />
-          <span className={`text-[10px] font-bold mt-1 ${activeTab === 'profile' ? 'text-brand-dark' : 'text-slate-400'}`}>Me</span>
+          <ProfileIcon className={`w-5.5 h-5.5 ${activeTab === 'profile' ? 'text-[#1E60F6] fill-current' : ''}`} />
+          <span className={`text-[10px] font-bold mt-1 ${activeTab === 'profile' ? 'text-[#1E60F6]' : 'text-slate-400'}`}>Me</span>
         </button>
       </nav>
     </div>

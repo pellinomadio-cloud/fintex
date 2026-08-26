@@ -3,6 +3,7 @@ import { User, Transaction, SupportMessage } from '../types';
 import { TIER_CONFIG } from '../utils/tierConfig';
 import { db, cleanForFirestore } from '../firebase';
 import { doc, setDoc, onSnapshot, getDoc, collection, deleteDoc, updateDoc, getDocs } from 'firebase/firestore';
+import { BlueCoinGraphic } from './BlueCoinGraphic';
 import { 
   Eye, EyeOff, Plus, ArrowUpRight, ArrowDownLeft, Landmark, 
   Send, Phone, Database, Trophy, Landmark as LoanIcon, 
@@ -10,7 +11,8 @@ import {
   Tv, Sparkles, AlertCircle, ShieldAlert, CheckCircle2,
   X, BadgeAlert, ArrowRightCircle, ArrowLeft, Coins, Copy, Check, Gift,
   ShieldCheck, Megaphone, Bot, Search, ChevronDown, Loader2, Heart,
-  Zap, Flame, BookOpen, Compass, Award, Pickaxe, ArrowRight
+  Zap, Flame, BookOpen, Compass, Award, Pickaxe, ArrowRight,
+  TrendingUp, Repeat, FileText, PlusCircle
 } from 'lucide-react';
 
 interface DashboardProps {
@@ -3201,16 +3203,18 @@ export default function Dashboard({
 
       {/* Top Bar: Brand Left | Guide, Avatar & Bell Right */}
       <div className="flex items-center justify-between" id="user-header-profile-bar">
-        {/* Left Cardano/App Icon Logo */}
+        {/* Left UX TRADING Brand */}
         <div className="flex items-center gap-2.5">
-          <div className="w-11 h-11 rounded-2xl bg-[#141A28] border border-slate-800 flex items-center justify-center p-2 shadow-lg shadow-black/20">
-            <img src="/icon.svg" alt="UXtrade Logo" className="w-7 h-7 rounded-lg" />
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#1E60F6] to-sky-400 flex items-center justify-center p-2 shadow-md shadow-blue-500/20 text-white">
+            <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
+              <path d="M4 18h3V6H4v12zm6 0h3V10h-3v8zm6-14v14h3V4h-3z" />
+            </svg>
           </div>
-          <div className="hidden xs:block">
-            <span className="text-sm font-black text-white tracking-tight block">UXtrade</span>
-            <span className="text-[10px] text-emerald-400 font-bold flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-              Live Node
+          <div>
+            <span className="text-sm sm:text-base font-black text-slate-900 tracking-tight block leading-tight">UX TRADING</span>
+            <span className="text-[10px] text-emerald-600 font-bold flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+              Live Node Active
             </span>
           </div>
         </div>
@@ -3221,21 +3225,21 @@ export default function Dashboard({
           <button
             type="button"
             onClick={handleRestartGuide}
-            className="flex items-center gap-1.5 px-3 py-2 bg-gradient-to-r from-amber-500/20 to-orange-500/20 hover:from-amber-500/30 hover:to-orange-500/30 border border-amber-500/40 text-amber-300 rounded-xl text-xs font-black shadow-sm transition-all cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-2 bg-blue-50 hover:bg-blue-100 border border-blue-200 text-[#1E60F6] rounded-xl text-xs font-bold shadow-xs transition-all cursor-pointer"
             id="btn-open-starter-guide"
             title="How to Earn Money & Upgrade Account"
           >
-            <BookOpen className="w-3.5 h-3.5 text-amber-400" />
+            <BookOpen className="w-3.5 h-3.5 text-[#1E60F6]" />
             <span className="hidden sm:inline">User Guide</span>
             <span className="sm:hidden">Guide</span>
-            <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span>
+            <span className="w-2 h-2 rounded-full bg-blue-500 animate-ping"></span>
           </button>
 
-          <div className="w-10 h-10 rounded-2xl overflow-hidden border border-slate-800 bg-[#141A28] flex items-center justify-center shadow-lg">
+          <div className="w-10 h-10 rounded-full overflow-hidden border border-slate-200 bg-white flex items-center justify-center shadow-xs">
             {user.avatar ? (
               <img src={user.avatar} alt="User Avatar" className="w-full h-full object-cover" />
             ) : (
-              <div className="w-full h-full bg-gradient-to-tr from-amber-500 to-indigo-600 flex items-center justify-center font-bold text-white text-sm">
+              <div className="w-full h-full bg-gradient-to-tr from-[#1E60F6] to-sky-500 flex items-center justify-center font-black text-white text-sm">
                 {user.name.charAt(0).toUpperCase()}
               </div>
             )}
@@ -3243,12 +3247,12 @@ export default function Dashboard({
 
           <button 
             type="button"
-            className="w-10 h-10 rounded-2xl bg-[#141A28] hover:bg-[#1C2538] flex items-center justify-center text-slate-200 border border-slate-800 relative transition-all shadow-lg cursor-pointer"
+            className="w-10 h-10 rounded-xl bg-white hover:bg-slate-50 flex items-center justify-center text-slate-700 border border-slate-200 relative transition-all shadow-xs cursor-pointer"
             id="notif-bell-btn"
-            onClick={() => setNotification("Welcome back! UXtrade live system active.")}
+            onClick={() => setNotification("Welcome back! UX Trading live system active.")}
           >
-            <Bell className="w-4 h-4 text-slate-200" />
-            <span className="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-sky-400 animate-ping-subtle" />
+            <Bell className="w-4.5 h-4.5 text-slate-700" />
+            <span className="absolute top-2 right-2 w-2.5 h-2.5 rounded-full bg-[#1E60F6] ring-2 ring-white animate-pulse" />
           </button>
         </div>
       </div>
@@ -3256,19 +3260,19 @@ export default function Dashboard({
       {/* Dynamic Greeting & User Tier Status Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-1" id="greeting-header">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight flex items-center gap-2" id="dashboard-user-name">
-            <span>Hi {user.name.split(' ')[0] || 'User'},</span>
+          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight flex items-center gap-2" id="dashboard-user-name">
+            <span>Welcome back, {user.name.split(' ')[0] || 'User'}!</span>
           </h1>
-          <p className="text-xs sm:text-sm font-semibold text-slate-400 tracking-tight">
+          <p className="text-xs sm:text-sm font-semibold text-slate-500 tracking-tight">
             {getGreetingTime()} • {todayFormatted}
           </p>
         </div>
 
         {/* Level Status Pill & Fast Upgrade Link */}
-        <div className="inline-flex items-center gap-2 bg-[#141A28] border border-slate-800 px-3 py-1.5 rounded-xl self-start sm:self-auto">
+        <div className="inline-flex items-center gap-2 bg-white border border-slate-200/90 px-3 py-1.5 rounded-xl self-start sm:self-auto shadow-xs">
           <div className="flex items-center gap-1.5">
-            <span className={`w-2 h-2 rounded-full ${user.tier && user.tier >= 2 ? 'bg-emerald-400' : 'bg-amber-400'}`} />
-            <span className="text-xs font-bold text-slate-200">
+            <span className={`w-2 h-2 rounded-full ${user.tier && user.tier >= 2 ? 'bg-emerald-500' : 'bg-blue-500'}`} />
+            <span className="text-xs font-bold text-slate-800">
               Level {currentTier} ({TIER_CONFIG[currentTier]?.badge || 'Basic'})
             </span>
           </div>
@@ -3276,7 +3280,7 @@ export default function Dashboard({
             <button
               type="button"
               onClick={() => handleOpenUpgrade(nextTier)}
-              className="px-2 py-0.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-black text-[10px] rounded-lg transition-all cursor-pointer flex items-center gap-1 shadow-xs"
+              className="px-2.5 py-1 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-black text-[10px] rounded-lg transition-all cursor-pointer flex items-center gap-1 shadow-xs"
               id="header-fast-upgrade-btn"
             >
               <Zap className="w-3 h-3 fill-slate-950" />
@@ -3349,67 +3353,24 @@ export default function Dashboard({
           );
         })}
 
-      {/* MY WALLET Main Balance Display Card (Clean & High Contrast) */}
+      {/* MY WALLET Main Balance Display Card (Exact Design from uploaded reference) */}
       <div 
-        className="relative bg-[#131926] border border-slate-800/90 rounded-[28px] p-5.5 shadow-2xl space-y-4" 
+        className="relative bg-gradient-to-r from-[#0B0F19] via-[#0E1322] to-[#0A0E1A] border border-slate-800/80 rounded-[28px] p-6 sm:p-7 shadow-2xl overflow-hidden" 
         id="dashboard-available-balance-module"
       >
-        <div className="flex items-start justify-between">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <span className="text-[10px] uppercase tracking-widest text-slate-400 font-extrabold block">
-                MAIN WALLET BALANCE
-              </span>
-              {/* Currency Selector Pill */}
-              <div className="inline-flex items-center bg-[#182030] border border-slate-800 p-0.5 rounded-lg text-[9px] font-bold">
-                <button
-                  type="button"
-                  onClick={() => handleCurrencyChange('NGN')}
-                  className={`px-2 py-0.5 rounded transition-all cursor-pointer ${
-                    primaryCurrency === 'NGN' ? 'bg-emerald-600 text-white font-black' : 'text-slate-400 hover:text-white'
-                  }`}
-                  id="btn-currency-ngn"
-                >
-                  ₦ NGN
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleCurrencyChange('USD')}
-                  className={`px-2 py-0.5 rounded transition-all cursor-pointer ${
-                    primaryCurrency === 'USD' ? 'bg-blue-600 text-white font-black' : 'text-slate-400 hover:text-white'
-                  }`}
-                  id="btn-currency-usd"
-                >
-                  $ USD
-                </button>
-              </div>
-            </div>
+        {/* Subtle Ambient Radial Blue Light */}
+        <div className="absolute right-0 top-1/2 -translate-y-1/2 w-60 h-60 bg-[#1E60F6]/15 rounded-full blur-3xl pointer-events-none" />
 
-            <div className="flex items-baseline gap-1 pt-1">
-              {showBalance ? (
-                primaryCurrency === 'USD' ? (
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-xl sm:text-2xl font-bold text-slate-400 font-sans">$</span>
-                    <span className="text-3xl sm:text-4xl font-black text-white font-mono tracking-tight" id="main-balance-text">
-                      {user.balance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                    </span>
-                  </div>
-                ) : (
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-xl sm:text-2xl font-bold text-emerald-400 font-sans">₦</span>
-                    <span className="text-3xl sm:text-4xl font-black text-white font-mono tracking-tight" id="main-balance-text">
-                      {(user.balance * 1600).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                    </span>
-                  </div>
-                )
-              ) : (
-                <span className="text-3xl sm:text-4xl font-black text-white font-mono tracking-tight" id="main-balance-text">
-                  ••••••
-                </span>
-              )}
+        <div className="flex items-center justify-between gap-3 relative z-10">
+          {/* Left Column: Balance text, eye toggle, amount, and subtext */}
+          <div className="space-y-1 sm:space-y-1.5 min-w-0">
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-slate-400 font-medium tracking-tight">
+                Total Balance
+              </span>
               <button 
                 type="button" 
-                className="text-slate-400 hover:text-white transition-colors cursor-pointer p-1 ml-1.5" 
+                className="text-slate-400 hover:text-white transition-colors cursor-pointer p-0.5" 
                 onClick={() => setShowBalance(!showBalance)}
                 id="toggle-visibility-btn"
                 title={showBalance ? "Hide Balance" : "Show Balance"}
@@ -3418,101 +3379,298 @@ export default function Dashboard({
               </button>
             </div>
 
-            {/* Subtext alternative currency display */}
-            <p className="text-xs text-slate-400 font-mono">
-              {primaryCurrency === 'NGN' 
-                ? `≈ $${user.balance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD ($1 = ₦1,600)`
-                : `≈ ₦${(user.balance * 1600).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} NGN`
-              }
+            {/* Giant Big Balance Amount */}
+            <div className="py-1">
+              {showBalance ? (
+                primaryCurrency === 'USD' ? (
+                  <h2 className="text-4xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight font-sans" id="main-balance-text">
+                    ${user.balance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </h2>
+                ) : (
+                  <h2 className="text-4xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight font-sans" id="main-balance-text">
+                    ₦{(user.balance * 1600).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </h2>
+                )
+              ) : (
+                <h2 className="text-4xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight font-sans" id="main-balance-text">
+                  $••••••
+                </h2>
+              )}
+            </div>
+
+            {/* Subtitle text */}
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-slate-400 text-xs sm:text-sm font-normal">
+                Your trading balance
+              </span>
+              <span className="text-slate-600 hidden sm:inline">•</span>
+              {/* Subtle currency switcher */}
+              <button
+                type="button"
+                onClick={() => handleCurrencyChange(primaryCurrency === 'USD' ? 'NGN' : 'USD')}
+                className="text-[11px] font-mono text-blue-400 hover:text-blue-300 font-semibold cursor-pointer underline-offset-2 hover:underline"
+              >
+                {primaryCurrency === 'USD' 
+                  ? `≈ ₦${(user.balance * 1600).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} NGN`
+                  : `≈ $${user.balance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD`
+                }
+              </button>
+            </div>
+          </div>
+
+          {/* Right Column: 3D Blue Crypto Coin Stack */}
+          <div className="shrink-0">
+            <BlueCoinGraphic className="w-28 h-28 sm:w-36 sm:h-36 lg:w-40 lg:h-40" />
+          </div>
+        </div>
+      </div>
+
+      {/* 4 Core Action Buttons below the balance card matching the uploaded design */}
+      <div className="grid grid-cols-4 gap-2.5 sm:gap-3" id="balance-core-actions">
+        {/* Deposit Button (Electric Blue) */}
+        <button 
+          type="button"
+          onClick={() => {
+            setInputAmount('');
+            setUsdtAmount('');
+            setNairaAmount('');
+            setAddMoneyStep('select');
+            setActiveModal('add_money');
+          }}
+          className="p-3.5 sm:p-4 bg-[#1E60F6] hover:bg-[#1853D4] text-white rounded-2xl flex flex-col items-center justify-center font-bold text-xs sm:text-sm gap-2 shadow-lg shadow-blue-500/20 active:scale-95 transition-all cursor-pointer group"
+          id="btn-add-money-modal"
+        >
+          <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+            <Plus className="w-5 h-5 text-white stroke-[2.5]" />
+          </div>
+          <span className="leading-none">Deposit</span>
+        </button>
+
+        {/* Withdraw Button (Solid Dark) */}
+        <button 
+          type="button"
+          onClick={() => {
+            setInputAmount('');
+            setActiveModal('transfer');
+          }}
+          className="p-3.5 sm:p-4 bg-[#0B0F19] hover:bg-[#141A28] text-white border border-slate-800 rounded-2xl flex flex-col items-center justify-center font-bold text-xs sm:text-sm gap-2 shadow-md active:scale-95 transition-all cursor-pointer group"
+          id="btn-send-money-modal"
+        >
+          <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+            <ArrowUpRight className="w-5 h-5 text-white stroke-[2.5]" />
+          </div>
+          <span className="leading-none">Withdraw</span>
+        </button>
+
+        {/* Trade Button (White Card) */}
+        <button 
+          type="button"
+          onClick={() => onNavigateToTab('trade')}
+          className="p-3.5 sm:p-4 bg-white hover:bg-slate-50 border border-slate-200/90 text-slate-800 rounded-2xl flex flex-col items-center justify-center font-bold text-xs sm:text-sm gap-2 shadow-xs hover:border-blue-300 active:scale-95 transition-all cursor-pointer group"
+          id="btn-nav-trade"
+        >
+          <div className="w-8 h-8 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+            <Repeat className="w-4.5 h-4.5 stroke-[2.5]" />
+          </div>
+          <span className="leading-none">Trade</span>
+        </button>
+
+        {/* Referral / VIP Button (White Card) */}
+        <button 
+          type="button"
+          onClick={() => onNavigateToTab('rewards')}
+          className="p-3.5 sm:p-4 bg-white hover:bg-slate-50 border border-slate-200/90 text-slate-800 rounded-2xl flex flex-col items-center justify-center font-bold text-xs sm:text-sm gap-2 shadow-xs hover:border-emerald-300 active:scale-95 transition-all cursor-pointer group"
+          id="btn-nav-referral"
+        >
+          <div className="w-8 h-8 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+            <Users className="w-4.5 h-4.5 stroke-[2.5]" />
+          </div>
+          <span className="leading-none">Referral</span>
+        </button>
+      </div>
+
+      {/* Daily Charity 20% deduction Notice */}
+      <div className="p-3 bg-white border border-slate-200/80 rounded-2xl flex items-center justify-between gap-2.5 shadow-xs" id="charity-donation-badge">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="w-7 h-7 rounded-xl bg-rose-50 border border-rose-100 text-rose-500 flex items-center justify-center shrink-0">
+            <Heart className="w-4 h-4 fill-rose-100" />
+          </div>
+          <div className="min-w-0">
+            <div className="flex items-center gap-1.5">
+              <span className="text-[11px] font-black text-slate-800 uppercase tracking-wider">Charity Support</span>
+              <span className="text-[9px] bg-rose-50 text-rose-600 border border-rose-200/60 px-1.5 py-0.2 rounded-md font-mono font-bold">20% Daily</span>
+            </div>
+            <p className="text-[10px] text-slate-500 truncate">
+              20% auto-deducted daily from balances over $1,000 USD (₦1,600,000) for charity
             </p>
           </div>
-
-          {/* Account Level Badge */}
-          <div className="text-right">
-            <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 block">Account Status</span>
-            <span className={`inline-block mt-0.5 px-2.5 py-1 rounded-xl text-xs font-black border ${
-              (user.tier || 1) >= 2 
-                ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-300' 
-                : 'bg-amber-500/15 border-amber-500/30 text-amber-300'
-            }`}>
-              Level {user.tier || 1} Active
-            </span>
-          </div>
         </div>
+        <span className="text-[10px] font-mono font-bold text-rose-600 shrink-0 bg-rose-50 px-2 py-1 rounded-lg border border-rose-200/60">
+          -20%/day (&gt;$1k)
+        </span>
+      </div>
 
-        {/* 3 Main Action Buttons: Upgrade Level | Withdraw | Deposit */}
-        <div className="grid grid-cols-3 gap-2 sm:gap-3 pt-2" id="balance-core-actions">
-          {/* Upgrade Button */}
+      {/* Top Markets section with clean white cards matching UX Trading color scheme */}
+      <div className="space-y-3" id="dashboard-top-markets-section">
+        <div className="flex items-center justify-between">
+          <h3 className="text-sm sm:text-base font-black text-slate-900 tracking-tight">Top Markets</h3>
           <button 
-            type="button"
-            onClick={() => handleOpenUpgrade(nextTier)}
-            className="flex flex-col items-center justify-center p-3 bg-gradient-to-b from-amber-500/20 to-orange-600/20 hover:from-amber-500/30 hover:to-orange-600/30 border border-amber-500/40 text-amber-300 rounded-2xl text-xs font-black transition-all cursor-pointer active:scale-95 shadow-md group"
-            id="btn-upgrade-account-level"
+            type="button" 
+            onClick={() => onNavigateToTab('trade')}
+            className="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1 cursor-pointer"
           >
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-amber-500 to-orange-500 text-slate-950 flex items-center justify-center shrink-0 mb-1 shadow-sm group-hover:scale-105 transition-transform">
-              <Zap className="w-4 h-4 fill-slate-950 text-slate-950" />
-            </div>
-            <span className="leading-tight">{isMaxTier ? 'Max Tier' : 'Upgrade'}</span>
-            <span className="text-[9px] text-amber-400 font-bold">{isMaxTier ? 'VIP Level 7' : `Level ${nextTier}`}</span>
-          </button>
-
-          {/* Withdraw Button */}
-          <button 
-            type="button"
-            onClick={() => {
-              setInputAmount('');
-              setActiveModal('transfer');
-            }}
-            className="flex flex-col items-center justify-center p-3 bg-[#1C2436] hover:bg-[#222C42] border border-slate-700/60 text-white rounded-2xl text-xs font-bold transition-all cursor-pointer active:scale-95 shadow-md group"
-            id="btn-send-money-modal"
-          >
-            <div className="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center shrink-0 mb-1 shadow-sm group-hover:scale-105 transition-transform">
-              <ArrowUpRight className="w-4 h-4 text-white" />
-            </div>
-            <span className="leading-tight">Withdraw</span>
-            <span className="text-[9px] text-slate-400 font-medium">Cashout</span>
-          </button>
-
-          {/* Deposit Button */}
-          <button 
-            type="button"
-            onClick={() => {
-              setInputAmount('');
-              setUsdtAmount('');
-              setNairaAmount('');
-              setAddMoneyStep('select');
-              setActiveModal('add_money');
-            }}
-            className="flex flex-col items-center justify-center p-3 bg-[#1C2436] hover:bg-[#222C42] border border-slate-700/60 text-white rounded-2xl text-xs font-bold transition-all cursor-pointer active:scale-95 shadow-md group"
-            id="btn-add-money-modal"
-          >
-            <div className="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0 mb-1 shadow-sm group-hover:scale-105 transition-transform">
-              <ArrowDownLeft className="w-4 h-4 text-white" />
-            </div>
-            <span className="leading-tight">Deposit</span>
-            <span className="text-[9px] text-slate-400 font-medium">Add Funds</span>
+            <span>View All</span>
+            <ArrowRight className="w-3.5 h-3.5" />
           </button>
         </div>
 
-        {/* Daily Charity 20% deduction Notice */}
-        <div className="p-2.5 bg-gradient-to-r from-rose-950/40 via-[#182030] to-slate-900/60 border border-rose-500/20 rounded-xl flex items-center justify-between gap-2.5" id="charity-donation-badge">
-          <div className="flex items-center gap-2 min-w-0">
-            <div className="w-6 h-6 rounded-lg bg-rose-500/15 border border-rose-500/30 text-rose-400 flex items-center justify-center shrink-0">
-              <Heart className="w-3.5 h-3.5 fill-rose-500/30" />
-            </div>
-            <div className="min-w-0">
-              <div className="flex items-center gap-1.5">
-                <span className="text-[10px] font-black text-rose-300 uppercase tracking-wider">Charity Support</span>
-                <span className="text-[9px] bg-rose-500/20 text-rose-300 px-1.5 py-0.2 rounded font-mono font-bold">20% Daily</span>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+          {/* BTC */}
+          <div 
+            onClick={() => onNavigateToTab('trade')}
+            className="bg-white border border-slate-200/80 hover:border-amber-300 rounded-2xl p-3.5 shadow-xs space-y-2.5 transition-all cursor-pointer group"
+          >
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-full bg-amber-500 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-xs">
+                ₿
               </div>
-              <p className="text-[10px] text-slate-400 truncate">
-                20% auto-deducted daily from balances over $1,000 USD (₦1,600,000) for charity
-              </p>
+              <div className="min-w-0">
+                <p className="text-xs font-black text-slate-900 leading-none">BTC</p>
+                <p className="text-[10px] text-slate-400 font-medium mt-0.5 truncate">Bitcoin</p>
+              </div>
+            </div>
+            <div>
+              <p className="text-sm font-extrabold text-slate-900 font-mono tracking-tight">$67,250.14</p>
+              <div className="flex items-center gap-1 text-[11px] font-bold text-emerald-600 mt-0.5">
+                <span>↗</span>
+                <span>+2.45%</span>
+              </div>
             </div>
           </div>
-          <span className="text-[10px] font-mono font-bold text-rose-400 shrink-0 bg-slate-900/80 px-2 py-1 rounded-lg border border-slate-800">
-            -20%/day (&gt;$1k)
-          </span>
+
+          {/* ETH */}
+          <div 
+            onClick={() => onNavigateToTab('trade')}
+            className="bg-white border border-slate-200/80 hover:border-blue-300 rounded-2xl p-3.5 shadow-xs space-y-2.5 transition-all cursor-pointer group"
+          >
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-full bg-slate-800 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-xs">
+                <span className="text-[11px]">◆</span>
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs font-black text-slate-900 leading-none">ETH</p>
+                <p className="text-[10px] text-slate-400 font-medium mt-0.5 truncate">Ethereum</p>
+              </div>
+            </div>
+            <div>
+              <p className="text-sm font-extrabold text-slate-900 font-mono tracking-tight">$3,320.76</p>
+              <div className="flex items-center gap-1 text-[11px] font-bold text-emerald-600 mt-0.5">
+                <span>↗</span>
+                <span>+1.82%</span>
+              </div>
+            </div>
+          </div>
+
+          {/* USDT */}
+          <div 
+            onClick={() => onNavigateToTab('trade')}
+            className="bg-white border border-slate-200/80 hover:border-teal-300 rounded-2xl p-3.5 shadow-xs space-y-2.5 transition-all cursor-pointer group"
+          >
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-full bg-teal-500 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-xs">
+                ₮
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs font-black text-slate-900 leading-none">USDT</p>
+                <p className="text-[10px] text-slate-400 font-medium mt-0.5 truncate">Tether</p>
+              </div>
+            </div>
+            <div>
+              <p className="text-sm font-extrabold text-slate-900 font-mono tracking-tight">$1.00</p>
+              <div className="flex items-center gap-1 text-[11px] font-bold text-emerald-600 mt-0.5">
+                <span>↗</span>
+                <span>+0.01%</span>
+              </div>
+            </div>
+          </div>
+
+          {/* BNB */}
+          <div 
+            onClick={() => onNavigateToTab('trade')}
+            className="bg-white border border-slate-200/80 hover:border-amber-300 rounded-2xl p-3.5 shadow-xs space-y-2.5 transition-all cursor-pointer group"
+          >
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-full bg-amber-400 text-slate-950 flex items-center justify-center font-bold text-xs shrink-0 shadow-xs">
+                ⬡
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs font-black text-slate-900 leading-none">BNB</p>
+                <p className="text-[10px] text-slate-400 font-medium mt-0.5 truncate">BNB</p>
+              </div>
+            </div>
+            <div>
+              <p className="text-sm font-extrabold text-slate-900 font-mono tracking-tight">$595.20</p>
+              <div className="flex items-center gap-1 text-[11px] font-bold text-rose-600 mt-0.5">
+                <span>↘</span>
+                <span>-0.34%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Quick Stats Overview Grid (4 Clean Pastel Cards from Reference) */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3" id="dashboard-metrics-grid">
+        {/* Total Trades */}
+        <div className="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-xs space-y-2">
+          <div className="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+            <TrendingUp className="w-4 h-4" />
+          </div>
+          <div>
+            <p className="text-xs text-slate-500 font-medium">Total Trades</p>
+            <p className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight mt-0.5">
+              {currentTxs.filter(t => t.type === 'transfer' || t.description.toLowerCase().includes('trade')).length}
+            </p>
+          </div>
+        </div>
+
+        {/* Total Profit */}
+        <div className="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-xs space-y-2">
+          <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+            <Landmark className="w-4 h-4" />
+          </div>
+          <div>
+            <p className="text-xs text-slate-500 font-medium">Total Profit</p>
+            <p className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight mt-0.5 font-mono">
+              ${(transactions.filter(t => t.type === 'reward').reduce((acc, t) => acc + t.amount, 0) || (user.balance > 0 ? user.balance * 0.08 : 0)).toFixed(2)}
+            </p>
+          </div>
+        </div>
+
+        {/* Active Orders */}
+        <div className="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-xs space-y-2">
+          <div className="w-8 h-8 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center">
+            <ArrowUpRight className="w-4 h-4" />
+          </div>
+          <div>
+            <p className="text-xs text-slate-500 font-medium">Active Orders</p>
+            <p className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight mt-0.5">
+              0
+            </p>
+          </div>
+        </div>
+
+        {/* Total Referrals */}
+        <div className="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-xs space-y-2">
+          <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
+            <Users className="w-4 h-4" />
+          </div>
+          <div>
+            <p className="text-xs text-slate-500 font-medium">Total Referrals</p>
+            <p className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight mt-0.5">
+              {transactions.filter(t => t.description.toLowerCase().includes('referral')).length}
+            </p>
+          </div>
         </div>
       </div>
 
@@ -3520,12 +3678,12 @@ export default function Dashboard({
       {/* 🎁 BIG PROMINENT DAILY REWARDS CLAIM CARD (High-Visibility for Users)       */}
       {/* ========================================================================= */}
       <div 
-        className="relative bg-gradient-to-br from-[#15232d] via-[#131c2a] to-[#0f172a] border-2 border-emerald-500/50 rounded-3xl p-5 sm:p-6 shadow-2xl shadow-emerald-950/40 overflow-hidden" 
+        className="relative bg-gradient-to-br from-[#0F1E36] via-[#102447] to-[#0A162C] border-2 border-emerald-500/40 rounded-3xl p-5 sm:p-6 shadow-xl overflow-hidden text-white" 
         id="big-daily-reward-claim-card"
       >
         {/* Background glow & accents */}
         <div className="absolute top-0 right-0 w-48 h-48 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-36 h-36 bg-teal-500/10 rounded-full blur-2xl pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-36 h-36 bg-blue-500/10 rounded-full blur-2xl pointer-events-none" />
 
         <div className="relative space-y-4">
           {/* Header row */}
@@ -3547,7 +3705,7 @@ export default function Dashboard({
               <Sparkles className="w-5 h-5 text-amber-400 animate-spin-slow" />
             </h2>
             <p className="text-xs text-slate-300 font-medium mt-1 leading-relaxed">
-              No deposit required! Tap the big button below once every 24 hours to credit <strong className="text-emerald-400 font-bold">$50.00 (₦80,000.00)</strong> directly into your account balance.
+              No deposit required! Tap the button below once every 24 hours to credit <strong className="text-emerald-400 font-bold">$50.00 (₦80,000.00)</strong> directly into your balance.
             </p>
           </div>
 
@@ -3606,15 +3764,15 @@ export default function Dashboard({
 
           {/* Quick Earning Stats Footer */}
           <div className="grid grid-cols-3 gap-2 pt-1 border-t border-slate-800/80 text-center">
-            <div className="p-2 bg-[#121824] rounded-xl border border-slate-800">
+            <div className="p-2 bg-[#0C1527] rounded-xl border border-slate-800">
               <span className="text-[10px] text-slate-400 font-bold block">Daily Reward</span>
               <span className="text-xs font-black text-emerald-400 font-mono">+$50.00</span>
             </div>
-            <div className="p-2 bg-[#121824] rounded-xl border border-slate-800">
+            <div className="p-2 bg-[#0C1527] rounded-xl border border-slate-800">
               <span className="text-[10px] text-slate-400 font-bold block">Mining Station</span>
               <span className="text-xs font-black text-sky-400 font-mono">+$3.00/5m</span>
             </div>
-            <div className="p-2 bg-[#121824] rounded-xl border border-slate-800">
+            <div className="p-2 bg-[#0C1527] rounded-xl border border-slate-800">
               <span className="text-[10px] text-slate-400 font-bold block">Referral Bonus</span>
               <span className="text-xs font-black text-amber-400 font-mono">+$0.50</span>
             </div>
@@ -3622,227 +3780,45 @@ export default function Dashboard({
         </div>
       </div>
 
-      {/* ========================================================================= */}
-      {/* 4 CLEAR EARNING & UPGRADE SHORTCUT TILES (Easy to Understand for Users)   */}
-      {/* ========================================================================= */}
-      <div className="space-y-2.5" id="dashboard-shortcuts-section">
-        <span className="text-[10px] uppercase tracking-widest text-slate-400 font-extrabold block pl-1">
-          HOW TO EARN & UPGRADE
-        </span>
-
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-          {/* 1. Daily Claim */}
-          <button
-            type="button"
-            onClick={() => {
-              if (!hasCheckedInToday) {
-                handleClaimDailyReward();
-              } else {
-                setNotification(`Reward claimed! Next claim available in ${countdownToMidnight}`);
-              }
-            }}
-            className="p-3.5 bg-[#131926] hover:bg-[#182032] border border-emerald-500/30 rounded-2xl text-left space-y-2 transition-all cursor-pointer shadow-md group"
-            id="shortcut-daily-claim"
+      {/* RECENT ACTIVITY Section Matching Reference Design */}
+      <div className="space-y-3" id="dashboard-recent-actions">
+        <div className="flex items-center justify-between">
+          <h3 className="text-sm sm:text-base font-black text-slate-900 tracking-tight">Recent Activity</h3>
+          <button 
+            type="button" 
+            onClick={() => onNavigateToTab('history')}
+            className="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1 cursor-pointer"
           >
-            <div className="w-9 h-9 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-              <Gift className="w-5 h-5" />
-            </div>
-            <div>
-              <span className="text-xs font-black text-white block">1. Daily $50</span>
-              <span className="text-[10px] text-emerald-400 font-bold">
-                {hasCheckedInToday ? '✓ Claimed Today' : 'Tap to Claim $50'}
-              </span>
-            </div>
-          </button>
-
-          {/* 2. Upgrade Account Level */}
-          <button
-            type="button"
-            onClick={() => handleOpenUpgrade(nextTier)}
-            className="p-3.5 bg-[#131926] hover:bg-[#182032] border border-amber-500/30 rounded-2xl text-left space-y-2 transition-all cursor-pointer shadow-md group"
-            id="shortcut-upgrade-level"
-          >
-            <div className="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-              <Zap className="w-5 h-5 fill-amber-400/30" />
-            </div>
-            <div>
-              <span className="text-xs font-black text-white block">
-                {isMaxTier ? 'VIP Max Level' : `2. Upgrade Lvl ${nextTier}`}
-              </span>
-              <span className="text-[10px] text-amber-400 font-bold">
-                {isMaxTier ? 'Unlimited Access' : (nextTierInfo?.dailyLimitLabel ? `Unlock ${nextTierInfo.dailyLimitLabel}` : 'Higher Limits')}
-              </span>
-            </div>
-          </button>
-
-          {/* 3. 5-Min Crypto Mining */}
-          <button
-            type="button"
-            onClick={() => onNavigateToTab('rewards')}
-            className="p-3.5 bg-[#131926] hover:bg-[#182032] border border-sky-500/30 rounded-2xl text-left space-y-2 transition-all cursor-pointer shadow-md group"
-            id="shortcut-mining"
-          >
-            <div className="w-9 h-9 rounded-xl bg-sky-500/20 text-sky-400 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-              <Pickaxe className="w-5 h-5" />
-            </div>
-            <div>
-              <span className="text-xs font-black text-white block">3. Mining ($3)</span>
-              <span className="text-[10px] text-sky-400 font-bold">Every 5 Minutes</span>
-            </div>
-          </button>
-
-          {/* 4. Refer Friends */}
-          <button
-            type="button"
-            onClick={() => onNavigateToTab('rewards')}
-            className="p-3.5 bg-[#131926] hover:bg-[#182032] border border-indigo-500/30 rounded-2xl text-left space-y-2 transition-all cursor-pointer shadow-md group"
-            id="shortcut-refer-earn"
-          >
-            <div className="w-9 h-9 rounded-xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-              <Users className="w-5 h-5" />
-            </div>
-            <div>
-              <span className="text-xs font-black text-white block">4. Refer & Earn</span>
-              <span className="text-[10px] text-indigo-400 font-bold">+$0.50 + Upgrade %</span>
-            </div>
+            <span>View All</span>
+            <ArrowRight className="w-3.5 h-3.5" />
           </button>
         </div>
-      </div>
 
-      {/* FUNDS & CRYPTO ASSETS Section */}
-      <div className="space-y-2.5" id="dashboard-funds-section">
-        <span className="text-[10px] uppercase tracking-widest text-slate-400 font-extrabold block pl-1">
-          CRYPTO HOLDINGS & WALLETS
-        </span>
-
-        <div className="flex items-center gap-3 overflow-x-auto pb-2 scrollbar-none">
-          {/* Plus action button card */}
-          <button
-            type="button"
-            onClick={() => {
-              setAddMoneyStep('select');
-              setActiveModal('add_money');
-            }}
-            className="w-12 h-36 bg-[#131926] border border-slate-800 rounded-2xl flex items-center justify-center text-slate-300 hover:text-white hover:border-slate-700 transition-all shrink-0 cursor-pointer shadow-md"
-            title="Add crypto asset"
-          >
-            <Plus className="w-5 h-5 text-slate-300" />
-          </button>
-
-          {/* Bitcoin (BTC) Card */}
-          <div className="w-44 p-4 bg-[#131926] border border-slate-800/90 rounded-2xl shrink-0 space-y-2 shadow-lg">
-            <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-400 flex items-center justify-center font-bold text-xs shrink-0">
-                ₿
-              </div>
-              <div>
-                <p className="text-xs font-bold text-white leading-none">Bitcoin</p>
-                <p className="text-[10px] text-slate-400 font-mono mt-0.5">BTC</p>
-              </div>
-            </div>
-
-            {/* Sparkline Blue Line Chart */}
-            <div className="h-8 w-full my-1">
-              <svg className="w-full h-full overflow-visible" viewBox="0 0 100 30">
-                <path d="M0 22 Q 25 12, 50 18 T 100 6" fill="none" stroke="#38BDF8" strokeWidth="2.5" strokeLinecap="round" />
-              </svg>
-            </div>
-
-            <div>
-              <p className="text-xs font-extrabold text-white font-mono">
-                ${user.balance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-              </p>
-              <p className="text-[10px] font-bold text-sky-400 font-mono mt-0.5">
-                +268.12  +0.92%
-              </p>
-            </div>
-          </div>
-
-          {/* Solana (SLN) Card */}
-          <div className="w-44 p-4 bg-[#131926] border border-slate-800/90 rounded-2xl shrink-0 space-y-2 shadow-lg">
-            <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-full bg-fuchsia-500/20 border border-fuchsia-500/40 text-fuchsia-400 flex items-center justify-center font-bold text-xs shrink-0">
-                S
-              </div>
-              <div>
-                <p className="text-xs font-bold text-white leading-none">Solana</p>
-                <p className="text-[10px] text-slate-400 font-mono mt-0.5">SLN</p>
-              </div>
-            </div>
-
-            {/* Sparkline Pink Line Chart */}
-            <div className="h-8 w-full my-1">
-              <svg className="w-full h-full overflow-visible" viewBox="0 0 100 30">
-                <path d="M0 18 Q 25 24, 50 10 T 100 12" fill="none" stroke="#EC4899" strokeWidth="2.5" strokeLinecap="round" />
-              </svg>
-            </div>
-
-            <div>
-              <p className="text-xs font-extrabold text-white font-mono">
-                $2,122.31
-              </p>
-              <p className="text-[10px] font-bold text-pink-400 font-mono mt-0.5">
-                -82.0  -5.62%
-              </p>
-            </div>
-          </div>
-
-          {/* USDT (Tether) Card */}
-          <div className="w-44 p-4 bg-[#131926] border border-slate-800/90 rounded-2xl shrink-0 space-y-2 shadow-lg">
-            <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 flex items-center justify-center font-bold text-xs shrink-0">
-                ₮
-              </div>
-              <div>
-                <p className="text-xs font-bold text-white leading-none">Tether USD</p>
-                <p className="text-[10px] text-slate-400 font-mono mt-0.5">USDT TRC20</p>
-              </div>
-            </div>
-
-            {/* Sparkline Cyan Line Chart */}
-            <div className="h-8 w-full my-1">
-              <svg className="w-full h-full overflow-visible" viewBox="0 0 100 30">
-                <path d="M0 25 Q 25 8, 50 18 T 100 4" fill="none" stroke="#06B6D4" strokeWidth="2.5" strokeLinecap="round" />
-              </svg>
-            </div>
-
-            <div>
-              <p className="text-xs font-extrabold text-white font-mono">
-                $1,764.46
-              </p>
-              <p className="text-[10px] font-bold text-emerald-400 font-mono mt-0.5">
-                +124.50  +1.00%
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* RECENT ACTIONS Section */}
-      <div className="space-y-2.5" id="dashboard-recent-actions">
-        <span className="text-[10px] uppercase tracking-widest text-slate-400 font-extrabold block pl-1">
-          RECENT ACTIONS & TRANSACTIONS
-        </span>
-
-        <div className="bg-[#131926] border border-slate-800/90 rounded-2xl p-4 shadow-lg">
+        <div className="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-xs">
           {currentTxs.length === 0 ? (
-            <div className="text-center py-6 text-slate-500 text-xs font-medium">
-              No recent transactions yet. Claim your daily reward or deposit to see actions here.
+            <div className="text-center py-8 space-y-2">
+              <div className="w-12 h-12 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto">
+                <FileText className="w-6 h-6" />
+              </div>
+              <p className="text-sm font-bold text-slate-700">No activity yet</p>
+              <p className="text-xs text-slate-400 max-w-xs mx-auto">
+                Start trading to see your recent activity here.
+              </p>
             </div>
           ) : (
             <div className="space-y-3">
               {currentTxs.slice(0, 5).map((tx, idx) => (
-                <div key={tx.id} className={`flex items-center justify-between ${idx > 0 ? 'border-t border-slate-800/60 pt-3' : ''}`}>
+                <div key={tx.id} className={`flex items-center justify-between ${idx > 0 ? 'border-t border-slate-100 pt-3' : ''}`}>
                   <div className="flex items-center gap-3">
                     <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
                       tx.description.toLowerCase().includes('charity')
-                        ? 'bg-rose-500/15 text-rose-400 border border-rose-500/30'
+                        ? 'bg-rose-50 text-rose-500 border border-rose-200'
                         : tx.type === 'deposit' || tx.type === 'reward' 
-                          ? 'bg-emerald-500/10 text-emerald-400' 
-                          : 'bg-rose-500/10 text-rose-400'
+                          ? 'bg-emerald-50 text-emerald-600' 
+                          : 'bg-rose-50 text-rose-600'
                     }`}>
                       {tx.description.toLowerCase().includes('charity') ? (
-                        <Heart className="w-4 h-4 fill-rose-500/40" />
+                        <Heart className="w-4 h-4 fill-rose-200" />
                       ) : tx.type === 'deposit' || tx.type === 'reward' ? (
                         <ArrowDownLeft className="w-4 h-4" />
                       ) : (
@@ -3850,13 +3826,13 @@ export default function Dashboard({
                       )}
                     </div>
                     <div>
-                      <p className="text-xs font-bold text-slate-200 leading-tight">{tx.description}</p>
+                      <p className="text-xs font-bold text-slate-800 leading-tight">{tx.description}</p>
                       <p className="text-[10px] text-slate-400">{new Date(tx.date).toLocaleDateString()}</p>
                     </div>
                   </div>
 
                   <span className={`text-xs font-extrabold font-mono ${
-                    tx.type === 'deposit' || tx.type === 'reward' ? 'text-emerald-400' : 'text-rose-400'
+                    tx.type === 'deposit' || tx.type === 'reward' ? 'text-emerald-600' : 'text-rose-600'
                   }`}>
                     {tx.type === 'deposit' || tx.type === 'reward' ? '+' : '-'}${tx.amount.toFixed(2)}
                   </span>
@@ -3864,6 +3840,51 @@ export default function Dashboard({
               ))}
             </div>
           )}
+        </div>
+      </div>
+
+      {/* Promotional Trading Journey Banner matching bottom of reference */}
+      <div className="bg-gradient-to-r from-blue-50 via-sky-50 to-indigo-50/70 border border-blue-100/90 rounded-3xl p-6 shadow-xs relative overflow-hidden flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5" id="dashboard-journey-banner">
+        {/* Left Copy */}
+        <div className="space-y-2 max-w-sm z-10">
+          <h3 className="text-lg sm:text-xl font-black text-slate-900 tracking-tight">
+            Your Trading Journey <span className="text-[#1E60F6]">Starts Here</span>
+          </h3>
+          <p className="text-xs text-slate-600 font-medium leading-relaxed">
+            Deposit, trade and earn with confidence. Enjoy instant free daily rewards!
+          </p>
+          <div className="pt-2">
+            <button
+              type="button"
+              onClick={() => {
+                if (!hasCheckedInToday) {
+                  handleClaimDailyReward();
+                } else {
+                  onNavigateToTab('trade');
+                }
+              }}
+              className="px-5 py-2.5 bg-[#1E60F6] hover:bg-[#1853D4] text-white text-xs font-black rounded-xl shadow-md shadow-blue-500/20 flex items-center gap-2 cursor-pointer transition-all active:scale-95"
+            >
+              <span>{hasCheckedInToday ? 'Start Now' : 'Claim Free $50'}</span>
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+
+        {/* Right Ascending Chart Vector Graphic */}
+        <div className="relative shrink-0 self-center sm:self-auto z-10">
+          <div className="w-40 h-24 flex items-end justify-center gap-2 relative">
+            <div className="w-5 h-8 bg-blue-600 rounded-t-md"></div>
+            <div className="w-5 h-13 bg-blue-500 rounded-t-md"></div>
+            <div className="w-5 h-18 bg-blue-400 rounded-t-md"></div>
+            <div className="w-5 h-24 bg-blue-300 rounded-t-md"></div>
+
+            {/* Ascending Blue Arrow */}
+            <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 160 100">
+              <path d="M 8 78 Q 70 55, 135 15" fill="none" stroke="#1E60F6" strokeWidth="4" strokeLinecap="round" />
+              <polygon points="140,10 128,20 142,24" fill="#1E60F6" />
+            </svg>
+          </div>
         </div>
       </div>
 
