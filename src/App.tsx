@@ -536,6 +536,7 @@ export default function App() {
               setTriggerUpgrade(true);
               setActiveTab('home');
             }}
+            onNavigateToTab={(tab) => setActiveTab(tab)}
           />
         )}
         {activeTab === 'bots' && (

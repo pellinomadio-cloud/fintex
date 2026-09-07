@@ -7,7 +7,7 @@ import {
   Calendar, FileSpreadsheet, ShieldCheck, Check, Sparkles,
   Lock, Mail, Users, Edit3, ShieldAlert, CheckCircle2, 
   ChevronDown, XCircle, Settings, Image as ImageIcon, LogOut,
-  Megaphone, Trash2
+  Megaphone, Trash2, Key, Eye, EyeOff
 } from 'lucide-react';
 
 interface FinancePageProps {
@@ -24,8 +24,8 @@ export default function FinancePage({ user, transactions, onUpdateUser }: Financ
 
   // Administrative session states
   const [showAdminLogin, setShowAdminLogin] = useState<boolean>(false);
-  const [adminEmail, setAdminEmail] = useState<string>('');
-  const [adminPassword, setAdminPassword] = useState<string>('');
+  const [adminPassKey, setAdminPassKey] = useState<string>('');
+  const [showPassKey, setShowPassKey] = useState<boolean>(false);
   const [adminError, setAdminError] = useState<string>('');
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState<boolean>(() => {
     return localStorage.getItem('fintex_admin_logged_in') === 'true';
@@ -175,14 +175,14 @@ export default function FinancePage({ user, transactions, onUpdateUser }: Financ
     e.preventDefault();
     setAdminError('');
 
-    if (adminEmail.trim().toLowerCase() === 'pellinomadio@gmail.com' && adminPassword === 'MAVELL999') {
+    const enteredKey = adminPassKey.trim();
+    if (enteredKey === 'TRUST1' || enteredKey.toUpperCase() === 'TRUST1') {
       localStorage.setItem('fintex_admin_logged_in', 'true');
       setIsAdminLoggedIn(true);
       setShowAdminLogin(false);
-      setAdminEmail('');
-      setAdminPassword('');
+      setAdminPassKey('');
     } else {
-      setAdminError('Access Denied: Invalid Administrative Credentials.');
+      setAdminError('Access Denied: Invalid Pass Key. Please enter the correct administrative pass key.');
     }
   };
 
@@ -582,21 +582,30 @@ export default function FinancePage({ user, transactions, onUpdateUser }: Financ
       <div className="space-y-6 pb-24 animate-fade-in font-sans" id="admin-login-view">
         <div className="flex items-center justify-between border-b border-slate-150 pb-4">
           <div>
-            <h2 className="text-xl font-bold text-brand-dark tracking-tight">Administrative Authentication</h2>
+            <h2 className="text-xl font-bold text-slate-900 tracking-tight">Administrative Authentication</h2>
             <p className="text-xs text-slate-500">Access gateway to consolidated accounts node</p>
           </div>
           <button 
             type="button" 
-            onClick={() => setShowAdminLogin(false)} 
+            onClick={() => {
+              setShowAdminLogin(false);
+              setAdminError('');
+              setAdminPassKey('');
+            }} 
             className="text-xs font-bold text-slate-500 hover:text-slate-800 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 rounded-xl cursor-pointer transition-all"
           >
             Cancel
           </button>
         </div>
 
-        <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm max-w-md mx-auto space-y-4">
-          <div className="w-12 h-12 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center font-bold text-lg mx-auto">
-            <Lock className="w-5 h-5" />
+        <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm max-w-md mx-auto space-y-5">
+          <div className="w-14 h-14 bg-blue-50 text-[#1E60F6] rounded-2xl flex items-center justify-center font-bold text-lg mx-auto shadow-xs">
+            <Key className="w-6 h-6" />
+          </div>
+
+          <div className="text-center space-y-1">
+            <h3 className="text-base font-black text-slate-900">Admin Dashboard Access</h3>
+            <p className="text-xs text-slate-500">Enter your administrative pass key to authenticate</p>
           </div>
 
           <form onSubmit={handleAdminLoginSubmit} className="space-y-4">
@@ -608,44 +617,45 @@ export default function FinancePage({ user, transactions, onUpdateUser }: Financ
             )}
 
             <div>
-              <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1">Admin Email Profile Address</label>
+              <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wide mb-1.5">
+                Pass Key
+              </label>
               <div className="relative">
-                <Mail className="absolute inset-y-0 left-0 pl-3 w-4 h-4 text-slate-400 my-auto" />
+                <Key className="absolute inset-y-0 left-0 pl-3 w-4 h-4 text-slate-400 my-auto pointer-events-none" />
                 <input 
-                  type="email"
+                  type={showPassKey ? "text" : "password"}
                   required
-                  placeholder="admin@ux6trade.online"
-                  className="w-full pl-9 pr-4 py-2.5 bg-slate-50 border border-slate-100 rounded-xl text-xs font-semibold focus:outline-none focus:border-brand-primary focus:bg-white text-slate-800"
-                  value={adminEmail}
-                  onChange={(e) => setAdminEmail(e.target.value)}
+                  autoFocus
+                  placeholder="Enter pass key"
+                  className="w-full pl-9 pr-10 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold tracking-wider focus:outline-none focus:border-[#1E60F6] focus:bg-white text-slate-900 transition-colors"
+                  value={adminPassKey}
+                  onChange={(e) => setAdminPassKey(e.target.value)}
+                  id="admin-passkey-input"
                 />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1">Administrative Clearing Key</label>
-              <div className="relative">
-                <Lock className="absolute inset-y-0 left-0 pl-3 w-4 h-4 text-slate-400 my-auto" />
-                <input 
-                  type="password"
-                  required
-                  placeholder="••••••••"
-                  className="w-full pl-9 pr-4 py-2.5 bg-slate-50 border border-slate-100 rounded-xl text-xs font-semibold focus:outline-none focus:border-brand-primary focus:bg-white text-slate-800"
-                  value={adminPassword}
-                  onChange={(e) => setAdminPassword(e.target.value)}
-                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassKey(!showPassKey)}
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 cursor-pointer"
+                  tabIndex={-1}
+                  title={showPassKey ? "Hide Pass Key" : "Show Pass Key"}
+                >
+                  {showPassKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
               </div>
             </div>
 
             <button
               type="submit"
-              className="w-full py-3 bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs rounded-2xl cursor-pointer transition-all uppercase tracking-wider"
+              className="w-full py-3.5 bg-[#1E60F6] hover:bg-blue-700 text-white font-bold text-xs rounded-2xl cursor-pointer transition-all uppercase tracking-wider shadow-md shadow-blue-500/20 active:scale-98 flex items-center justify-center gap-2"
+              id="admin-passkey-submit-btn"
             >
-              Authenticate Admin Authority
+              <Lock className="w-4 h-4" />
+              <span>Unlock Admin Dashboard</span>
             </button>
           </form>
+
           <p className="text-[10px] text-slate-400 text-center leading-normal">
-            Only authorized personnel are granted clearance. Database reads and modifications are fully audited.
+            Administrative access is monitored. Verified operations and ledger edits are securely synchronized.
           </p>
         </div>
       </div>
@@ -1129,29 +1139,42 @@ export default function FinancePage({ user, transactions, onUpdateUser }: Financ
   return (
     <div className="space-y-6 pb-24" id="finance-tab-content">
       {/* Title block */}
-      <div className="flex items-center justify-between" id="finance-header-row">
+      <div className="flex items-center justify-between gap-2" id="finance-header-row">
         <div>
           <h2 className="text-xl font-bold text-brand-dark tracking-tight">Ledger & Analytics</h2>
           <p className="text-xs text-slate-550">Real-time ledger updates and cashflow charts</p>
         </div>
-        <button
-          type="button"
-          onClick={handleExportStatementClick}
-          className="text-xs font-bold text-brand-dark bg-white border border-slate-100 hover:bg-slate-50 px-3.5 py-2 rounded-xl transition-all shadow-sm inline-flex items-center gap-1.5"
-          id="export-statement-btn"
-        >
-          {exportSuccess ? (
-            <>
-              <Check className="w-4 h-4 text-emerald-500" />
-              <span className="text-emerald-600 font-bold">Exported (.csv)</span>
-            </>
-          ) : (
-            <>
-              <FileSpreadsheet className="w-4 h-4 text-brand-primary" />
-              <span>Export CSV Statement</span>
-            </>
-          )}
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setShowAdminLogin(true)}
+            className="text-xs font-bold text-slate-700 hover:text-[#1E60F6] bg-white border border-slate-200 hover:border-blue-300 hover:bg-blue-50/50 px-3 py-2 rounded-xl transition-all shadow-xs inline-flex items-center gap-1.5 cursor-pointer"
+            id="admin-portal-header-btn"
+            title="Open Admin Dashboard"
+          >
+            <ShieldCheck className="w-4 h-4 text-[#1E60F6]" />
+            <span>Admin Portal</span>
+          </button>
+          <button
+            type="button"
+            onClick={handleExportStatementClick}
+            className="text-xs font-bold text-brand-dark bg-white border border-slate-100 hover:bg-slate-50 px-3 py-2 rounded-xl transition-all shadow-sm inline-flex items-center gap-1.5 cursor-pointer"
+            id="export-statement-btn"
+          >
+            {exportSuccess ? (
+              <>
+                <Check className="w-4 h-4 text-emerald-500" />
+                <span className="text-emerald-600 font-bold">Exported (.csv)</span>
+              </>
+            ) : (
+              <>
+                <FileSpreadsheet className="w-4 h-4 text-brand-primary" />
+                <span className="hidden sm:inline">Export CSV Statement</span>
+                <span className="sm:hidden">Export</span>
+              </>
+            )}
+          </button>
+        </div>
       </div>
 
       {/* income vs expense cards */}

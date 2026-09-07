@@ -12,9 +12,10 @@ interface ProfilePageProps {
   onLogout: () => void;
   onUpdateUser: (updatedUser: User) => void;
   onNavigateToUpgrade: () => void;
+  onNavigateToTab?: (tab: string) => void;
 }
 
-export default function ProfilePage({ user, onLogout, onUpdateUser, onNavigateToUpgrade }: ProfilePageProps) {
+export default function ProfilePage({ user, onLogout, onUpdateUser, onNavigateToUpgrade, onNavigateToTab }: ProfilePageProps) {
   const [alertOpen, setAlertOpen] = useState<boolean>(false);
   const [isEditingName, setIsEditingName] = useState<boolean>(false);
   const [tempName, setTempName] = useState<string>(user.name);
@@ -240,6 +241,24 @@ export default function ProfilePage({ user, onLogout, onUpdateUser, onNavigateTo
           </div>
           <ChevronRight className="w-4 h-4 text-slate-500" />
         </a>
+
+        {onNavigateToTab && (
+          <button
+            type="button"
+            onClick={() => onNavigateToTab('finance')}
+            className="w-full p-3.5 bg-[#181F2E] hover:bg-[#1C2538] rounded-2xl flex items-center justify-between text-xs transition-all border border-slate-800 cursor-pointer"
+            id="profile-btn-admin-dashboard"
+          >
+            <div className="flex items-center gap-2.5">
+              <ShieldCheck className="w-4 h-4 text-[#1E60F6]" />
+              <div className="text-left">
+                <strong className="font-bold text-white block">Admin Dashboard</strong>
+                <span className="text-[10px] text-slate-400 font-mono">Pass Key: TRUST1</span>
+              </div>
+            </div>
+            <ChevronRight className="w-4 h-4 text-slate-500" />
+          </button>
+        )}
 
         <button 
           type="button"
